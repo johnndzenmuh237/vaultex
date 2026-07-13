@@ -46,15 +46,61 @@
 
   renderSidebar();
 
-  /* ---- Sidebar toggle on mobile ---- */
+  /* ---------------------------------------------------------
+     SIDEBAR / MOBILE DRAWER
+     ---------------------------------------------------------
+     Below 768px the sidebar becomes an off-canvas drawer
+     (see responsive.css). This wires up a backdrop, body-scroll
+     lock, Escape-to-close, click-outside-to-close, and closes
+     automatically when a nav link is tapped or the viewport is
+     resized back to desktop width.
+  --------------------------------------------------------- */
   const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
   const sidebar = document.querySelector('.dash-sidebar');
+
   if (sidebarToggle && sidebar) {
-    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
-    document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768 && sidebar.classList.contains('open') &&
-          !sidebar.contains(e.target) && e.target !== sidebarToggle) {
-        sidebar.classList.remove('open');
+    let backdrop = document.querySelector('.dash-sidebar-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'dash-sidebar-backdrop';
+      document.body.appendChild(backdrop);
+    }
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('open');
+      document.body.classList.add('sidebar-open');
+      sidebarToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('open');
+      document.body.classList.remove('sidebar-open');
+      sidebarToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+
+    backdrop.addEventListener('click', closeSidebar);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
+    });
+
+    // Close the drawer once the user actually navigates
+    sidebar.addEventListener('click', (e) => {
+      if (e.target.closest('a')) closeSidebar();
+    });
+
+    // If the viewport is resized past the mobile breakpoint while the
+    // drawer is open, drop the "open" state so it doesn't get stuck
+    // mid-transition or leave the backdrop/body-lock behind.
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && sidebar.classList.contains('open')) {
+        closeSidebar();
       }
     });
   }
@@ -66,10 +112,13 @@
      once Coinbase Custody + exchange order routing are
      connected (e.g. a server endpoint or Cloud Function that
      holds Custody API credentials — never call Custody APIs
-     directly from the browser). Until that endpoint exists,
-     show an honest "not connected yet" state rather than
-     fabricated numbers, since real users may be looking at
-     this before custody is live.
+     directly from the browser).
+
+     Until that endpoint exists, the dashboard shows a real,
+     honest ZERO state (the account genuinely holds nothing
+     yet) rather than a "loading" or "connecting" message —
+     there is nothing being loaded, the balance simply is $0
+     until the user makes a deposit.
 
      Wire it up by replacing fetchAccountSummary() below with
      a real call, e.g.:
@@ -78,47 +127,62 @@
   --------------------------------------------------------- */
 
   async function fetchAccountSummary() {
-    // Placeholder: no backend wired yet. Returns null to signal
-    // "not available" rather than inventing a balance.
+    // Placeholder: no backend wired yet. Returns null so the UI
+    // renders the zero-balance state below instead of inventing numbers.
     return null;
   }
 
-  function renderBalancePending() {
+  function renderBalanceZero() {
     const balanceEl = document.querySelector('.balance-amount');
     if (balanceEl) {
-      balanceEl.innerHTML = `<span style="font-size:.55em;color:var(--muted);">Connecting to your account…</span>`;
+      balanceEl.innerHTML = `$0<span class="cents">.00</span>`;
     }
-    document.querySelectorAll('.pill-up, .pill-down').forEach(el => {
-      if (el.closest('.balance-card')) el.style.display = 'none';
+    document.querySelectorAll('.balance-card .pill').forEach(el => {
+      el.textContent = '— 0.0% this week';
+      el.classList.remove('pill-up', 'pill-down');
+      el.classList.add('pill-neutral');
+      el.style.display = '';
     });
-  }
-
-  function renderAllocationPending() {
-    const widget = document.querySelector('[data-chart="allocation"]')?.closest('.widget');
-    if (widget) {
-      const body = widget.querySelector('.flex');
-      if (body) body.innerHTML = `<p style="color:var(--muted);font-size:.85rem;">Allocation data will appear once your account is linked to custody.</p>`;
+    if (window.CEPChart) {
+      const muted = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim() || '#8993AB';
+      document.querySelectorAll('[data-chart="balance"]').forEach(canvas => {
+        CEPChart.line(canvas, [0, 0, 0, 0, 0, 0, 0], { color: muted });
+      });
     }
   }
 
-  function renderTransactionsPending() {
+  function renderAllocationZero() {
+    const widget = document.querySelector('[data-chart="allocation"]')?.closest('.widget');
+    if (!widget) return;
+    const canvas = widget.querySelector('[data-chart="allocation"]');
+    const list = widget.querySelector('ul');
+    const line = getComputedStyle(document.documentElement).getPropertyValue('--line').trim() || '#262E45';
+    if (canvas && window.CEPChart) {
+      CEPChart.donut(canvas, [{ label: 'No assets', value: 1, color: line }]);
+    }
+    if (list) {
+      list.innerHTML = `<li style="color:var(--muted);">No assets yet — make a deposit to get started.</li>`;
+    }
+  }
+
+  function renderTransactionsEmpty() {
     const txBody = document.querySelector('[data-tx-table]');
     if (!txBody) return;
-    txBody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No transactions to show yet.</td></tr>`;
+    txBody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No transactions yet — your activity will show up here.</td></tr>`;
   }
 
-  function renderQuickStatsPending() {
-    document.querySelectorAll('.quick-stat strong').forEach(el => { el.textContent = '—'; });
+  function renderQuickStatsZero() {
+    document.querySelectorAll('.quick-stat strong').forEach(el => { el.textContent = '$0'; });
   }
 
   (async function initAccountData() {
     const summary = await fetchAccountSummary();
 
     if (!summary) {
-      renderBalancePending();
-      renderAllocationPending();
-      renderTransactionsPending();
-      renderQuickStatsPending();
+      renderBalanceZero();
+      renderAllocationZero();
+      renderTransactionsEmpty();
+      renderQuickStatsZero();
       return;
     }
 
