@@ -1,0 +1,2 @@
+# vaultex
+global trade
