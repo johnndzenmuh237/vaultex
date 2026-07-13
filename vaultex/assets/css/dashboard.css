@@ -1,71 +1,364 @@
 /* =========================================================
-   DASHBOARD.CSS — extra widget & trading-panel styling
+   DEPOSIT.CSS — page-specific styling for deposit.html
+   Built on the shared tokens/classes from style.css +
+   dashboard.css. This pass focuses on visual weight: numbered
+   step badges, a proper custom select, icon accents, shadows
+   and hierarchy — so nothing on this page reads as bare text.
    ========================================================= */
 
-.dash-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-.dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-
-.quick-stat { display: flex; align-items: center; gap: 14px; }
-.quick-stat .ico { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.quick-stat .ico.mint { background: var(--mint-dim); color: var(--mint); }
-.quick-stat .ico.gold { background: var(--gold-dim); color: var(--gold); }
-.quick-stat .ico.coral { background: var(--coral-dim); color: var(--coral); }
-.quick-stat strong { font-family: var(--font-mono); font-size: 1.3rem; display: block; }
-.quick-stat span { font-size: .8rem; color: var(--muted); }
-
-.tab-row { display: flex; gap: 6px; background: var(--ink-raise); border-radius: var(--radius-sm); padding: 4px; width: fit-content; margin-bottom: 18px; }
-.tab-row button { background: transparent; border: none; color: var(--muted); padding: 8px 16px; border-radius: 6px; font-size: .85rem; font-weight: 600; }
-.tab-row button.active { background: var(--ink-soft); color: var(--mint); }
-
-.progress-bar { height: 8px; border-radius: 6px; background: var(--ink-raise); overflow: hidden; }
-.progress-bar span { display: block; height: 100%; background: var(--mint); border-radius: 6px; }
-
-.security-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
-.security-row:last-child { border-bottom: none; }
-.toggle { width: 46px; height: 26px; border-radius: 20px; background: var(--ink-raise); position: relative; border: 1px solid var(--line); cursor: pointer; }
-.toggle.on { background: var(--mint-dim); border-color: var(--mint); }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--muted); transition: all .2s; }
-.toggle.on::after { left: 22px; background: var(--mint); }
-
-.kyc-step { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-.kyc-step:last-child { border-bottom: none; }
-.kyc-step .num { width: 32px; height: 32px; border-radius: 50%; background: var(--ink-raise); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .85rem; flex-shrink: 0; }
-.kyc-step.done .num { background: var(--mint); color: #03140F; }
-
-.empty-state { text-align: center; padding: 64px 24px; color: var(--muted); }
-.empty-state .ico { font-size: 2.5rem; margin-bottom: 14px; }
-
-.order-book .row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-family: var(--font-mono); font-size: .82rem; padding: 5px 0; position: relative; }
-.order-book .row.ask { color: var(--coral); }
-.order-book .row.bid { color: var(--mint); }
-
-/* ---- Zero-balance state (neutral pill, not up/down colored) ---- */
-.pill-neutral { background: var(--ink-raise); color: var(--muted); }
-
-/* ---- Total balance card: match the flat "widget" look ----
-   style.css gives .balance-card its own gradient background,
-   larger radius/padding, and a decorative glow (::after) so it
-   stood out from the other cards. Reshaped here to use the same
-   flat surface, border, radius and padding as every other card
-   on the dashboard (quick-stats, allocation, transactions), so
-   the whole grid reads as one consistent set instead of one
-   "hero" card among plain ones. */
-.balance-card {
-  background: var(--ink-soft);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  overflow: visible;
+/* ---- Topbar balance pill ---- */
+.dash-topbar .balance-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  min-width: 220px;
 }
-.balance-card::after { content: none; }
-.balance-card .balance-amount { margin: 0 0 10px; }
+.balance-card-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--mint-dim);
+  color: var(--mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.balance-label {
+  display: block;
+  font-size: .72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 2px;
+}
+.balance-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--paper);
+}
 
-/* ---- Chart canvases must never force horizontal overflow ----
-   The balance canvas ships with width="600" in the HTML as an
-   intrinsic size; without this it stays 600px wide on any
-   viewport narrower than that, pushing the whole page into a
-   horizontal scroll. The allocation donut is fixed-square and
-   just needs to not shrink/collapse inside its flex row. */
-[data-chart] { max-width: 100%; }
-[data-chart="balance"] { width: 100% !important; height: 120px !important; }
-[data-chart="allocation"] { width: 120px !important; height: 120px !important; flex-shrink: 0; }
-.widget .flex { flex-wrap: wrap; }
+/* ---- Step headers ----
+   Replaces plain "1. Choose asset & amount" text with a real
+   numbered badge + heading pair, the way Coinbase/Kraken-style
+   flows present multi-step panels. */
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.step-num {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--mint-dim);
+  color: var(--mint);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-head h2 { font-size: 1.05rem; margin: 0; }
+.result-header .step-head { margin-bottom: 0; }
+
+/* ---- Panels get real depth ---- */
+.form-panel, .result-panel, .history-panel {
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- Deposit grid ---- */
+.deposit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 24px;
+  margin-bottom: 24px;
+  align-items: start;
+}
+
+/* ---- Form fields ---- */
+.field-label {
+  display: block;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin: 22px 0 10px;
+}
+.field-label:first-of-type { margin-top: 0; }
+
+.field-input {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ink-raise);
+  color: var(--paper);
+  font-size: .95rem;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.field-input:focus {
+  border-color: var(--mint);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--mint-dim);
+}
+
+/* Currency select: a real dark control with a coin badge and a
+   drawn arrow, not the OS default that made it look like text. */
+.select-wrap { position: relative; display: flex; align-items: center; }
+.select-coin {
+  position: absolute;
+  left: 12px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: .78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  top: 50%; right: 16px;
+  width: 9px; height: 9px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+select.field-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-left: 48px;
+  padding-right: 40px;
+  cursor: pointer;
+  font-weight: 500;
+}
+select.field-input option {
+  background: var(--ink-raise);
+  color: var(--paper);
+}
+
+.amount-wrap { position: relative; }
+.amount-prefix {
+  position: absolute;
+  top: 50%; left: 16px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .95rem;
+  pointer-events: none;
+}
+.amount-input { padding-left: 30px; font-family: var(--font-mono); }
+
+.field-hint { font-size: .78rem; color: var(--muted); margin-top: 8px; }
+
+.primary-btn {
+  margin-top: 26px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: .95rem;
+  border: 1px solid transparent;
+  background: var(--mint);
+  color: #03140F;
+  transition: transform .15s var(--ease), box-shadow .15s var(--ease);
+}
+.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -6px var(--mint-dim); }
+.primary-btn:active { transform: translateY(0); }
+.primary-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.form-error {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--coral-dim);
+  color: var(--coral);
+  font-size: .85rem;
+}
+
+/* ---- Result panel ---- */
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px 6px 12px;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status-waiting { background: var(--gold-dim); color: var(--gold); }
+.status-waiting .status-dot { animation: pulse-dot 1.4s ease-in-out infinite; }
+.status-confirmed, .status-success, .status-completed { background: var(--mint-dim); color: var(--mint); }
+.status-expired, .status-failed { background: var(--coral-dim); color: var(--coral); }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+.result-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.qr-wrap {
+  background: #fff;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  width: 168px;
+  height: 168px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-card);
+}
+#qrcode img, #qrcode canvas { display: block; width: 140px !important; height: 140px !important; }
+
+.result-details { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.detail-row { display: flex; flex-direction: column; gap: 6px; }
+.detail-label { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+.detail-value { font-size: .95rem; color: var(--paper); }
+.detail-value.mono { font-family: var(--font-mono); }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+
+.copy-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.copy-row .detail-value {
+  flex: 1;
+  min-width: 0;
+  background: var(--ink-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+}
+.copy-btn {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--ink-raise);
+  color: var(--paper);
+  font-size: .8rem;
+  font-weight: 600;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.copy-btn:hover { border-color: var(--mint); color: var(--mint); background: var(--mint-dim); }
+
+.countdown-value {
+  display: inline-block;
+  background: var(--ink-raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.result-note {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.result-note strong { color: var(--paper); }
+
+/* ---- History table ---- */
+.history-panel .widget-head { margin-bottom: 18px; }
+.table-wrap { width: 100%; }
+.history-table tbody tr:hover td { background: var(--ink-raise); }
+.history-table td { transition: background .12s; }
+
+.empty-row { padding: 0 !important; border-bottom: none !important; }
+.empty-state-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  color: var(--muted);
+  font-size: .88rem;
+}
+.empty-ico {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--ink-raise);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+/* =========================================================
+   Responsive — mirrors the breakpoints used across the rest
+   of the dashboard (1200 / 992 / 768 / 480).
+   ========================================================= */
+
+@media (max-width: 992px) {
+  .deposit-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .dash-topbar .balance-card { width: 100%; min-width: 0; }
+  .form-panel, .result-panel, .history-panel { padding: 22px; }
+  .result-body { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .result-details { width: 100%; text-align: left; }
+  .qr-wrap { margin: 0 auto; }
+  .copy-row { flex-wrap: wrap; }
+  .copy-row .detail-value { width: 100%; }
+  .copy-btn { width: 100%; }
+  table.history-table { table-layout: fixed; }
+  .history-table th, .history-table td {
+    padding: 10px 6px;
+    font-size: .78rem;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-num { width: 26px; height: 26px; font-size: .8rem; }
+  .step-head h2 { font-size: .95rem; }
+  .qr-wrap { width: 140px; height: 140px; }
+  #qrcode img, #qrcode canvas { width: 112px !important; height: 112px !important; }
+  .primary-btn { padding: 12px 20px; font-size: .9rem; }
+  .history-table th, .history-table td { padding: 8px 4px; font-size: .72rem; }
+  .empty-state-inline { padding: 36px 16px; }
+}
