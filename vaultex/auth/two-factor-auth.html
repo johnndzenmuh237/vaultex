@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two-Factor Verification — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="auth-form-wrap" style="min-height:100vh;">
+  <div class="auth-card text-center">
+    <a href="../index.html" class="nav-logo" style="justify-content:center;margin-bottom:32px;"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <div class="feature-icon" style="margin:0 auto 18px;">⛉</div>
+    <h2>Two-factor verification</h2>
+    <p>Enter the 6-digit code from your authenticator app to continue.</p>
+
+    <form>
+      <div class="otp-row">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+        <input type="text" maxlength="1" inputmode="numeric">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Verify &amp; continue</button>
+    </form>
+
+    <p style="margin-top:24px;font-size:.85rem;">Didn't get a code? <a href="#" style="color:var(--mint);">Resend code</a></p>
+    <p style="font-size:.85rem;"><a href="#" style="color:var(--muted);">Use a backup code instead</a></p>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.otp-row input').forEach((input, i, all) => {
+  input.addEventListener('input', () => { if (input.value && all[i + 1]) all[i + 1].focus(); });
+  input.addEventListener('keydown', (e) => { if (e.key === 'Backspace' && !input.value && all[i - 1]) all[i - 1].focus(); });
+});
+</script>
+</body>
+</html>

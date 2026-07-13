@@ -1,0 +1,71 @@
+/* =========================================================
+   DASHBOARD.CSS — extra widget & trading-panel styling
+   ========================================================= */
+
+.dash-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+.dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+.quick-stat { display: flex; align-items: center; gap: 14px; }
+.quick-stat .ico { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.quick-stat .ico.mint { background: var(--mint-dim); color: var(--mint); }
+.quick-stat .ico.gold { background: var(--gold-dim); color: var(--gold); }
+.quick-stat .ico.coral { background: var(--coral-dim); color: var(--coral); }
+.quick-stat strong { font-family: var(--font-mono); font-size: 1.3rem; display: block; }
+.quick-stat span { font-size: .8rem; color: var(--muted); }
+
+.tab-row { display: flex; gap: 6px; background: var(--ink-raise); border-radius: var(--radius-sm); padding: 4px; width: fit-content; margin-bottom: 18px; }
+.tab-row button { background: transparent; border: none; color: var(--muted); padding: 8px 16px; border-radius: 6px; font-size: .85rem; font-weight: 600; }
+.tab-row button.active { background: var(--ink-soft); color: var(--mint); }
+
+.progress-bar { height: 8px; border-radius: 6px; background: var(--ink-raise); overflow: hidden; }
+.progress-bar span { display: block; height: 100%; background: var(--mint); border-radius: 6px; }
+
+.security-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.security-row:last-child { border-bottom: none; }
+.toggle { width: 46px; height: 26px; border-radius: 20px; background: var(--ink-raise); position: relative; border: 1px solid var(--line); cursor: pointer; }
+.toggle.on { background: var(--mint-dim); border-color: var(--mint); }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--muted); transition: all .2s; }
+.toggle.on::after { left: 22px; background: var(--mint); }
+
+.kyc-step { display: flex; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.kyc-step:last-child { border-bottom: none; }
+.kyc-step .num { width: 32px; height: 32px; border-radius: 50%; background: var(--ink-raise); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .85rem; flex-shrink: 0; }
+.kyc-step.done .num { background: var(--mint); color: #03140F; }
+
+.empty-state { text-align: center; padding: 64px 24px; color: var(--muted); }
+.empty-state .ico { font-size: 2.5rem; margin-bottom: 14px; }
+
+.order-book .row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-family: var(--font-mono); font-size: .82rem; padding: 5px 0; position: relative; }
+.order-book .row.ask { color: var(--coral); }
+.order-book .row.bid { color: var(--mint); }
+
+/* ---- Zero-balance state (neutral pill, not up/down colored) ---- */
+.pill-neutral { background: var(--ink-raise); color: var(--muted); }
+
+/* ---- Total balance card: match the flat "widget" look ----
+   style.css gives .balance-card its own gradient background,
+   larger radius/padding, and a decorative glow (::after) so it
+   stood out from the other cards. Reshaped here to use the same
+   flat surface, border, radius and padding as every other card
+   on the dashboard (quick-stats, allocation, transactions), so
+   the whole grid reads as one consistent set instead of one
+   "hero" card among plain ones. */
+.balance-card {
+  background: var(--ink-soft);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  overflow: visible;
+}
+.balance-card::after { content: none; }
+.balance-card .balance-amount { margin: 0 0 10px; }
+
+/* ---- Chart canvases must never force horizontal overflow ----
+   The balance canvas ships with width="600" in the HTML as an
+   intrinsic size; without this it stays 600px wide on any
+   viewport narrower than that, pushing the whole page into a
+   horizontal scroll. The allocation donut is fixed-square and
+   just needs to not shrink/collapse inside its flex row. */
+[data-chart] { max-width: 100%; }
+[data-chart="balance"] { width: 100% !important; height: 120px !important; }
+[data-chart="allocation"] { width: 120px !important; height: 120px !important; flex-shrink: 0; }
+.widget .flex { flex-wrap: wrap; }

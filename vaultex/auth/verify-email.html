@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="auth-form-wrap" style="min-height:100vh;">
+  <div class="auth-card text-center">
+    <a href="../index.html" class="nav-logo" style="justify-content:center;margin-bottom:32px;"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    
+    <div class="feature-icon" style="margin:0 auto 18px;">✉</div>
+    <h2>Verify your email</h2>
+    <p id="verify-copy">We sent a confirmation link to your inbox. Click it to activate your account.</p>
+    <button class="btn btn-ghost btn-block" id="resend-btn">Resend verification email</button>
+    <p style="margin-top:24px;font-size:.85rem;"><a href="#" id="logout-link" style="color:var(--mint);">← Log out and use a different account</a></p>
+
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const resendBtn = document.getElementById('resend-btn');
+  const copyEl = document.getElementById('verify-copy');
+  let pollTimer = null;
+
+  auth.onAuthStateChanged((user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+    if (user.emailVerified) {
+      // FIXED: was '/dashboard/dashboard.html' (absolute — breaks on file://
+      // and on hosts not serving from the domain root). verify-email.html
+      // lives in /auth/, dashboard.html lives in /dashboard/, so go up one level.
+      window.location.href = '../dashboard/dashboard.html';
+      return;
+    }
+
+    copyEl.textContent = `We sent a confirmation link to ${user.email}. Click it to activate your account.`;
+
+    // Poll every 4s to see if the user verified in another tab, then
+    // move them along automatically instead of making them refresh.
+    pollTimer = setInterval(async () => {
+      await user.reload();
+      if (user.emailVerified) {
+        clearInterval(pollTimer);
+        // FIXED: same relative-path correction as above.
+        window.location.href = '../dashboard/dashboard.html';
+      }
+    }, 4000);
+
+    resendBtn.addEventListener('click', async () => {
+      resendBtn.disabled = true;
+      try {
+        await user.sendEmailVerification();
+        resendBtn.textContent = 'Sent! Check your inbox.';
+      } catch (err) {
+        resendBtn.textContent = 'Could not resend — try again shortly.';
+        resendBtn.disabled = false;
+      }
+    });
+  });
+
+  document.getElementById('logout-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (pollTimer) clearInterval(pollTimer);
+    await auth.signOut();
+    window.location.href = 'login.html';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+/* =========================================================
+   THEMES.CSS — alternate brand presets
+   Apply by setting data-brand="violet|sunset|ocean" on <html>
+   alongside data-theme="dark|light"
+   ========================================================= */
+
+html[data-brand="violet"] {
+  --mint: #8B7CFF;
+  --mint-dim: #8B7CFF1a;
+  --gold: #FF8BD0;
+  --gold-dim: #FF8BD01a;
+}
+
+html[data-brand="sunset"] {
+  --mint: #FF8A3D;
+  --mint-dim: #FF8A3D1a;
+  --gold: #FFD23D;
+  --gold-dim: #FFD23D1a;
+}
+
+html[data-brand="ocean"] {
+  --mint: #2BC4FF;
+  --mint-dim: #2BC4FF1a;
+  --gold: #00E8C6;
+  --gold-dim: #00E8C61a;
+}
+
+/* Logo / brand name swap helper — set via JS, kept here for reference:
+   document.querySelector('.nav-logo .mark').textContent = 'YB';
+   document.querySelectorAll('.brand-name').forEach(el => el.textContent = 'YourBrand');
+*/

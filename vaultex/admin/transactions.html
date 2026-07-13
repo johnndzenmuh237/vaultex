@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions — Vaultex Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Admin</span></a>
+    <nav class="dash-nav">
+      <a href="index.html">⌂ <span class="label">Overview</span></a>
+      <a href="users.html">◉ <span class="label">Users</span></a>
+      <a href="kyc.html">⛉ <span class="label">KYC review</span></a>
+      <a href="transactions.html" class="active">⇵ <span class="label">Transactions</span></a>
+      <a href="markets.html">⌗ <span class="label">Markets</span></a>
+      <a href="investments.html">◎ <span class="label">Investment plans</span></a>
+      <a href="support.html">☎ <span class="label">Support tickets</span></a>
+      <a href="settings.html">⚙ <span class="label">Platform settings</span></a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div><h2 class="mb-0" style="font-size:1.5rem;">Platform transactions</h2><p class="mb-0" style="font-size:.88rem;">Every deposit, withdrawal, and trade across all users.</p></div>
+      <div class="dash-search"><span>⌕</span><input type="text" placeholder="Search..."></div>
+    </div>
+
+    
+    <div class="widget">
+      <table class="data-table">
+        <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          <tr><td>amara@example.com</td><td>Deposit</td><td class="mono">0.42 BTC</td><td><span class="pill pill-up">Completed</span></td><td class="mono">2h ago</td></tr>
+          <tr><td>daniel@example.com</td><td>Withdrawal</td><td class="mono">1,200 USDT</td><td><span class="pill pill-down">Pending review</span></td><td class="mono">4h ago</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/charts.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

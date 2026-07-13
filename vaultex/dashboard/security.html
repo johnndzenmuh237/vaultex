@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security — Vaultex Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav">
+      <a href="dashboard.html">⌂ <span class="label">Overview</span></a>
+      <a href="assets.html">◇ <span class="label">Assets</span></a>
+      <a href="transactions.html">⇵ <span class="label">Transactions</span></a>
+      <a href="deposits.html">⬇ <span class="label">Deposits</span></a>
+      <a href="withdrawals.html">⬆ <span class="label">Withdrawals</span></a>
+      <a href="trading-history.html">⌗ <span class="label">Trading history</span></a>
+      <div class="group-label">Account</div>
+      <a href="profile.html">◉ <span class="label">Profile</span></a>
+      <a href="security.html" class="active">⛉ <span class="label">Security</span></a>
+      <a href="notifications.html">⚑ <span class="label">Notifications</span></a>
+      <a href="api-management.html">⌬ <span class="label">API keys</span></a>
+      <a href="settings.html">⚙ <span class="label">Settings</span></a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div><h2 class="mb-0" style="font-size:1.5rem;">Security</h2><p class="mb-0" style="font-size:.88rem;">Manage how your account stays protected.</p></div>
+      <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+    </div>
+
+    <div class="widget" style="margin-bottom:24px;">
+      <div class="widget-head"><h3>Login &amp; access</h3></div>
+      <div class="security-row">
+        <div><strong>Password</strong><p class="mb-0" style="font-size:.85rem;">Last changed 64 days ago</p></div>
+        <button class="btn btn-ghost btn-sm">Change</button>
+      </div>
+      <div class="security-row">
+        <div><strong>Two-factor authentication</strong><p class="mb-0" style="font-size:.85rem;">Authenticator app enabled</p></div>
+        <div class="toggle on"></div>
+      </div>
+      <div class="security-row">
+        <div><strong>Withdrawal whitelist</strong><p class="mb-0" style="font-size:.85rem;">Only send funds to approved addresses</p></div>
+        <div class="toggle"></div>
+      </div>
+      <div class="security-row">
+        <div><strong>Anti-phishing code</strong><p class="mb-0" style="font-size:.85rem;">Adds a custom code to all official emails</p></div>
+        <button class="btn btn-ghost btn-sm">Set up</button>
+      </div>
+    </div>
+
+    <div class="widget" style="margin-bottom:24px;">
+      <div class="widget-head"><h3>Identity verification</h3><span class="badge">Level 2</span></div>
+      <div class="kyc-step done"><div class="num">✓</div><div><strong>Email verified</strong><p class="mb-0" style="font-size:.85rem;" data-user-email>…</p></div></div>
+      <div class="kyc-step done"><div class="num">✓</div><div><strong>Phone verified</strong><p class="mb-0" style="font-size:.85rem;">+1 •••• ••32</p></div></div>
+      <div class="kyc-step done"><div class="num">✓</div><div><strong>Government ID</strong><p class="mb-0" style="font-size:.85rem;">Approved — unlocks $100K daily limit</p></div></div>
+      <div class="kyc-step"><div class="num">4</div><div><strong>Proof of address</strong><p class="mb-0" style="font-size:.85rem;">Optional — unlocks unlimited withdrawals</p></div></div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-head"><h3>Active sessions</h3></div>
+      <table class="data-table">
+        <thead><tr><th>Device</th><th>Location</th><th>Last active</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Chrome · Windows</td><td>Lagos, NG</td><td class="mono">Just now</td><td><span class="badge">This device</span></td></tr>
+          <tr><td>Safari · iPhone</td><td>Lagos, NG</td><td class="mono">3h ago</td><td><button class="btn btn-sm btn-ghost">Revoke</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav">
+      <a href="dashboard.html">⌂ <span class="label">Overview</span></a>
+      <a href="assets.html">◇ <span class="label">Assets</span></a>
+      <a href="transactions.html">⇵ <span class="label">Transactions</span></a>
+      <a href="deposits.html">⬇ <span class="label">Deposits</span></a>
+      <a href="withdrawals.html">⬆ <span class="label">Withdrawals</span></a>
+      <a href="trading-history.html">⌗ <span class="label">Trading history</span></a>
+      <div class="group-label">Account</div>
+      <a href="profile.html">◉ <span class="label">Profile</span></a>
+      <a href="security.html">⛉ <span class="label">Security</span></a>
+      <a href="notifications.html" class="active">⚑ <span class="label">Notifications</span></a>
+      <a href="api-management.html">⌬ <span class="label">API keys</span></a>
+      <a href="settings.html">⚙ <span class="label">Settings</span></a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Notifications</h2>
+        <p class="mb-0" style="font-size:.88rem;">Account activity, price alerts, and security events.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="theme-toggle" aria-label="Notifications" data-dropdown-trigger="notif-panel" style="position:relative;">⚑</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    
+    <div class="widget">
+      <div class="widget-head"><h3>Recent</h3><button class="btn btn-sm btn-ghost">Mark all as read</button></div>
+      <div data-notif-list></div>
+    </div>
+  </main>
+</div>
+
+
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/charts.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script src="../assets/js/notifications.js"></script>
+</body>
+</html>

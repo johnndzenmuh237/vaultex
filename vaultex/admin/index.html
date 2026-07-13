@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Overview — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Admin</span></a>
+    <nav class="dash-nav">
+      <a href="index.html" class="active">⌂ <span class="label">Overview</span></a>
+      <a href="users.html">◉ <span class="label">Users</span></a>
+      <a href="kyc.html">⛉ <span class="label">KYC review</span></a>
+      <a href="transactions.html">⇵ <span class="label">Transactions</span></a>
+      <a href="markets.html">⌗ <span class="label">Markets</span></a>
+      <a href="investments.html">◎ <span class="label">Investment plans</span></a>
+      <a href="support.html">☎ <span class="label">Support tickets</span></a>
+      <a href="settings.html">⚙ <span class="label">Platform settings</span></a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div><h2 class="mb-0" style="font-size:1.5rem;">Admin overview</h2><p class="mb-0" style="font-size:.88rem;">Platform health at a glance.</p></div>
+      <div class="dash-search"><span>⌕</span><input type="text" placeholder="Search users, tx, tickets..."></div>
+    </div>
+
+    <div class="dash-grid-3" style="margin-bottom:24px;">
+      <div class="widget quick-stat"><div class="ico mint">◉</div><div><strong>284,902</strong><span>Registered users</span></div></div>
+      <div class="widget quick-stat"><div class="ico gold">⛉</div><div><strong>312</strong><span>Pending KYC reviews</span></div></div>
+      <div class="widget quick-stat"><div class="ico coral">☎</div><div><strong>47</strong><span>Open support tickets</span></div></div>
+    </div>
+
+    <div class="dash-grid-2" style="margin-bottom:24px;">
+      <div class="widget">
+        <div class="widget-head"><h3>Platform volume (30d)</h3></div>
+        <canvas data-chart="balance" width="600" height="220"></canvas>
+      </div>
+      <div class="widget">
+        <div class="widget-head"><h3>Asset allocation, platform-wide</h3></div>
+        <div class="flex" style="gap:20px;">
+          <canvas data-chart="allocation" width="120" height="120"></canvas>
+          <ul style="font-size:.85rem;display:flex;flex-direction:column;gap:10px;">
+            <li><span style="color:var(--mint);">●</span> BTC — 45%</li>
+            <li><span style="color:var(--gold);">●</span> ETH — 28%</li>
+            <li><span style="color:#8B7CFF;">●</span> Altcoins — 17%</li>
+            <li><span style="color:var(--muted);">●</span> Stablecoins — 10%</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-head"><h3>Latest user registrations</h3><a href="users.html" class="btn btn-sm btn-ghost">Manage users</a></div>
+      <table class="data-table">
+        <thead><tr><th>User</th><th>Email</th><th>KYC</th><th>Joined</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Amara Eze</td><td>amara@example.com</td><td><span class="pill pill-up">Verified</span></td><td class="mono">Jun 21, 2026</td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+          <tr><td>Daniel Osei</td><td>daniel@example.com</td><td><span class="pill pill-down">Pending</span></td><td class="mono">Jun 21, 2026</td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+          <tr><td>Priya Nair</td><td>priya@example.com</td><td><span class="pill pill-up">Verified</span></td><td class="mono">Jun 20, 2026</td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/charts.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+</body>
+</html>

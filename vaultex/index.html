@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaultex — Trade, Invest & Stake Crypto with Confidence</title>
+<meta name="description" content="Vaultex is a full-scale crypto exchange and investment platform: spot trading, staking, DeFi yield, and a launchpad — built for serious investors.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<link rel="stylesheet" href="assets/css/themes.css">
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <nav class="nav-links">
+      <a href="markets.html">Markets</a>
+      <a href="exchange.html">Trade</a>
+      <div class="dropdown">
+        <a href="#">Earn <span style="font-size:.7em;">▾</span></a>
+        <div class="dropdown-panel">
+          <a href="staking.html">Staking</a>
+          <a href="investments.html">Trading Plans</a>
+          <a href="earn.html">Savings &amp; Yield</a>
+          <a href="launchpad.html">Launchpad</a>
+        </div>
+      </div>
+      <a href="nft-marketplace.html">NFT Market</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+      <a href="auth/login.html" class="btn btn-ghost btn-sm">Log in</a>
+      <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu">
+    <a href="markets.html">Markets</a>
+    <a href="exchange.html">Trade</a>
+    <a href="staking.html">Staking</a>
+    <a href="investments.html">Investment Plans</a>
+    <a href="launchpad.html">Launchpad</a>
+    <a href="nft-marketplace.html">NFT Market</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="about.html">About</a>
+    <a href="auth/login.html">Log in</a>
+    <a href="auth/register.html" class="btn btn-primary btn-block" style="margin-top:16px;">Get started</a>
+  </div>
+</header>
+
+<!-- ===== TICKER STRIP ===== -->
+<div class="ticker-strip"><div class="ticker-track"></div></div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">Trusted by 2.4M+ investors</div>
+      <h1 class="hero-title">Your vault for the<br><span class="accent">on-chain economy.</span></h1>
+      <p class="hero-lede">Spot trading, staking, and curated investment plans in one platform — built with institutional-grade security and the clarity beginners need.</p>
+      <div class="hero-cta">
+        <a href="auth/register.html" class="btn btn-primary btn-lg">Create free account</a>
+        <a href="exchange.html" class="btn btn-ghost btn-lg">Explore markets</a>
+      </div>
+      <div class="hero-trust">
+        <div><strong data-counter="2.4" data-suffix="M+">0</strong><span>Active users</span></div>
+        <div><strong data-counter="180" data-suffix="+">0</strong><span>Countries served</span></div>
+        <div><strong data-counter="98.7" data-suffix="%">0</strong><span>Uptime, 5yr avg</span></div>
+        <div><strong data-counter="11.2" data-suffix="B">0</strong><span>Assets secured ($)</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="pair">
+        <div><div class="pair-name">BTC / USDT</div><span style="font-size:.78rem;color:var(--muted);">Bitcoin</span></div>
+        <div class="pair-price">$67,230.12</div>
+      </div>
+      <canvas data-chart="balance" width="420" height="180"></canvas>
+      <div class="ticker-rows"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATS BAND ===== -->
+<div class="stats-band">
+  <div class="container grid cols-4">
+    <div class="stat-item"><strong>350+</strong><span>Tradable assets</span></div>
+    <div class="stat-item"><strong>0.05%</strong><span>Maker fee, from</span></div>
+    <div class="stat-item"><strong>24/7</strong><span>Live human support</span></div>
+    <div class="stat-item"><strong>SOC2</strong><span>Audited infrastructure</span></div>
+  </div>
+</div>
+
+<!-- ===== FEATURES ===== -->
+<section class="section">
+  <div class="container">
+    <div class="section-head center">
+      <div class="eyebrow" style="justify-content:center;">Why Vaultex</div>
+      <h2>One platform, every way to grow digital assets</h2>
+      <p>From your first trade to a fully diversified portfolio, Vaultex scales with you.</p>
+    </div>
+    <div class="grid cols-3">
+      <div class="feature-card">
+        <div class="feature-icon">⇄</div>
+        <h3>Spot &amp; margin trading</h3>
+        <p>Deep liquidity order books with sub-50ms matching, advanced charting, and conditional orders.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">◎</div>
+        <h3>Staking &amp; yield</h3>
+        <p>Lock assets into curated staking pools and structured investment plans with transparent APY.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">▣</div>
+        <h3>Self-custody wallets</h3>
+        <p>Multi-network wallets with withdrawal whitelisting, cold-storage backing, and instant transfers.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚙</div>
+        <h3>Launchpad access</h3>
+        <p>Get early allocation into vetted token launches before they list publicly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⛉</div>
+        <h3>Bank-grade security</h3>
+        <p>Two-factor authentication, withdrawal locks, and 95% of assets held in cold storage.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">◈</div>
+        <h3>NFT marketplace</h3>
+        <p>Mint, buy, and trade digital collectibles with zero-gas listing on select networks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MARKETS PREVIEW ===== -->
+<section class="section section-sm" style="background:var(--ink-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+  <div class="container">
+    <div class="flex-between" style="margin-bottom:24px;">
+      <h2 class="mb-0">Top markets today</h2>
+      <a href="markets.html" class="btn btn-ghost btn-sm">View all markets →</a>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Asset</th><th>Price</th><th>24h Change</th><th>Market Cap</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><div class="coin-cell"><div class="coin-icon">BTC</div><div><strong>Bitcoin</strong></div></div></td><td class="mono">$67,230.12</td><td class="mono delta-up">+2.31%</td><td class="mono">$1.32T</td><td><a href="exchange.html" class="btn btn-sm btn-ghost">Trade</a></td></tr>
+        <tr><td><div class="coin-cell"><div class="coin-icon">ETH</div><div><strong>Ethereum</strong></div></div></td><td class="mono">$3,489.55</td><td class="mono delta-up">+1.12%</td><td class="mono">$419B</td><td><a href="exchange.html" class="btn btn-sm btn-ghost">Trade</a></td></tr>
+        <tr><td><div class="coin-cell"><div class="coin-icon">SOL</div><div><strong>Solana</strong></div></div></td><td class="mono">$178.40</td><td class="mono delta-down">-0.84%</td><td class="mono">$82B</td><td><a href="exchange.html" class="btn btn-sm btn-ghost">Trade</a></td></tr>
+        <tr><td><div class="coin-cell"><div class="coin-icon">BNB</div><div><strong>BNB</strong></div></div></td><td class="mono">$612.30</td><td class="mono delta-up">+0.45%</td><td class="mono">$91B</td><td><a href="exchange.html" class="btn btn-sm btn-ghost">Trade</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="section">
+  <div class="container">
+    <div class="section-head center">
+      <div class="eyebrow" style="justify-content:center;">Member stories</div>
+      <h2>Built on the trust of real investors</h2>
+    </div>
+    <div class="grid cols-3">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">Vaultex made it simple to move from saving in cash to actually building a diversified crypto portfolio. The staking dashboard alone is worth it.</p>
+        <div class="testimonial-person">
+          <img src="assets/images/testimonials/avatar-1.jpg" alt="Portrait of Amara Eze">
+          <div><strong>Amara Eze</strong><span>Product Manager</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">The order execution speed is the best I've used across five exchanges. Support actually answers within minutes, every time.</p>
+        <div class="testimonial-person">
+          <img src="assets/images/testimonials/avatar-2.jpg" alt="Portrait of Daniel Osei">
+          <div><strong>Daniel Osei</strong><span>Day trader</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p class="quote">As a complete beginner, the onboarding and KYC flow felt effortless. I was staking my first assets within ten minutes.</p>
+        <div class="testimonial-person">
+          <img src="assets/images/testimonials/avatar-3.jpg" alt="Portrait of Priya Nair">
+          <div><strong>Priya Nair</strong><span>First-time investor</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA BAND ===== -->
+<section class="section-sm">
+  <div class="container">
+    <div class="feature-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;padding:48px;">
+      <div>
+        <h3 style="margin-bottom:8px;">Ready to put your assets to work?</h3>
+        <p class="mb-0">Open an account in under two minutes. No hidden fees, ever.</p>
+      </div>
+      <a href="auth/register.html" class="btn btn-primary btn-lg">Create free account</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex;"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+        <p>A full-scale crypto exchange and investment platform for traders, investors, and builders.</p>
+        <div class="social-icons">
+          <a href="#" aria-label="X / Twitter">𝕏</a>
+          <a href="#" aria-label="Telegram">✈</a>
+          <a href="#" aria-label="Discord">◆</a>
+          <a href="#" aria-label="GitHub">⌥</a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Product</h4>
+        <a href="exchange.html">Exchange</a><a href="staking.html">Staking</a><a href="investments.html">Investments</a><a href="earn.html">Earn</a><a href="launchpad.html">Launchpad</a>
+      </div>
+      <div class="footer-col"><h4>Company</h4>
+        <a href="about.html">About us</a><a href="careers.html">Careers</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col"><h4>Resources</h4>
+        <a href="faq.html">FAQ</a><a href="documentation/installation.html">Documentation</a><a href="referrals.html">Referral program</a>
+      </div>
+      <div class="footer-col"><h4>Legal</h4>
+        <a href="#">Terms of service</a><a href="#">Privacy policy</a><a href="#">Risk disclosure</a><a href="#">AML policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span style="color:var(--muted);font-size:.85rem;">© 2026 Vaultex. All rights reserved.</span>
+      <span style="color:var(--muted);font-size:.8rem;">Digital assets are volatile and carry risk of loss.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/charts.js"></script>
+</body>
+</html>

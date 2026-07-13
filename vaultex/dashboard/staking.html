@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staking — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A0E1A; --ink-soft:#121829; --ink-raise:#1B2236; --line:#262E45;
+  --paper:#E9ECF6; --muted:#8993AB;
+  --mint:#00D9A3; --mint-dim:rgba(0,217,163,.10);
+  --coral:#FF5C72; --coral-dim:rgba(255,92,114,.10);
+  --gold:#F2B84B; --gold-dim:rgba(242,184,75,.10);
+  --font-display:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --font-mono:'JetBrains Mono',monospace;
+  --radius-sm:6px; --radius-md:12px; --radius-lg:18px; --ease:cubic-bezier(.2,.8,.2,1);
+}
+html[data-theme="light"]{ --ink:#F0F2FA; --ink-soft:#FFFFFF; --ink-raise:#E4E7F3; --line:#D5DAF0; --paper:#0D1226; --muted:#5B6480; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--paper);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+button:disabled{cursor:not-allowed;opacity:.4}
+input{font-family:inherit}
+img{display:block}
+.container{max-width:1180px;margin:0 auto;padding:0 24px}
+.mono{font-family:var(--font-mono)}
+.delta-up{color:var(--mint)} .delta-down{color:var(--coral)}
+.text-center{text-align:center}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:var(--ink-soft);border-bottom:1px solid var(--line)}
+.navbar .container{height:60px;display:flex;align-items:center;gap:24px}
+.nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;font-size:1.15rem;flex-shrink:0}
+.nav-logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--mint),var(--gold));display:flex;align-items:center;justify-content:center;color:#04150F;font-weight:800;font-family:var(--font-mono);font-size:.85rem}
+.nav-links{display:flex;align-items:center;gap:22px;flex:1}
+.nav-links a{color:var(--muted);font-size:.86rem;font-weight:500;white-space:nowrap}
+.nav-links a.active,.nav-links a:hover{color:var(--paper)}
+.dropdown{position:relative}
+.dropdown-panel{position:absolute;top:calc(100% + 10px);left:0;background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-md);min-width:190px;padding:6px;box-shadow:0 16px 40px -8px rgba(0,0,0,.55);opacity:0;visibility:hidden;transform:translateY(4px);transition:all .15s}
+.dropdown:hover .dropdown-panel{opacity:1;visibility:visible;transform:translateY(0)}
+.dropdown-panel a{display:block;padding:8px 10px;border-radius:6px;font-size:.82rem}
+.dropdown-panel a:hover{background:var(--ink-raise)}
+.nav-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:.83rem;border:1px solid transparent;cursor:pointer;transition:all .15s var(--ease);white-space:nowrap}
+.btn-primary{background:var(--mint);color:#03140F;border-color:var(--mint)}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);opacity:.92}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--paper)}
+.btn-ghost:hover{border-color:var(--mint)}
+.btn-sm{padding:6px 13px;font-size:.78rem}
+.btn-block{width:100%;justify-content:center}
+.theme-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--ink-raise);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.95rem;flex-shrink:0}
+.nav-burger{display:none;flex-direction:column;gap:4px;padding:4px}
+.nav-burger span{width:20px;height:2px;background:var(--paper);border-radius:2px;display:block}
+.mobile-menu{display:none}
+
+/* WALLET STRIP */
+.wallet-strip{background:var(--ink-soft);border-bottom:1px solid var(--line)}
+.wallet-strip .container{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:12px 24px}
+.w-stat{font-family:var(--font-mono);font-size:.78rem;display:flex;gap:6px;align-items:baseline}
+.w-stat .lbl{color:var(--muted)}
+.w-stat .val{color:var(--paper);font-weight:700}
+.wallet-strip .btn{margin-left:auto}
+
+/* HERO */
+.hero{padding:64px 0 40px}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mint);background:var(--mint-dim);padding:5px 12px;border-radius:20px;margin-bottom:16px}
+.hero h1{font-family:var(--font-display);font-size:2.4rem;font-weight:700;line-height:1.15;margin-bottom:14px}
+.hero p{color:var(--muted);font-size:1rem}
+.demo-banner{background:var(--gold-dim);border:1px solid var(--gold);border-radius:var(--radius-md);padding:12px 16px;font-size:.82rem;color:var(--paper);display:flex;gap:10px;align-items:flex-start;max-width:680px;margin:20px auto 0}
+.demo-banner .chip{flex-shrink:0;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
+
+/* SECTION */
+.section-sm{padding:32px 0 72px}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.section-head h2{font-family:var(--font-display);font-size:1.3rem}
+.section-head span{color:var(--muted);font-size:.85rem}
+
+/* ASSET TABLE */
+.table-wrap{background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead th{text-align:left;padding:12px 18px;font-family:var(--font-mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--ink-raise)}
+.data-table tbody tr{border-bottom:1px solid var(--line)}
+.data-table tbody tr:last-child{border-bottom:none}
+.data-table td{padding:14px 18px;font-size:.88rem;vertical-align:middle}
+.coin-cell{display:flex;align-items:center;gap:10px}
+.coin-cell img{width:30px;height:30px;border-radius:50%;background:var(--ink-raise)}
+.coin-sub{color:var(--muted);font-size:.72rem}
+.lock-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;font-family:var(--font-mono)}
+.lock-badge.flex{background:var(--mint-dim);color:var(--mint)}
+.lock-badge.locked{background:var(--gold-dim);color:var(--gold)}
+.avail-cell{font-family:var(--font-mono);font-size:.78rem}
+.avail-cell .zero{color:var(--muted)}
+.row-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+
+/* STAKES LIST */
+.stake-card{background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-md);padding:16px 18px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:10px}
+.stake-card .sc-coin{display:flex;align-items:center;gap:10px;min-width:150px}
+.stake-card img{width:32px;height:32px;border-radius:50%}
+.stake-card .sc-stat{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);display:flex;flex-direction:column;gap:2px;min-width:90px}
+.stake-card .sc-stat b{color:var(--paper);font-size:.85rem;font-weight:700}
+.stake-card .sc-stat b.reward{color:var(--mint)}
+.stake-card .sc-actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-direction:column}
+.stake-card .unlock-note{font-family:var(--font-mono);font-size:.66rem;color:var(--gold)}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:10px;padding:44px 20px;color:var(--muted);text-align:center;background:var(--ink-soft);border:1px dashed var(--line);border-radius:var(--radius-lg)}
+.empty-state strong{color:var(--paper)}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.show{display:flex}
+.modal-box{background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-lg);width:100%;max-width:420px;padding:22px;display:flex;flex-direction:column;gap:14px;position:relative}
+.modal-box h3{font-family:var(--font-display);font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.modal-box h3 img{width:26px;height:26px;border-radius:50%}
+.modal-close-x{position:absolute;top:14px;right:16px;color:var(--muted);font-size:1.2rem}
+.modal-note{font-size:.76rem;color:var(--muted);line-height:1.5}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field label{font-family:var(--font-mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.input-wrap{position:relative}
+.input-wrap input{width:100%;padding:9px 60px 9px 12px;background:var(--ink-raise);border:1px solid var(--line);border-radius:var(--radius-sm);color:var(--paper);font-family:var(--font-mono);font-size:.85rem;outline:none}
+.input-wrap input:focus{border-color:var(--mint)}
+.input-unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:.68rem;color:var(--muted)}
+.pct-row{display:flex;gap:4px}
+.pct-btn{flex:1;padding:5px 0;border-radius:4px;font-size:.68rem;font-family:var(--font-mono);color:var(--muted);border:1px solid var(--line);text-align:center}
+.pct-btn:hover{border-color:var(--mint);color:var(--mint)}
+.order-summary{background:var(--ink);border-radius:var(--radius-sm);padding:10px 12px;display:flex;flex-direction:column;gap:5px}
+.sum-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem}
+.sum-row .lbl{color:var(--muted)} .sum-row .val{color:var(--paper)}
+.sum-row.hl .val{color:var(--mint);font-weight:700}
+.form-msg{font-size:.72rem;color:var(--coral);text-align:center;min-height:16px}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--line);padding:56px 0 28px;margin-top:20px}
+.footer-grid{display:grid;grid-template-columns:1.6fr repeat(4,1fr);gap:32px;margin-bottom:36px}
+.footer-col p{color:var(--muted);font-size:.85rem;margin-top:8px;line-height:1.6}
+.footer-col h4{font-size:.82rem;margin-bottom:12px;color:var(--paper)}
+.footer-col a{display:block;color:var(--muted);font-size:.84rem;margin-bottom:9px}
+.footer-col a:hover{color:var(--paper)}
+.social-icons{display:flex;gap:10px;margin-top:14px}
+.social-icons a{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);padding-top:20px}
+
+@media (max-width:900px){
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .nav-burger{display:flex}
+  .hero h1{font-size:1.9rem}
+}
+@media (max-width:640px){
+  .footer-grid{grid-template-columns:1fr}
+  .data-table thead{display:none}
+  .data-table tbody tr{display:block;padding:14px 0}
+  .data-table td{display:flex;justify-content:space-between;align-items:center;padding:6px 18px;font-size:.82rem}
+  .data-table td:first-child{padding-top:10px}
+  .row-actions{justify-content:flex-start;width:100%}
+  .stake-card{flex-direction:column;align-items:flex-start}
+  .stake-card .sc-actions{margin-left:0;flex-direction:row;width:100%;justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <nav class="nav-links">
+      <a href="markets.html">Markets</a>
+      <a href="trade.html">Trade</a>
+      <div class="dropdown">
+        <a href="#">Earn <span style="font-size:.7em">▾</span></a>
+        <div class="dropdown-panel">
+          <a href="staking.html" class="active">Staking</a>
+          <a href="investments.html">Investment Plans</a>
+          <a href="earn.html">Savings &amp; Yield</a>
+        </div>
+      </div>
+      <a href="nft-marketplace.html">NFT Market</a>
+      <a href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☾</button>
+      <a href="trade.html" class="btn btn-ghost btn-sm">Trade</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="wallet-strip">
+  <div class="container">
+    <div class="w-stat"><span class="lbl">USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
+    <div class="w-stat"><span class="lbl">Total staked (est.)</span><span class="val" id="totalStakedVal">$0.00</span></div>
+    <div class="w-stat"><span class="lbl">Unclaimed rewards (est.)</span><span class="val" id="totalRewardVal" style="color:var(--mint)">$0.00</span></div>
+    <a href="trade.html" class="btn btn-primary btn-sm">Buy assets to stake</a>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="container text-center" style="max-width:680px;margin:0 auto">
+    <div class="eyebrow" style="justify-content:center">Staking</div>
+    <h1>Put your assets to work while you sleep.</h1>
+    <p>Stake real holdings from your Vaultex wallet with transparent, daily-calculated APY — no lock-up surprises, no hidden fees.</p>
+    <div class="demo-banner">
+      <span class="chip">Demo</span>
+      <span>This is a simulated environment — staking works with the demo funds in your Vaultex wallet (the same balance and holdings used on the <a href="trade.html" style="color:var(--gold);text-decoration:underline">Trade</a> page). No real crypto or payment provider is involved. You can only stake assets you actually hold; buy some on the Trade page first if a row shows zero available.</span>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="section-head"><h2>Available staking pools</h2><span>Rewards accrue every second based on your holdings</span></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Asset</th><th>APY</th><th>Lock-up</th><th>Min. amount</th><th>Available to stake</th><th></th></tr></thead>
+        <tbody id="assetRows">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Loading live pool data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section-sm" style="padding-top:0">
+  <div class="container">
+    <div class="section-head"><h2>Your active stakes</h2><span id="stakesCount"></span></div>
+    <div id="stakesList">
+      <div class="empty-state">
+        <strong>No active stakes yet</strong>
+        <span>Stake an asset above to start earning — rewards update live right here.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal-backdrop" id="stakeModal">
+  <div class="modal-box">
+    <button class="modal-close-x" id="stakeModalClose">✕</button>
+    <h3><img id="modalIcon" alt=""><span id="modalTitle">Stake ETH</span></h3>
+    <p class="modal-note" id="modalNote"></p>
+    <div class="form-field">
+      <label>Amount</label>
+      <div class="input-wrap"><input type="number" id="stakeAmount" step="0.000001" placeholder="0.0000"><span class="input-unit" id="stakeUnit">ETH</span></div>
+    </div>
+    <div class="pct-row">
+      <button class="pct-btn" data-pct="25">25%</button>
+      <button class="pct-btn" data-pct="50">50%</button>
+      <button class="pct-btn" data-pct="75">75%</button>
+      <button class="pct-btn" data-pct="100">Max</button>
+    </div>
+    <div class="order-summary">
+      <div class="sum-row"><span class="lbl">Available</span><span class="val" id="modalAvail">0.0000</span></div>
+      <div class="sum-row"><span class="lbl">APY</span><span class="val" id="modalApy">—</span></div>
+      <div class="sum-row"><span class="lbl">Lock-up</span><span class="val" id="modalLock">—</span></div>
+      <div class="sum-row hl"><span class="lbl">Est. daily reward</span><span class="val" id="modalDaily">—</span></div>
+      <div class="sum-row hl"><span class="lbl">Est. yearly reward</span><span class="val" id="modalYearly">—</span></div>
+    </div>
+    <div class="form-msg" id="stakeMsg"></div>
+    <button class="btn btn-primary btn-block" id="stakeConfirm">Stake now</button>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+        <p>A full-scale crypto exchange and investment platform for traders, investors, and builders.</p>
+        <div class="social-icons"><a href="#">𝕏</a><a href="#">✈</a><a href="#">◆</a><a href="#">⌥</a></div>
+      </div>
+      <div class="footer-col"><h4>Product</h4><a href="trade.html">Exchange</a><a href="staking.html">Staking</a><a href="investments.html">Investments</a><a href="earn.html">Earn</a></div>
+      <div class="footer-col"><h4>Company</h4><a href="about.html">About us</a><a href="careers.html">Careers</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a></div>
+      <div class="footer-col"><h4>Resources</h4><a href="faq.html">FAQ</a><a href="#">Documentation</a><a href="#">Referral program</a></div>
+      <div class="footer-col"><h4>Legal</h4><a href="#">Terms of service</a><a href="#">Privacy policy</a><a href="#">Risk disclosure</a></div>
+    </div>
+    <div class="footer-bottom">
+      <span style="color:var(--muted);font-size:.85rem">© 2026 Vaultex. All rights reserved.</span>
+      <span style="color:var(--muted);font-size:.8rem">Digital assets are volatile and carry risk of loss. Demo environment — no real funds are involved.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const fmtUSD = n => '$'+(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtAmt = n => (n||0).toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:6});
+
+  /* ===== shared storage keys — same wallet as trade.html ===== */
+  const LS_BAL = 'vaultex_balance_usdt';
+  const LS_HOLD = 'vaultex_holdings';
+  const LS_STAKES = 'vaultex_stakes';
+
+  function getBalance(){ return parseFloat(localStorage.getItem(LS_BAL)||'0'); }
+  function getHoldings(){ try{ return JSON.parse(localStorage.getItem(LS_HOLD)||'{}'); }catch(e){ return {}; } }
+  function setHoldings(h){ localStorage.setItem(LS_HOLD, JSON.stringify(h)); }
+  function getStakes(){ try{ return JSON.parse(localStorage.getItem(LS_STAKES)||'[]'); }catch(e){ return []; } }
+  function setStakes(s){ localStorage.setItem(LS_STAKES, JSON.stringify(s)); }
+
+  /* ===== staking pool definitions (symbol must match CoinGecko ticker used on trade.html) ===== */
+  const POOLS = [
+    { id:'bitcoin',    symbol:'btc',  name:'Bitcoin',   apy:2.1,  lockDays:0,  min:0.0005 },
+    { id:'ethereum',   symbol:'eth',  name:'Ethereum',  apy:4.8,  lockDays:0,  min:0.01 },
+    { id:'solana',     symbol:'sol',  name:'Solana',    apy:6.2,  lockDays:0,  min:1 },
+    { id:'polkadot',   symbol:'dot',  name:'Polkadot',  apy:11.4, lockDays:28, min:5 },
+    { id:'cardano',    symbol:'ada',  name:'Cardano',   apy:3.9,  lockDays:0,  min:10 },
+    { id:'avalanche-2',symbol:'avax', name:'Avalanche', apy:7.5,  lockDays:0,  min:1 },
+    { id:'matic-network',symbol:'matic',name:'Polygon', apy:5.6,  lockDays:0,  min:10 },
+    { id:'chainlink',  symbol:'link', name:'Chainlink', apy:4.2,  lockDays:0,  min:1 },
+    { id:'cosmos',     symbol:'atom', name:'Cosmos',    apy:9.8,  lockDays:21, min:1 },
+    { id:'tron',       symbol:'trx',  name:'Tron',      apy:4.5,  lockDays:0,  min:50 },
+  ];
+  let PRICES = {};   // symbol -> current usd price
+  let IMAGES = {};   // symbol -> icon url
+
+  const API_BASE = 'https://api.coingecko.com/api/v3';
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  async function fetchWithRetry(url, tries=3, base=700){
+    let lastErr;
+    for(let i=0;i<tries;i++){
+      try{
+        const res = await fetch(url);
+        if(res.status===429){ await sleep(base*Math.pow(2,i)+1500); continue; }
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        return await res.json();
+      }catch(e){ lastErr=e; if(i<tries-1) await sleep(base*Math.pow(2,i)); }
+    }
+    throw lastErr;
+  }
+
+  const LS_PRICE_CACHE = 'vaultex_stake_price_cache';
+  async function loadPrices(){
+    const ids = POOLS.map(p=>p.id).join(',');
+    try{
+      const data = await fetchWithRetry(`${API_BASE}/coins/markets?vs_currency=usd&ids=${ids}&price_change_percentage=24h`, 3, 700);
+      data.forEach(c=>{ PRICES[c.symbol]=c.current_price; IMAGES[c.symbol]=c.image; });
+      try{ localStorage.setItem(LS_PRICE_CACHE, JSON.stringify({p:PRICES,i:IMAGES,ts:Date.now()})); }catch(e){}
+    }catch(err){
+      console.warn('Vaultex staking: price fetch failed', err);
+      if(!Object.keys(PRICES).length){
+        try{
+          const cached = JSON.parse(localStorage.getItem(LS_PRICE_CACHE)||'null');
+          if(cached){ PRICES=cached.p; IMAGES=cached.i; }
+        }catch(e){}
+      }
+      setTimeout(loadPrices, 8000);
+    }
+    renderAssetRows();
+    renderHeader();
+    renderStakes();
+  }
+
+  /* ===== header wallet strip ===== */
+  function renderHeader(){
+    $('usdtBal').textContent = fmtUSD(getBalance());
+    const stakes = getStakes();
+    let staked=0, reward=0;
+    stakes.forEach(s=>{
+      const p = PRICES[s.symbol]||0;
+      staked += s.amount*p;
+      reward += computeReward(s)*p;
+    });
+    $('totalStakedVal').textContent = fmtUSD(staked);
+    $('totalRewardVal').textContent = fmtUSD(reward);
+  }
+
+  function computeReward(stake){
+    const elapsedMs = Date.now()-stake.startedAt;
+    const years = elapsedMs/(365*86400000);
+    return stake.amount*(stake.apy/100)*years;
+  }
+
+  /* ===== asset pool table ===== */
+  function renderAssetRows(){
+    const holdings = getHoldings();
+    const tbody = $('assetRows');
+    tbody.innerHTML = POOLS.map(pool=>{
+      const avail = holdings[pool.symbol]||0;
+      const img = IMAGES[pool.symbol] || '';
+      const lockLabel = pool.lockDays>0 ? `${pool.lockDays} days` : 'Flexible';
+      const badgeCls = pool.lockDays>0 ? 'locked' : 'flex';
+      const disabled = avail < pool.min;
+      return `<tr>
+        <td><div class="coin-cell">${img?`<img src="${img}" alt="${pool.symbol}" onerror="this.style.visibility='hidden'">`:''}<div><strong>${pool.name}</strong><div class="coin-sub">${pool.symbol.toUpperCase()}</div></div></div></td>
+        <td class="mono delta-up">${pool.apy.toFixed(1)}%</td>
+        <td><span class="lock-badge ${badgeCls}">${lockLabel}</span></td>
+        <td class="mono">${pool.min} ${pool.symbol.toUpperCase()}</td>
+        <td class="avail-cell ${avail<=0?'zero':''}">${fmtAmt(avail)} ${pool.symbol.toUpperCase()}</td>
+        <td><div class="row-actions">
+          ${avail<pool.min ? `<a href="trade.html" class="btn btn-ghost btn-sm">Buy ${pool.symbol.toUpperCase()}</a>` : `<button class="btn btn-primary btn-sm" data-stake="${pool.symbol}">Stake</button>`}
+        </div></td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('[data-stake]').forEach(btn=>{
+      btn.addEventListener('click', ()=> openStakeModal(btn.dataset.stake));
+    });
+  }
+
+  /* ===== active stakes list ===== */
+  let stakesTimer=null;
+  function renderStakes(){
+    const stakes = getStakes();
+    $('stakesCount').textContent = stakes.length ? `${stakes.length} active` : '';
+    if(!stakes.length){
+      $('stakesList').innerHTML = `<div class="empty-state"><strong>No active stakes yet</strong><span>Stake an asset above to start earning — rewards update live right here.</span></div>`;
+      return;
+    }
+    $('stakesList').innerHTML = stakes.map(s=>{
+      const pool = POOLS.find(p=>p.symbol===s.symbol) || {};
+      const img = IMAGES[s.symbol]||'';
+      const reward = computeReward(s);
+      const p = PRICES[s.symbol]||0;
+      const usdVal = (s.amount+reward)*p;
+      const locked = s.unlockAt && Date.now() < s.unlockAt;
+      let unlockNote = '';
+      if(locked){
+        const msLeft = s.unlockAt-Date.now();
+        const days = Math.floor(msLeft/86400000), hrs = Math.floor((msLeft%86400000)/3600000);
+        unlockNote = `<div class="unlock-note">Unlocks in ${days}d ${hrs}h</div>`;
+      }
+      return `<div class="stake-card">
+        <div class="sc-coin">${img?`<img src="${img}" alt="">`:''}<div><strong>${s.symbol.toUpperCase()}</strong><div class="coin-sub" style="color:var(--muted);font-size:.72rem">${pool.apy?pool.apy.toFixed(1):'—'}% APY</div></div></div>
+        <div class="sc-stat">Staked<b>${fmtAmt(s.amount)} ${s.symbol.toUpperCase()}</b></div>
+        <div class="sc-stat">Reward so far<b class="reward">+${fmtAmt(reward)} ${s.symbol.toUpperCase()}</b></div>
+        <div class="sc-stat">Value<b>${fmtUSD(usdVal)}</b></div>
+        <div class="sc-actions">
+          <button class="btn btn-ghost btn-sm" data-unstake="${s.id}" ${locked?'disabled':''}>${locked?'Locked':'Unstake'}</button>
+          ${unlockNote}
+        </div>
+      </div>`;
+    }).join('');
+
+    $('stakesList').querySelectorAll('[data-unstake]').forEach(btn=>{
+      btn.addEventListener('click', ()=> unstake(btn.dataset.unstake));
+    });
+  }
+
+  function unstake(id){
+    const stakes = getStakes();
+    const idx = stakes.findIndex(s=>s.id===id);
+    if(idx<0) return;
+    const s = stakes[idx];
+    if(s.unlockAt && Date.now() < s.unlockAt) return;
+    const reward = computeReward(s);
+    const holdings = getHoldings();
+    holdings[s.symbol] = (holdings[s.symbol]||0) + s.amount + reward;
+    setHoldings(holdings);
+    stakes.splice(idx,1);
+    setStakes(stakes);
+    renderAssetRows(); renderStakes(); renderHeader();
+  }
+
+  /* ===== stake modal ===== */
+  let modalSymbol = null;
+  function openStakeModal(symbol){
+    const pool = POOLS.find(p=>p.symbol===symbol); if(!pool) return;
+    modalSymbol = symbol;
+    const holdings = getHoldings();
+    const avail = holdings[symbol]||0;
+    $('modalIcon').src = IMAGES[symbol]||'';
+    $('modalTitle').textContent = `Stake ${pool.name}`;
+    $('modalNote').textContent = `Staking locks these ${pool.symbol.toUpperCase()} from your wallet and starts accruing ${pool.apy}% APY immediately, calculated per second. ${pool.lockDays>0 ? `Funds are locked for ${pool.lockDays} days before you can unstake.` : 'You can unstake anytime — flexible pool.'}`;
+    $('stakeUnit').textContent = pool.symbol.toUpperCase();
+    $('modalAvail').textContent = fmtAmt(avail)+' '+pool.symbol.toUpperCase();
+    $('modalApy').textContent = pool.apy.toFixed(1)+'%';
+    $('modalLock').textContent = pool.lockDays>0 ? pool.lockDays+' days' : 'Flexible';
+    $('stakeAmount').value='';
+    $('stakeMsg').textContent='';
+    updateModalSummary();
+    $('stakeModal').classList.add('show');
+  }
+  function closeStakeModal(){ $('stakeModal').classList.remove('show'); modalSymbol=null; }
+  $('stakeModalClose').addEventListener('click', closeStakeModal);
+  $('stakeModal').addEventListener('click', e=>{ if(e.target.id==='stakeModal') closeStakeModal(); });
+
+  function updateModalSummary(){
+    if(!modalSymbol) return;
+    const pool = POOLS.find(p=>p.symbol===modalSymbol);
+    const amt = parseFloat($('stakeAmount').value)||0;
+    const daily = amt*(pool.apy/100)/365;
+    const yearly = amt*(pool.apy/100);
+    $('modalDaily').textContent = amt>0 ? fmtAmt(daily)+' '+pool.symbol.toUpperCase() : '—';
+    $('modalYearly').textContent = amt>0 ? fmtAmt(yearly)+' '+pool.symbol.toUpperCase() : '—';
+
+    const holdings = getHoldings();
+    const avail = holdings[modalSymbol]||0;
+    let msg='';
+    let disable=false;
+    if(avail<=0){ msg=`You don't hold any ${pool.symbol.toUpperCase()} yet.`; disable=true; }
+    else if(amt<=0){ disable=true; }
+    else if(amt>avail){ msg='Amount exceeds your available balance.'; disable=true; }
+    else if(amt<pool.min){ msg=`Minimum stake is ${pool.min} ${pool.symbol.toUpperCase()}.`; disable=true; }
+    $('stakeMsg').textContent = msg;
+    $('stakeConfirm').disabled = disable;
+  }
+  $('stakeAmount').addEventListener('input', updateModalSummary);
+  document.querySelectorAll('.modal-box .pct-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(!modalSymbol) return;
+      const holdings = getHoldings();
+      const avail = holdings[modalSymbol]||0;
+      const pct = parseFloat(btn.dataset.pct)/100||1;
+      $('stakeAmount').value = (avail*pct).toFixed(6);
+      updateModalSummary();
+    });
+  });
+
+  $('stakeConfirm').addEventListener('click', ()=>{
+    if(!modalSymbol) return;
+    const pool = POOLS.find(p=>p.symbol===modalSymbol);
+    const amt = parseFloat($('stakeAmount').value)||0;
+    const holdings = getHoldings();
+    const avail = holdings[modalSymbol]||0;
+    if(amt<=0 || amt>avail || amt<pool.min) return;
+
+    holdings[modalSymbol] = avail - amt;
+    setHoldings(holdings);
+
+    const stakes = getStakes();
+    const now = Date.now();
+    stakes.push({
+      id: 'stk_'+now+'_'+Math.random().toString(36).slice(2,8),
+      symbol: modalSymbol,
+      amount: amt,
+      apy: pool.apy,
+      lockDays: pool.lockDays,
+      startedAt: now,
+      unlockAt: pool.lockDays>0 ? now + pool.lockDays*86400000 : 0
+    });
+    setStakes(stakes);
+
+    closeStakeModal();
+    renderAssetRows(); renderStakes(); renderHeader();
+  });
+
+  /* ===== theme ===== */
+  $('themeToggle').addEventListener('click', ()=>{
+    const html=document.documentElement;
+    const light = html.getAttribute('data-theme')==='light';
+    html.setAttribute('data-theme', light?'dark':'light');
+    $('themeToggle').textContent = light?'☾':'☀';
+  });
+
+  /* ===== init ===== */
+  renderHeader();
+  renderAssetRows();
+  renderStakes();
+  loadPrices();
+  setInterval(loadPrices, 60000);   // refresh live prices every 60s
+  setInterval(()=>{ renderStakes(); renderHeader(); }, 1000); // live reward ticking
+})();
+</script>
+</body>
+</html>

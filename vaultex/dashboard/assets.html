@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Assets — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav">
+      <!-- populated by dash-shell.js -->
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">My assets</h2>
+        <p class="mb-0" style="font-size:.88rem;">Every balance in your account, in one place.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="theme-toggle" aria-label="Notifications" data-dropdown-trigger="notif-panel" style="position:relative;">⚑</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="widget" style="margin-bottom:24px;">
+      <div class="widget-head"><h3>Holdings</h3><span class="mono" data-portfolio-total>$0.00</span></div>
+      <table class="data-table">
+        <thead><tr><th>Asset</th><th>Amount</th><th>Price</th><th>24h</th><th>Value</th><th></th></tr></thead>
+        <tbody data-holdings-table>
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">Loading supported assets…</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:12px;">Balances show as 0 until a deposit is confirmed on your account. Prices are live market data; your holdings are not.</p>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/charts.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dash-shell.js"></script>
+<script src="../assets/js/portfolio.js"></script>
+</body>
+</html>

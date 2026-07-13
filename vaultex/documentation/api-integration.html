@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Integration — Vaultex Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+.docs-shell { display:grid; grid-template-columns:240px 1fr; gap:48px; max-width:1100px; margin:0 auto; padding:48px 24px; }
+.docs-nav { position:sticky; top:96px; height:fit-content; display:flex; flex-direction:column; gap:4px; }
+.docs-nav a { padding:10px 14px; border-radius:8px; color:var(--muted); font-size:.9rem; }
+.docs-nav a:hover { background:var(--ink-soft); color:var(--paper); }
+.docs-content pre { background:var(--ink-soft); border:1px solid var(--line); border-radius:10px; padding:18px; overflow-x:auto; font-family:var(--font-mono); font-size:.85rem; line-height:1.6; }
+.docs-content code { font-family:var(--font-mono); background:var(--ink-raise); padding:2px 6px; border-radius:4px; font-size:.88em; }
+.docs-content h2 { margin-top:40px; }
+@media (max-width:768px){ .docs-shell{ grid-template-columns:1fr; } .docs-nav{ position:static; flex-direction:row; overflow-x:auto; } }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <nav class="nav-links">
+      <a href="../markets.html">Markets</a>
+      <a href="../exchange.html">Trade</a>
+      <div class="dropdown">
+        <a href="#">Earn <span style="font-size:.7em;">▾</span></a>
+        <div class="dropdown-panel">
+          <a href="../staking.html">Staking</a>
+          <a href="../investments.html">Investment Plans</a>
+          <a href="../earn.html">Savings &amp; Yield</a>
+          <a href="../launchpad.html">Launchpad</a>
+        </div>
+      </div>
+      <a href="../nft-marketplace.html">NFT Market</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="../about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+      <a href="../auth/login.html" class="btn btn-ghost btn-sm">Log in</a>
+      <a href="../auth/register.html" class="btn btn-primary btn-sm">Get started</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu">
+    <a href="../markets.html">Markets</a>
+    <a href="../exchange.html">Trade</a>
+    <a href="../staking.html">Staking</a>
+    <a href="../investments.html">Investment Plans</a>
+    <a href="../launchpad.html">Launchpad</a>
+    <a href="../nft-marketplace.html">NFT Market</a>
+    <a href="../pricing.html">Pricing</a>
+    <a href="../about.html">About</a>
+    <a href="../careers.html">Careers</a>
+    <a href="../auth/login.html">Log in</a>
+    <a href="../auth/register.html" class="btn btn-primary btn-block" style="margin-top:16px;">Get started</a>
+  </div>
+</header>
+
+<div class="docs-shell">
+  <nav class="docs-nav">
+      <a href="installation.html">Installation</a>
+      <a href="customization.html">Customization</a>
+      <a href="deployment.html">Deployment</a>
+      <a href="api-integration.html" style="color:var(--mint);font-weight:600;">API Integration</a>
+  </nav>
+  <div class="docs-content">
+    <h1>API integration</h1>
+    
+<p>The backend exposes a small set of JSON endpoints. All authenticated endpoints rely on the <code>vlx_session</code> cookie set at login — no separate API token is required for first-party use.</p>
+<h2>POST /api/register</h2>
+<pre>{ "firstName": "Jane", "lastName": "Doe", "email": "jane@example.com", "password": "••••••••" }</pre>
+<p>Returns <code>201</code> and sets a session cookie on success, <code>409</code> if the email is already registered.</p>
+<h2>POST /api/login</h2>
+<pre>{ "email": "jane@example.com", "password": "••••••••" }</pre>
+<p>Returns <code>200</code> and a session cookie on success, <code>401</code> on incorrect credentials.</p>
+<h2>GET /api/me</h2>
+<p>Returns the authenticated user's profile, or <code>401</code> if there is no valid session.</p>
+<h2>GET /api/prices</h2>
+<p>Returns live market prices, proxied server-side from CoinGecko's public API (cached 60 seconds).</p>
+<h2>Personal API keys (for your own bots)</h2>
+<p>The dashboard's <a href="../dashboard/api-management.html">API key page</a> is ready in the UI. Wire it to real, scoped tokens by extending <code>server.js</code> with an <code>api_keys</code> store and checking an <code>Authorization: Bearer</code> header alongside the cookie check already in place.</p>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <a href="../index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex;"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+        <p>A full-scale crypto exchange and investment platform for traders, investors, and builders.</p>
+        <div class="social-icons">
+          <a href="#" aria-label="X / Twitter">𝕏</a>
+          <a href="#" aria-label="Telegram">✈</a>
+          <a href="#" aria-label="Discord">◆</a>
+          <a href="#" aria-label="GitHub">⌥</a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Product</h4>
+        <a href="../exchange.html">Exchange</a><a href="../staking.html">Staking</a><a href="../investments.html">Investments</a><a href="../earn.html">Earn</a><a href="../launchpad.html">Launchpad</a>
+      </div>
+      <div class="footer-col"><h4>Company</h4>
+        <a href="../about.html">About us</a><a href="../careers.html">Careers</a><a href="../pricing.html">Pricing</a><a href="../contact.html">Contact</a>
+      </div>
+      <div class="footer-col"><h4>Resources</h4>
+        <a href="../faq.html">FAQ</a><a href="../documentation/installation.html">Documentation</a><a href="../referrals.html">Referral program</a>
+      </div>
+      <div class="footer-col"><h4>Legal</h4>
+        <a href="#">Terms of service</a><a href="#">Privacy policy</a><a href="#">Risk disclosure</a><a href="#">AML policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span style="color:var(--muted);font-size:.85rem;">© 2026 Vaultex. All rights reserved.</span>
+      <span style="color:var(--muted);font-size:.8rem;">Digital assets are volatile and carry risk of loss.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+</body>
+</html>

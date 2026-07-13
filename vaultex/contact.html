@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact us — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <nav class="nav-links"><a href="markets.html">Markets</a><a href="faq.html">FAQ</a><a href="contact.html" class="active">Contact</a></nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+      <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu"><a href="markets.html">Markets</a><a href="faq.html">FAQ</a></div>
+</header>
+
+<section class="section">
+  <div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;">
+    <div>
+      <div class="eyebrow">Get in touch</div>
+      <h1>We're here to help.</h1>
+      <p style="max-width:420px;margin-bottom:32px;">Whether it's a question about your account or a partnership inquiry, our team typically replies within a few hours.</p>
+      <div class="feature-card" style="margin-bottom:16px;">
+        <strong>Support</strong><p class="mb-0">support@vaultex.com</p>
+      </div>
+      <div class="feature-card" style="margin-bottom:16px;">
+        <strong>Business &amp; partnerships</strong><p class="mb-0">partners@vaultex.com</p>
+      </div>
+      <div class="feature-card">
+        <strong>Press</strong><p class="mb-0">press@vaultex.com</p>
+      </div>
+    </div>
+
+    <form class="widget">
+      <div class="field"><label for="c-name">Full name</label><input type="text" id="c-name" placeholder="Jane Doe"></div>
+      <div class="field"><label for="c-email">Email</label><input type="email" id="c-email" placeholder="you@example.com"></div>
+      <div class="field">
+        <label for="c-topic">Topic</label>
+        <select id="c-topic">
+          <option>Account support</option>
+          <option>Billing</option>
+          <option>Partnerships</option>
+          <option>Press</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="c-msg">Message</label>
+        <textarea id="c-msg" rows="5" style="width:100%;padding:13px 16px;border-radius:8px;border:1px solid var(--line);background:var(--ink-raise);color:var(--paper);font-family:inherit;"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Send message</button>
+    </form>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-bottom">
+    <span style="color:var(--muted);font-size:.85rem;">© 2026 Vaultex. All rights reserved.</span>
+    <a href="index.html" style="color:var(--mint);">Back to home →</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

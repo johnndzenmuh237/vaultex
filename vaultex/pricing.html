@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing &amp; Fees — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <nav class="nav-links">
+      <a href="markets.html">Markets</a><a href="exchange.html">Trade</a><a href="staking.html">Earn</a><a href="pricing.html" class="active">Pricing</a><a href="about.html">About</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+      <a href="auth/login.html" class="btn btn-ghost btn-sm">Log in</a>
+      <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu"><a href="markets.html">Markets</a><a href="exchange.html">Trade</a><a href="about.html">About</a></div>
+</header>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head center">
+      <div class="eyebrow" style="justify-content:center;">Pricing</div>
+      <h1>Transparent fees, no surprises</h1>
+      <p>Fees drop automatically as your 30-day trading volume grows.</p>
+    </div>
+
+    <div class="grid cols-3">
+      <div class="price-card">
+        <h3>Starter</h3>
+        <p>For new traders getting started</p>
+        <div class="price-amount">0.10<span>% per trade</span></div>
+        <ul>
+          <li>Spot trading on 350+ pairs</li>
+          <li>Standard withdrawal limits</li>
+          <li>Email support</li>
+        </ul>
+        <a href="auth/register.html" class="btn btn-ghost btn-block">Get started</a>
+      </div>
+      <div class="price-card featured">
+        <span class="tag">Most popular</span>
+        <h3>Pro</h3>
+        <p>For active traders &amp; investors</p>
+        <div class="price-amount">0.05<span>% per trade</span></div>
+        <ul>
+          <li>Everything in Starter</li>
+          <li>Higher withdrawal limits</li>
+          <li>Priority live chat support</li>
+          <li>Access to launchpad allocations</li>
+        </ul>
+        <a href="auth/register.html" class="btn btn-primary btn-block">Get started</a>
+      </div>
+      <div class="price-card">
+        <h3>Institutional</h3>
+        <p>For funds &amp; market makers</p>
+        <div class="price-amount">Custom</div>
+        <ul>
+          <li>Dedicated account manager</li>
+          <li>Custom API rate limits</li>
+          <li>OTC desk access</li>
+          <li>Negotiated maker/taker fees</li>
+        </ul>
+        <a href="contact.html" class="btn btn-ghost btn-block">Contact sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-sm" style="background:var(--ink-soft);border-top:1px solid var(--line);">
+  <div class="container">
+    <h2 class="text-center" style="margin-bottom:32px;">Fee schedule by 30-day volume</h2>
+    <table class="data-table">
+      <thead><tr><th>Tier</th><th>30-day volume (USDT)</th><th>Maker fee</th><th>Taker fee</th></tr></thead>
+      <tbody>
+        <tr><td>Tier 1</td><td class="mono">&lt; 50,000</td><td class="mono">0.10%</td><td class="mono">0.10%</td></tr>
+        <tr><td>Tier 2</td><td class="mono">50,000 – 250,000</td><td class="mono">0.08%</td><td class="mono">0.09%</td></tr>
+        <tr><td>Tier 3</td><td class="mono">250,000 – 1,000,000</td><td class="mono">0.06%</td><td class="mono">0.07%</td></tr>
+        <tr><td>Tier 4</td><td class="mono">&gt; 1,000,000</td><td class="mono">0.04%</td><td class="mono">0.05%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-bottom">
+    <span style="color:var(--muted);font-size:.85rem;">© 2026 Vaultex. All rights reserved.</span>
+    <a href="index.html" style="color:var(--mint);">Back to home →</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

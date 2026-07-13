@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<style>
+.faq-item { border-bottom: 1px solid var(--line); padding: 22px 0; cursor: pointer; }
+.faq-q { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-family: var(--font-display); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height .25s var(--ease); }
+.faq-item.open .faq-a { max-height: 200px; margin-top: 12px; }
+.faq-q .plus { transition: transform .2s; }
+.faq-item.open .plus { transform: rotate(45deg); }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container">
+    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
+    <nav class="nav-links"><a href="markets.html">Markets</a><a href="exchange.html">Trade</a><a href="pricing.html">Pricing</a><a href="faq.html" class="active">FAQ</a></nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+      <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
+      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mobile-menu"><a href="markets.html">Markets</a><a href="pricing.html">Pricing</a></div>
+</header>
+
+<section class="section">
+  <div class="container" style="max-width:760px;">
+    <div class="section-head center">
+      <div class="eyebrow" style="justify-content:center;">Support</div>
+      <h1>Frequently asked questions</h1>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How do I verify my identity? <span class="plus">+</span></div>
+      <div class="faq-a"><p>Go to Dashboard → Security → Identity verification and follow the prompts to submit a government ID and a quick selfie. Most reviews complete within a few minutes.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What are the withdrawal limits? <span class="plus">+</span></div>
+      <div class="faq-a"><p>Limits scale with your verification level, from $2,000/day at Level 1 up to unlimited at Level 3. Check your current tier under Settings.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Is my crypto insured? <span class="plus">+</span></div>
+      <div class="faq-a"><p>95% of customer assets are held in cold storage and covered by our insurance fund against breaches of our own infrastructure.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How does staking APY work? <span class="plus">+</span></div>
+      <div class="faq-a"><p>APY is calculated daily based on network conditions and displayed before you confirm any staking position, with no hidden lock-up fees.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I use Vaultex on mobile? <span class="plus">+</span></div>
+      <div class="faq-a"><p>Yes — the platform is fully responsive, and native iOS and Android apps mirror every feature available on desktop.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-bottom">
+    <span style="color:var(--muted);font-size:.85rem;">© 2026 Vaultex. All rights reserved.</span>
+    <a href="contact.html" style="color:var(--mint);">Still need help? Contact us →</a>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

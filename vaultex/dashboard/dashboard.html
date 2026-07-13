@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav">
+      <!-- populated by dashboard.js -->
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Welcome back, <span data-user-firstname>…</span></h2>
+        <p class="mb-0" style="font-size:.88rem;">Here's what's happening with your portfolio today.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <div class="dash-search"><span>⌕</span><input type="text" placeholder="Search assets, transactions..."></div>
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="theme-toggle" aria-label="Notifications" data-dropdown-trigger="notif-panel" style="position:relative;">⚑</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="dash-grid-2" style="margin-bottom:24px;">
+      <div class="widget balance-card">
+        <div class="widget-head"><h3>Total balance</h3></div>
+        <div class="balance-amount">$0<span class="cents">.00</span></div>
+        <span class="pill pill-neutral">— 0.0% this week</span>
+        <canvas data-chart="balance" width="600" height="120" style="margin-top:20px;"></canvas>
+      </div>
+      <div class="widget">
+        <div class="widget-head"><h3>Allocation</h3></div>
+        <div class="flex" style="gap:20px;">
+          <canvas data-chart="allocation" width="120" height="120"></canvas>
+          <ul style="font-size:.85rem;display:flex;flex-direction:column;gap:10px;">
+            <li style="color:var(--muted);">No assets yet — make a deposit to get started.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid-3" style="margin-bottom:24px;">
+      <div class="widget quick-stat">
+        <div class="ico mint">↑</div>
+        <div><strong>$0</strong><span>Deposited (30d)</span></div>
+      </div>
+      <div class="widget quick-stat">
+        <div class="ico gold">◎</div>
+        <div><strong>$0</strong><span>Staking rewards</span></div>
+      </div>
+      <div class="widget quick-stat">
+        <div class="ico coral">↓</div>
+        <div><strong>$0</strong><span>Withdrawn (30d)</span></div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-head">
+        <h3>Recent transactions</h3>
+        <a href="transactions.html" class="btn btn-sm btn-ghost">View all</a>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody data-tx-table><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No transactions yet — your activity will show up here.</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Notification dropdown panel -->
+<div id="notif-panel" class="widget" style="position:fixed;top:70px;right:24px;width:340px;z-index:300;display:none;box-shadow:var(--shadow-card);">
+  <div class="widget-head"><h3>Notifications</h3></div>
+  <div data-notif-list></div>
+</div>
+<style>#notif-panel.open{display:block;}</style>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/charts.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script src="../assets/js/notifications.js"></script>
+</body>
+</html>
