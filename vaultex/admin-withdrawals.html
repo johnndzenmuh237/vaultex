@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdrawal review — Vaultex Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body>
+
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex Admin</span></a>
+    <nav class="dash-nav">
+      <a href="admin-dashboard.html">⌂ <span class="label">Overview</span></a>
+      <a href="admin-users.html">◉ <span class="label">Users</span></a>
+      <a href="admin-deposits.html">⬇ <span class="label">Deposits</span></a>
+      <a href="admin-withdrawals.html" class="active">⬆ <span class="label">Withdrawals</span></a>
+      <a href="admin-transactions.html">⇵ <span class="label">Transactions</span></a>
+      <div class="group-label">Account</div>
+      <a href="admin-settings.html">⚙ <span class="label">Settings</span></a>
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Withdrawal review</h2>
+        <p class="mb-0" style="font-size:.88rem;">Approve or reject pending withdrawal requests.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="dash-grid-3" style="margin-bottom:24px;">
+      <div class="widget"><div class="widget-head"><h3>Pending</h3></div><p class="mono" id="stat-pending" style="font-size:1.8rem;">0</p></div>
+      <div class="widget"><div class="widget-head"><h3>Approved today</h3></div><p class="mono" id="stat-approved" style="font-size:1.8rem;">0</p></div>
+      <div class="widget"><div class="widget-head"><h3>Rejected today</h3></div><p class="mono" id="stat-rejected" style="font-size:1.8rem;">0</p></div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-head">
+        <h3>Pending requests</h3>
+        <button class="btn btn-ghost btn-sm" id="refresh-btn">Refresh</button>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Submitted</th><th>User</th><th>Asset</th><th>Amount</th><th>Address</th><th>Balance</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="pending-body">
+          <tr><td colspan="7">Loading pending withdrawals…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="widget" style="margin-top:24px;">
+      <div class="widget-head"><h3>Recently reviewed</h3></div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Reviewed</th><th>User</th><th>Asset</th><th>Amount</th><th>Decision</th><th>Reason</th></tr>
+        </thead>
+        <tbody id="reviewed-body">
+          <tr><td colspan="6">No reviewed withdrawals yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Reject reason modal -->
+<div id="reject-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:400; align-items:center; justify-content:center;">
+  <div class="widget" style="width:420px; max-width:90vw;">
+    <div class="widget-head"><h3>Reject withdrawal</h3></div>
+    <p class="field-hint">Give the user a clear, specific reason so they know exactly what to fix before resubmitting.</p>
+    <div class="field">
+      <label for="reject-reason-input">Reason</label>
+      <textarea id="reject-reason-input" rows="3" placeholder="e.g. Address format doesn't match the selected network (expected TRC20)."></textarea>
+    </div>
+    <p id="reject-modal-error" class="field-hint" style="color:var(--coral);" hidden></p>
+    <div class="flex" style="gap:10px; margin-top:10px;">
+      <button class="btn btn-ghost btn-sm btn-block" id="reject-cancel-btn">Cancel</button>
+      <button class="btn btn-primary btn-sm btn-block" id="reject-confirm-btn">Confirm rejection</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/main.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/admin-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script src="../assets/js/admin-withdrawal.js"></script>
+</body>
+</html>
