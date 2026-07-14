@@ -185,7 +185,7 @@ img{display:block}
 </head>
 <body>
 
-<div class="demo-ribbon">⚠ Demo staking environment — simulated balances only, not connected to your real account balance or any real crypto</div>
+<div class="demo-ribbon">⚠ Demo staking environment — simulated balances only, not connected to your real crypto or any real payment provider</div>
 
 <header class="navbar">
   <div class="container">
@@ -218,7 +218,6 @@ img{display:block}
     <div class="w-stat"><span class="lbl">Total staked (est.)</span><span class="val" id="totalStakedVal">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Unclaimed rewards (est.)</span><span class="val" id="totalRewardVal" style="color:var(--mint)">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Est. weekly profit</span><span class="val" id="totalWeeklyVal" style="color:var(--mint)">$0.00</span></div>
-    <a href="#" id="faucetBtn" class="btn btn-primary btn-sm">Add demo funds</a>
   </div>
 </div>
 
@@ -229,7 +228,7 @@ img{display:block}
     <p>Pick a staking plan for each asset — flexible or fixed-term — and track your rewards accrue in real time, down to the second.</p>
     <div class="demo-banner">
       <span class="chip">Demo</span>
-      <span>This is a simulated staking environment with its own demo wallet — it is completely separate from your real Vaultex account balance and involves no real crypto or payment provider. Use "Add demo funds" above to top up, then stake to see how plans, lock-ups, and rewards work.</span>
+      <span>This is a simulated staking environment with its own demo wallet — it is completely separate from your real Vaultex account balance and involves no real crypto or payment provider. Your demo USDT balance here reflects deposits to your real Vaultex account; stake it to see how plans, lock-ups, and rewards work.</span>
     </div>
   </div>
 </section>
@@ -351,6 +350,11 @@ img{display:block}
   </div>
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+
 <script>
 (function(){
   'use strict';
@@ -366,9 +370,12 @@ img{display:block}
          (used on dashboard.html — real funds, admin-gated
          withdrawals), and
        - any production wallet keys.
-     This page never reads or writes anything from the real
-     account. Every figure here is simulated and clearly
-     labeled "Demo" in the UI.
+     This page never reads or writes anything to the real
+     account balance or Firestore trade/withdrawal data. Every
+     figure here is simulated and clearly labeled "Demo" in the
+     UI. The only thing read from the real account is the
+     totalBalance figure, used purely to size the demo USDT
+     balance below — see syncDemoBalanceWithDeposits().
   ========================================================= */
   const LS_BAL   = 'vaultex_demo_staking_balance_usdt';
   const LS_HOLD  = 'vaultex_demo_staking_holdings';
@@ -376,7 +383,7 @@ img{display:block}
   const LS_HIST  = 'vaultex_demo_staking_history';
 
   function getBalance(){ return parseFloat(localStorage.getItem(LS_BAL)||'0'); }
-  function setBalance(v){ localStorage.setItem(LS_BAL, String(v)); }
+  function setBalance(v){ localStorage.setItem(LS_BAL, String(Math.max(0,v))); }
   function getHoldings(){ try{ return JSON.parse(localStorage.getItem(LS_HOLD)||'{}'); }catch(e){ return {}; } }
   function setHoldings(h){ localStorage.setItem(LS_HOLD, JSON.stringify(h)); }
   function getStakes(){ try{ return JSON.parse(localStorage.getItem(LS_STAKES)||'[]'); }catch(e){ return []; } }
@@ -384,9 +391,57 @@ img{display:block}
   function getHistory(){ try{ return JSON.parse(localStorage.getItem(LS_HIST)||'[]'); }catch(e){ return []; } }
   function setHistory(h){ localStorage.setItem(LS_HIST, JSON.stringify(h)); }
 
-  // Seed a starting demo balance the first time someone visits, so
-  // the page is immediately usable without a separate onboarding step.
-  if(localStorage.getItem(LS_BAL)===null){ setBalance(10000); }
+  /* ---------------------------------------------------------
+     SYNC DEMO USDT BALANCE WITH REAL DEPOSITS
+     ---------------------------------------------------------
+     Same pattern as trade.html's AutoTrading bot: on auth and on
+     tab refocus, check /api/account/summary for the real balance.
+     If it's higher than the last time we checked (a deposit), add
+     that exact delta to the local demo staking balance. Real
+     balance decreases (withdrawals) are never synced in, since the
+     demo balance may already include simulated staking rewards and
+     subtracting a withdrawal from it would produce a meaningless
+     number. This key is namespaced separately from trade.html's
+     tracker so each demo pool (staking vs. AutoTrading) receives
+     its own independent top-up off the same real deposit.
+  --------------------------------------------------------- */
+  const LS_REAL_SEEN = uid => `vaultex_demo_staking_real_balance_seen_${uid}`;
+
+  async function syncDemoBalanceWithDeposits(uid){
+    if(!uid || !window.auth || !auth.currentUser) return;
+    try{
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/account/summary', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if(!res.ok) return;
+      const data = await res.json();
+      if(!data.success || typeof data.totalBalance !== 'number') return;
+
+      const key = LS_REAL_SEEN(uid);
+      const lastSeenRaw = localStorage.getItem(key);
+      const lastSeen = lastSeenRaw === null ? NaN : parseFloat(lastSeenRaw);
+      const realBal = data.totalBalance;
+
+      if(isNaN(lastSeen)){
+        // First time seeing this user on this device: seed the demo
+        // balance from their real balance right now.
+        setBalance(realBal);
+      } else if(realBal > lastSeen){
+        // Real balance grew since last check — a deposit happened.
+        const delta = realBal - lastSeen;
+        setBalance(getBalance() + delta);
+      }
+      // realBal <= lastSeen: demo balance left untouched.
+
+      localStorage.setItem(key, realBal.toString());
+    }catch(e){
+      console.error('Failed to sync demo staking balance with real deposits', e);
+    }finally{
+      renderHeader();
+      renderAssetRows();
+    }
+  }
 
   /* ===== staking pool + plan definitions ===== */
   const POOLS = [
@@ -510,19 +565,16 @@ img{display:block}
     });
   }
 
-  /* ===== demo faucet: top up demo USDT, and one-click convert into an asset ===== */
-  $('faucetBtn').addEventListener('click', (e)=>{
-    e.preventDefault();
-    setBalance(getBalance()+5000);
-    renderHeader();
-  });
-
+  /* ===== one-click convert demo USDT into a demo asset holding =====
+     Unchanged behavior, just spends from the (now deposit-synced)
+     demo USDT balance instead of a manually-topped-up faucet balance.
+  */
   function faucetConvert(symbol){
     const pool = POOLS.find(p=>p.symbol===symbol); if(!pool) return;
     const price = PRICES[symbol];
     if(!price){ alert('Prices are still loading, try again in a moment.'); return; }
     const usdToSpend = Math.min(getBalance(), 200);
-    if(usdToSpend<=0){ alert('Add demo funds first using the button above.'); return; }
+    if(usdToSpend<=0){ alert('Your demo USDT balance is $0 — deposit funds to your Vaultex account to get a demo balance here.'); return; }
     setBalance(getBalance()-usdToSpend);
     const holdings = getHoldings();
     holdings[symbol] = (holdings[symbol]||0) + usdToSpend/price;
@@ -729,6 +781,18 @@ img{display:block}
   loadPrices();
   setInterval(loadPrices, 60000);
   setInterval(()=>{ renderStakes(); renderHeader(); }, 1000);
+
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden && window.auth && auth.currentUser){
+      syncDemoBalanceWithDeposits(auth.currentUser.uid);
+    }
+  });
+
+  if(window.auth){
+    auth.onAuthStateChanged((user) => {
+      if(user) syncDemoBalanceWithDeposits(user.uid);
+    });
+  }
 })();
 </script>
 </body>
