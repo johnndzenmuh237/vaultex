@@ -7,13 +7,28 @@
    implements the exact API contract documented in those
    files' header comments.
 
-   Firestore layout used:
+   Firestore layout used (unified with your existing
+   `transactions` collection/rules, rather than a separate
+   `withdrawals` collection):
+
      users/{uid}                 -> { balance: number, email, ... }
-     withdrawals/{id}            -> {
-       userId, userEmail, currency, address, amount,
-       usdValue, status: "pending"|"approved"|"rejected",
+     transactions/{id}           -> {
+       uid, userEmail, type: "withdrawal",
+       currency, address, amount, usdValue,
+       status: "pending"|"approved"|"rejected",
        reason: string|null, createdAt, reviewedAt, reviewedBy
      }
+
+   This matches your existing firestore.rules pattern:
+     match /transactions/{txId} {
+       allow read: if request.auth != null
+                   && request.auth.uid == resource.data.uid;
+       allow write: if false;
+     }
+   — client reads work directly against this collection for a
+   user's own docs; all writes still go through these Cloud
+   Functions (Admin SDK bypasses rules), so status/balance can
+   never be set by the client.
 
    SECURITY MODEL (important):
    - Every route requires a valid Firebase ID token
@@ -26,10 +41,6 @@
    - Balance is NEVER written by the client. It is only ever
      mutated inside the Firestore transaction in
      reviewWithdrawal(), and only on "approve".
-   - Firestore security rules (see firestore.rules) lock the
-     `withdrawals` and `users.balance` fields so they can only
-     be written by these Cloud Functions (via the Admin SDK,
-     which bypasses rules), not directly by clients.
    ========================================================= */
 
 const functions = require("firebase-functions");
@@ -43,6 +54,9 @@ const db = admin.firestore();
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
+
+const TRANSACTIONS = "transactions";
+const TYPE = "withdrawal";
 
 /* ---------------------------------------------------------
    AUTH MIDDLEWARE
@@ -120,15 +134,14 @@ app.post("/create-withdrawal", requireAuth, async (req, res) => {
       }
 
       // Daily limit is checked against APPROVED withdrawals only —
-      // pending ones haven't touched the balance yet, so they
-      // shouldn't count twice against the limit here. We do a
-      // best-effort check on already-approved withdrawals today.
+      // pending ones haven't touched the balance yet.
       const todayStart = admin.firestore.Timestamp.fromDate(
         new Date(new Date().setHours(0, 0, 0, 0))
       );
       const approvedTodaySnap = await tx.get(
-        db.collection("withdrawals")
-          .where("userId", "==", uid)
+        db.collection(TRANSACTIONS)
+          .where("uid", "==", uid)
+          .where("type", "==", TYPE)
           .where("status", "==", "approved")
           .where("reviewedAt", ">=", todayStart)
       );
@@ -139,10 +152,11 @@ app.post("/create-withdrawal", requireAuth, async (req, res) => {
         throw new Error(`Exceeds daily withdrawal limit of $${DAILY_LIMIT_USD.toLocaleString()}`);
       }
 
-      const wdRef = db.collection("withdrawals").doc();
+      const txRef = db.collection(TRANSACTIONS).doc();
       const record = {
-        userId: uid,
+        uid,
         userEmail: req.user.email || null,
+        type: TYPE,
         currency,
         address: address.trim(),
         amount: amt,
@@ -154,8 +168,8 @@ app.post("/create-withdrawal", requireAuth, async (req, res) => {
         reviewedAt: null,
         reviewedBy: null,
       };
-      tx.set(wdRef, record);
-      return { id: wdRef.id, ...record, createdAt: new Date().toISOString() };
+      tx.set(txRef, record);
+      return { id: txRef.id, ...record, createdAt: new Date().toISOString() };
     });
 
     // TODO: notify admins (email / Slack webhook / internal queue)
@@ -175,8 +189,8 @@ app.get("/get-withdrawal-status", requireAuth, async (req, res) => {
   const { id } = req.query;
   if (!id) return res.status(400).json({ success: false, message: "Missing id" });
 
-  const snap = await db.collection("withdrawals").doc(id).get();
-  if (!snap.exists || snap.data().userId !== req.user.uid) {
+  const snap = await db.collection(TRANSACTIONS).doc(id).get();
+  if (!snap.exists || snap.data().uid !== req.user.uid || snap.data().type !== TYPE) {
     return res.status(404).json({ success: false, message: "Not found" });
   }
   const d = snap.data();
@@ -189,8 +203,9 @@ app.get("/get-withdrawal-status", requireAuth, async (req, res) => {
 
 app.get("/get-withdrawals", requireAuth, async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 10, 50);
-  const snap = await db.collection("withdrawals")
-    .where("userId", "==", req.user.uid)
+  const snap = await db.collection(TRANSACTIONS)
+    .where("uid", "==", req.user.uid)
+    .where("type", "==", TYPE)
     .orderBy("createdAt", "desc")
     .limit(limit)
     .get();
@@ -227,8 +242,8 @@ app.get("/account/summary", requireAuth, async (req, res) => {
   const uid = req.user.uid;
   const [userSnap, txSnap] = await Promise.all([
     db.collection("users").doc(uid).get(),
-    db.collection("withdrawals")
-      .where("userId", "==", uid)
+    db.collection(TRANSACTIONS)
+      .where("uid", "==", uid)
       .orderBy("createdAt", "desc")
       .limit(10)
       .get(),
@@ -239,7 +254,7 @@ app.get("/account/summary", requireAuth, async (req, res) => {
     const w = d.data();
     return {
       date: w.createdAt?.toDate?.().toLocaleDateString() || "--",
-      type: "Withdrawal",
+      type: w.type === TYPE ? "Withdrawal" : (w.type || "Transaction"),
       amount: w.amount,
       asset: (w.currency || "").toUpperCase(),
       status: w.status === "approved" ? "Completed" : w.status === "rejected" ? "Rejected" : "Pending",
@@ -260,7 +275,8 @@ app.get("/account/summary", requireAuth, async (req, res) => {
 --------------------------------------------------------- */
 
 app.get("/admin/get-pending-withdrawals", requireAuth, requireAdmin, async (req, res) => {
-  const snap = await db.collection("withdrawals")
+  const snap = await db.collection(TRANSACTIONS)
+    .where("type", "==", TYPE)
     .where("status", "==", "pending")
     .orderBy("createdAt", "asc")
     .get();
@@ -269,7 +285,7 @@ app.get("/admin/get-pending-withdrawals", requireAuth, requireAdmin, async (req,
     const w = d.data();
     return {
       id: d.id,
-      userId: w.userId,
+      userId: w.uid,
       userEmail: w.userEmail,
       currency: w.currency,
       address: w.address,
@@ -288,7 +304,8 @@ app.get("/admin/get-pending-withdrawals", requireAuth, requireAdmin, async (req,
 
 app.get("/admin/get-reviewed-withdrawals", requireAuth, requireAdmin, async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 20, 100);
-  const snap = await db.collection("withdrawals")
+  const snap = await db.collection(TRANSACTIONS)
+    .where("type", "==", TYPE)
     .where("status", "in", ["approved", "rejected"])
     .orderBy("reviewedAt", "desc")
     .limit(limit)
@@ -298,7 +315,7 @@ app.get("/admin/get-reviewed-withdrawals", requireAuth, requireAdmin, async (req
     const w = d.data();
     return {
       id: d.id,
-      userId: w.userId,
+      userId: w.uid,
       userEmail: w.userEmail,
       currency: w.currency,
       amount: w.amount,
@@ -326,17 +343,17 @@ app.post("/admin/review-withdrawal", requireAuth, requireAdmin, async (req, res)
     return res.status(400).json({ success: false, message: "A reason is required to reject" });
   }
 
-  const wdRef = db.collection("withdrawals").doc(id);
+  const txRef = db.collection(TRANSACTIONS).doc(id);
 
   try {
     await db.runTransaction(async (tx) => {
-      const wdSnap = await tx.get(wdRef);
-      if (!wdSnap.exists) throw new Error("Withdrawal not found");
+      const wdSnap = await tx.get(txRef);
+      if (!wdSnap.exists || wdSnap.data().type !== TYPE) throw new Error("Withdrawal not found");
       const wd = wdSnap.data();
       if (wd.status !== "pending") throw new Error("Withdrawal has already been reviewed");
 
       if (decision === "approve") {
-        const userRef = db.collection("users").doc(wd.userId);
+        const userRef = db.collection("users").doc(wd.uid);
         const userSnap = await tx.get(userRef);
         if (!userSnap.exists) throw new Error("User not found");
         const balance = Number(userSnap.data().balance || 0);
@@ -350,7 +367,7 @@ app.post("/admin/review-withdrawal", requireAuth, requireAdmin, async (req, res)
         tx.update(userRef, {
           balance: admin.firestore.FieldValue.increment(-Number(wd.usdValue)),
         });
-        tx.update(wdRef, {
+        tx.update(txRef, {
           status: "approved",
           reason: null,
           reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -360,7 +377,7 @@ app.post("/admin/review-withdrawal", requireAuth, requireAdmin, async (req, res)
         // TODO: trigger the actual on-chain payout here (or enqueue
         // it to a payout worker) now that the balance is reserved.
       } else {
-        tx.update(wdRef, {
+        tx.update(txRef, {
           status: "rejected",
           reason: reason.trim(),
           reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
