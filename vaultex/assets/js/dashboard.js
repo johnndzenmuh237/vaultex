@@ -176,6 +176,92 @@
     if (stats[2]) stats[2].textContent = `$${withdrawn30d.toLocaleString()}`;
   }
 
+  /* ---------------------------------------------------------
+     WEEKLY TRADING P&L PILL
+     ---------------------------------------------------------
+     The balance-card pill above only ever showed the hardcoded
+     "— 0.0% this week" zero-state — it was never wired to real
+     data. Trading Center (trading.html) writes closed trades to
+     users/{uid}/trades in Firestore with a `pnl` field, so we
+     listen to that directly here (same data source trading.html
+     reads/writes) and turn it into a live "this week" figure.
+
+     This runs independently of fetchAccountSummary()/the
+     /api/account/summary backend call above — it only touches
+     the pill, never the balance figure itself, so it can't get
+     out of sync with whatever the backend reports as totalBalance.
+  --------------------------------------------------------- */
+
+  let _unsubWeeklyPnl = null;
+
+  function getDb() {
+    if (window.db) return window.db;
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+      return firebase.firestore();
+    }
+    return null;
+  }
+
+  function renderPillNeutral() {
+    document.querySelectorAll('.balance-card .pill').forEach(el => {
+      el.textContent = '— $0.00 this week';
+      el.classList.remove('pill-up', 'pill-down');
+      el.classList.add('pill-neutral');
+    });
+  }
+
+  function renderPillPnl(weeklyPnl) {
+    document.querySelectorAll('.balance-card .pill').forEach(el => {
+      if (!weeklyPnl) {
+        el.textContent = '— $0.00 this week';
+        el.classList.remove('pill-up', 'pill-down');
+        el.classList.add('pill-neutral');
+        return;
+      }
+      const up = weeklyPnl > 0;
+      el.textContent = `${up ? '+' : '-'}$${Math.abs(weeklyPnl).toFixed(2)} this week`;
+      el.classList.remove('pill-neutral', up ? 'pill-down' : 'pill-up');
+      el.classList.add(up ? 'pill-up' : 'pill-down');
+    });
+  }
+
+  function listenWeeklyTradingPnl(uid) {
+    const db = getDb();
+    if (!db || !uid) return;
+
+    if (_unsubWeeklyPnl) {
+      _unsubWeeklyPnl();
+      _unsubWeeklyPnl = null;
+    }
+
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    _unsubWeeklyPnl = db.collection('users').doc(uid).collection('trades')
+      .where('status', '==', 'closed')
+      .onSnapshot(snap => {
+        let weeklyPnl = 0;
+        snap.forEach(doc => {
+          const t = doc.data();
+          const closedAt = t.closedAt && t.closedAt.toDate ? t.closedAt.toDate() : null;
+          if (closedAt && closedAt >= sevenDaysAgo && typeof t.pnl === 'number') {
+            weeklyPnl += t.pnl;
+          }
+        });
+        renderPillPnl(weeklyPnl);
+      }, err => {
+        console.error('Failed to load weekly trading P&L', err);
+        renderPillNeutral();
+      });
+  }
+
+  function stopWeeklyTradingPnl() {
+    if (_unsubWeeklyPnl) {
+      _unsubWeeklyPnl();
+      _unsubWeeklyPnl = null;
+    }
+    renderPillNeutral();
+  }
+
   async function initAccountData() {
     const summary = await fetchAccountSummary();
 
@@ -225,12 +311,15 @@
   // the pattern used in withdrawal.js / admin-withdrawal.js.
   if (window.auth) {
     auth.onAuthStateChanged((user) => {
-      if (user) initAccountData();
-      else {
+      if (user) {
+        initAccountData();
+        listenWeeklyTradingPnl(user.uid);
+      } else {
         renderBalanceZero();
         renderAllocationZero();
         renderTransactionsEmpty();
         renderQuickStatsZero();
+        stopWeeklyTradingPnl();
       }
     });
   }
