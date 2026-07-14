@@ -9,6 +9,10 @@
 <link rel="stylesheet" href="../assets/css/style.css">
 <link rel="stylesheet" href="../assets/css/dashboard.css">
 <link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+/* VaultexBotTrade — small addition, not part of dashboard.css yet */
+.demo-chip{display:inline-block;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px;vertical-align:middle;}
+</style>
 </head>
 <body>
 
@@ -67,6 +71,13 @@
         <div class="ico coral">↓</div>
         <div><strong>$0</strong><span>Withdrawn (30d)</span></div>
       </div>
+    </div>
+
+    <!-- VaultexBotTrade — demo AutoTrading bot summary, isolated from real balance/withdrawals.
+         Populated live by dashboard.js via users/{uid}/botDemo/state (Firestore). -->
+    <div class="widget" data-bot-widget style="margin-bottom:24px;">
+      <div class="widget-head"><h3>VaultexBotTrade <span class="demo-chip">Demo</span></h3><span class="pill pill-neutral">Loading…</span></div>
+      <p style="color:var(--muted);font-size:.85rem;">Checking AutoTrading status…</p>
     </div>
 
     <div class="widget">
