@@ -3,264 +3,301 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Markets — 350+ assets on Vaultex</title>
+<title>Trading Center — Vaultex</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/style.css">
 <link rel="stylesheet" href="../assets/css/dashboard.css">
 <link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+  /* ============ Trading Center — scoped styles ============
+     Self-contained so this page can be dropped in without
+     touching your global CSS files. Feel free to move any of
+     this into dashboard.css / responsive.css later. */
+
+  .trading-wrap { max-width: 1400px; margin: 0 auto; }
+
+  .trading-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    flex-wrap: wrap; gap: 14px; margin-bottom: 20px;
+  }
+  .trading-header h2 { margin: 0 0 4px; font-size: 1.5rem; }
+  .trading-header p { margin: 0; font-size: .88rem; color: var(--muted); }
+
+  .balance-chip {
+    background: var(--ink-soft); border: 1px solid var(--line);
+    padding: 10px 18px; border-radius: 10px; text-align: right;
+  }
+  .balance-chip .label { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .balance-chip .value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 600; }
+
+  .trading-layout {
+    display: grid; grid-template-columns: 300px 1fr;
+    gap: 20px; margin-bottom: 24px; align-items: start;
+  }
+
+  /* ---- Market list panel ---- */
+  .market-list-panel { display: flex; flex-direction: column; padding: 16px; }
+  .market-search {
+    width: 100%; padding: 10px 14px; margin-bottom: 10px;
+    border-radius: 8px; border: 1px solid var(--line);
+    background: var(--ink-soft); color: var(--paper); font-size: .88rem;
+  }
+  .market-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .market-tabs button {
+    flex: 1; padding: 6px 8px; font-size: .76rem; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .market-tabs button.active { background: var(--ink-soft); color: var(--paper); border-color: var(--accent, #6C7CFF); }
+  .market-rows { max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+  .market-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 8px;
+    border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+  }
+  .market-row:hover { background: var(--ink-soft); }
+  .market-row.active { background: var(--ink-soft); border-color: var(--accent, #6C7CFF); }
+  .market-row img { border-radius: 50%; flex-shrink: 0; }
+  .market-row .m-name { font-weight: 600; font-size: .85rem; line-height: 1.2; }
+  .market-row .m-sym { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
+  .market-row .m-right { margin-left: auto; text-align: right; }
+  .market-row .m-price { font-family: 'JetBrains Mono', monospace; font-size: .82rem; }
+  .market-row .m-pct { font-size: .74rem; font-family: 'JetBrains Mono', monospace; }
+  .market-empty { text-align: center; color: var(--muted); font-size: .85rem; padding: 24px 8px; }
+
+  /* ---- Chart + order panel ---- */
+  .chart-panel { display: flex; flex-direction: column; gap: 16px; }
+  .selected-asset { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .selected-asset img { border-radius: 50%; }
+  .selected-asset .sa-name { font-weight: 700; font-size: 1.05rem; }
+  .selected-asset .sa-sym { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
+  .selected-asset .sa-price { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 600; margin-left: auto; }
+  .selected-asset .sa-pct { font-family: 'JetBrains Mono', monospace; font-size: .85rem; padding: 3px 9px; border-radius: 6px; }
+
+  .chart-container { width: 100%; height: 380px; border-radius: 10px; overflow: hidden; }
+  .chart-loading { color: var(--muted); font-size: .85rem; text-align: center; padding: 40px 0; }
+
+  .order-ticket { border-top: 1px solid var(--line); padding-top: 16px; }
+  .order-ticket .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .order-ticket .field { flex: 1; min-width: 160px; }
+  .order-ticket label { display: block; font-size: .76rem; color: var(--muted); margin-bottom: 6px; }
+  .order-ticket input[type="number"] {
+    width: 100%; padding: 11px 14px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--ink-soft); color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: .95rem;
+  }
+  .order-ticket .est-qty { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+  .order-ticket .btn-buy { min-width: 160px; }
+  .order-ticket .ticket-msg { font-size: .8rem; margin-top: 8px; min-height: 1.1em; }
+  .order-ticket .ticket-msg.err { color: var(--coral, #ea3943); }
+  .order-ticket .ticket-msg.ok { color: var(--mint, #16c784); }
+
+  .table-scroll { overflow-x: auto; }
+  .table-scroll table { min-width: 560px; }
+
+  .pnl-up { color: #16c784; }
+  .pnl-down { color: #ea3943; }
+
+  /* ---- VaultexBot promo ---- */
+  .bot-promo {
+    display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+    padding: 24px; border-radius: 14px; margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(108,124,255,.14), rgba(0,224,255,.08));
+    border: 1px solid var(--line);
+  }
+  .bot-promo .bot-icon {
+    width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ink-soft); font-size: 1.5rem;
+  }
+  .bot-promo .bot-copy { flex: 1; min-width: 240px; }
+  .bot-promo .bot-copy h3 { margin: 0 0 6px; font-size: 1.1rem; }
+  .bot-promo .bot-copy p { margin: 0; font-size: .88rem; color: var(--muted); max-width: 560px; }
+
+  #vaultexbot-vip { scroll-margin-top: 90px; }
+  .vip-card {
+    display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+    padding: 24px; border-radius: 14px; border: 1px solid var(--line);
+  }
+  .vip-card ul { margin: 10px 0 0; padding-left: 18px; font-size: .85rem; color: var(--muted); }
+  .vip-card ul li { margin-bottom: 6px; }
+  .vip-card .vip-cta { flex-shrink: 0; }
+
+  @media (max-width: 1024px) {
+    .trading-layout { grid-template-columns: 1fr; }
+    .market-list-panel { order: 2; }
+    .chart-panel { order: 1; }
+    .market-rows { max-height: 320px; }
+  }
+  @media (max-width: 640px) {
+    .chart-container { height: 300px; }
+    .selected-asset .sa-price { font-size: 1.1rem; }
+    .bot-promo, .vip-card { padding: 18px; }
+  }
+</style>
 </head>
 <body>
 
-<header class="navbar">
-  <div class="container">
-    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
-    <nav class="nav-links">
-      <a href="markets.html" class="active">Markets</a>
-      <a href="exchange.html">Trade</a>
-      <div class="dropdown">
-        <a href="#">Earn <span style="font-size:.7em;">▾</span></a>
-        <div class="dropdown-panel">
-          <a href="staking.html">Staking</a>
-          <a href="investments.html">Investment Plans</a>
-          <a href="earn.html">Savings &amp; Yield</a>
-          <a href="launchpad.html">Launchpad</a>
-        </div>
-      </div>
-      <a href="nft-marketplace.html">NFT Market</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="about.html">About</a>
+<div class="dash-shell">
+
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav">
+      <!-- populated by dashboard.js -->
     </nav>
-    <div class="nav-actions">
-      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
-      <a href="auth/login.html" class="btn btn-ghost btn-sm">Log in</a>
-      <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
-      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-  </div>
-  <div class="mobile-menu">
-    <a href="markets.html">Markets</a>
-    <a href="exchange.html">Trade</a>
-    <a href="staking.html">Staking</a>
-    <a href="investments.html">Investment Plans</a>
-    <a href="launchpad.html">Launchpad</a>
-    <a href="nft-marketplace.html">NFT Market</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="about.html">About</a>
-    <a href="careers.html">Careers</a>
-    <a href="auth/login.html">Log in</a>
-    <a href="auth/register.html" class="btn btn-primary btn-block" style="margin-top:16px;">Get started</a>
-  </div>
-</header>
+  </aside>
 
-
-<section class="section-sm">
-  <div class="container">
-    <div class="section-head">
-      <div class="eyebrow">Live markets</div>
-      <h1>350+ assets, one screen</h1>
-      <p>Real-time prices pulled straight from our market data feed.</p>
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Trading Center</h2>
+        <p class="mb-0" style="font-size:.88rem;">Live markets, manual trading, and VaultexBot — all in one place.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <div class="dash-search"><span>⌕</span><input type="text" placeholder="Search assets, transactions..."></div>
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="theme-toggle" aria-label="Notifications" data-dropdown-trigger="notif-panel" style="position:relative;">⚑</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
     </div>
-    <div class="flex" style="gap:10px;margin-bottom:20px;">
-      <input type="text" placeholder="Search by name or symbol" style="flex:1;max-width:320px;padding:11px 16px;border-radius:8px;border:1px solid var(--line);background:var(--ink-soft);color:var(--paper);">
-      <div class="tab-row" style="margin-bottom:0;"><button class="active">All</button><button>Spot</button><button>Gainers</button><button>Losers</button></div>
-    </div>
-    <table class="data-table" id="markets-table">
-      <thead><tr><th>#</th><th>Asset</th><th>Price</th><th>24h %</th><th>Market cap</th><th>Volume (24h)</th><th></th></tr></thead>
-      <tbody data-markets-table></tbody>
-    </table>
-  </div>
-</section>
 
-<footer class="footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-col">
-        <a href="index.html" class="nav-logo" style="margin-bottom:16px;display:inline-flex;"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
-        <p>A full-scale crypto exchange and investment platform for traders, investors, and builders.</p>
-        <div class="social-icons">
-          <a href="#" aria-label="X / Twitter">𝕏</a>
-          <a href="#" aria-label="Telegram">✈</a>
-          <a href="#" aria-label="Discord">◆</a>
-          <a href="#" aria-label="GitHub">⌥</a>
+    <div class="trading-wrap">
+
+      <div class="trading-header">
+        <div>
+          <h2>Markets &amp; manual trading</h2>
+          <p>Trades are placed against your real dashboard balance — no simulated funds.</p>
+        </div>
+        <div class="balance-chip">
+          <div class="label">Available balance</div>
+          <div class="value" data-available-balance>$0.00</div>
         </div>
       </div>
-      <div class="footer-col"><h4>Product</h4>
-        <a href="exchange.html">Exchange</a><a href="staking.html">Staking</a><a href="investments.html">Investments</a><a href="earn.html">Earn</a><a href="launchpad.html">Launchpad</a>
-      </div>
-      <div class="footer-col"><h4>Company</h4>
-        <a href="about.html">About us</a><a href="careers.html">Careers</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a>
-      </div>
-      <div class="footer-col"><h4>Resources</h4>
-        <a href="faq.html">FAQ</a><a href="documentation/installation.html">Documentation</a><a href="referrals.html">Referral program</a>
-      </div>
-      <div class="footer-col"><h4>Legal</h4>
-        <a href="#">Terms of service</a><a href="#">Privacy policy</a><a href="#">Risk disclosure</a><a href="#">AML policy</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span style="color:var(--muted);font-size:.85rem;">© 2026 Vaultex. All rights reserved.</span>
-      <span style="color:var(--muted);font-size:.8rem;">Digital assets are volatile and carry risk of loss.</span>
-    </div>
-  </div>
-</footer>
 
-<script src="assets/js/main.js"></script>
-<script src="assets/js/charts.js"></script>
-<script>
-/**
- * Vaultex — Live Markets
- * Populates #markets-table from a public live market-data feed (CoinGecko /coins/markets).
- * No API key required.
- */
-(function () {
-  const API_BASE = "https://api.coingecko.com/api/v3/coins/markets";
-  const PER_PAGE = 250;          // CoinGecko max per page
-  const PAGES_TO_FETCH = 2;      // 2 x 250 = 500 assets fetched, we show 350+
-  const REFRESH_MS = 30000;      // live refresh interval
+      <div class="trading-layout">
 
-  const tbody = document.querySelector("[data-markets-table]");
-  const searchInput = document.querySelector('input[placeholder="Search by name or symbol"]');
-  const tabButtons = document.querySelectorAll(".tab-row button");
+        <!-- Market list -->
+        <div class="widget market-list-panel">
+          <input type="text" class="market-search" placeholder="Search by name or symbol" data-market-search>
+          <div class="market-tabs" data-market-tabs>
+            <button class="active" data-tab="All">All</button>
+            <button data-tab="Gainers">Gainers</button>
+            <button data-tab="Losers">Losers</button>
+          </div>
+          <div class="market-rows" data-market-rows>
+            <div class="market-empty">Loading live markets…</div>
+          </div>
+        </div>
 
-  if (!tbody) return;
-
-  let allCoins = [];          // raw data from API
-  let currentTab = "All";
-  let currentQuery = "";
-
-  // ---------- formatting helpers ----------
-  function fmtPrice(n) {
-    if (n == null) return "—";
-    if (n >= 1) return "$" + n.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 });
-    if (n >= 0.01) return "$" + n.toFixed(4);
-    return "$" + n.toPrecision(3);
-  }
-
-  function fmtCompact(n) {
-    if (n == null) return "—";
-    return "$" + Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 }).format(n);
-  }
-
-  function fmtPct(n) {
-    if (n == null) return "—";
-    const sign = n > 0 ? "+" : "";
-    return `${sign}${n.toFixed(2)}%`;
-  }
-
-  // ---------- fetch ----------
-  async function fetchPage(page) {
-    const url = `${API_BASE}?vs_currency=usd&order=market_cap_desc&per_page=${PER_PAGE}&page=${page}&price_change_percentage=24h&sparkline=false`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Market feed error: ${res.status}`);
-    return res.json();
-  }
-
-  async function loadMarkets() {
-    try {
-      const pages = await Promise.all(
-        Array.from({ length: PAGES_TO_FETCH }, (_, i) => fetchPage(i + 1))
-      );
-      allCoins = pages.flat();
-      render();
-    } catch (err) {
-      console.error("Vaultex live markets: failed to load", err);
-      if (allCoins.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">
-          Live market feed temporarily unavailable. Retrying…
-        </td></tr>`;
-      }
-    }
-  }
-
-  // ---------- filtering ----------
-  function getFiltered() {
-    let rows = allCoins;
-
-    if (currentTab === "Gainers") {
-      rows = rows.filter(c => (c.price_change_percentage_24h ?? 0) > 0);
-      rows = [...rows].sort((a, b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0));
-    } else if (currentTab === "Losers") {
-      rows = rows.filter(c => (c.price_change_percentage_24h ?? 0) < 0);
-      rows = [...rows].sort((a, b) => (a.price_change_percentage_24h ?? 0) - (b.price_change_percentage_24h ?? 0));
-    }
-    // "Spot" and "All" both show the full live list (this site lists spot assets only)
-
-    if (currentQuery) {
-      const q = currentQuery.toLowerCase();
-      rows = rows.filter(
-        c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q)
-      );
-    }
-
-    return rows;
-  }
-
-  // ---------- render ----------
-  function render() {
-    const rows = getFiltered();
-
-    if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">
-        No assets match your search.
-      </td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = rows
-      .map((c, i) => {
-        const pct = c.price_change_percentage_24h;
-        const pctClass = pct == null ? "" : pct >= 0 ? "text-up" : "text-down";
-        return `
-        <tr>
-          <td>${c.market_cap_rank ?? i + 1}</td>
-          <td>
-            <div class="flex" style="gap:10px;align-items:center;">
-              <img src="${c.image}" alt="${c.symbol}" width="24" height="24" style="border-radius:50%;" loading="lazy">
-              <div>
-                <div style="font-weight:600;">${c.name}</div>
-                <div style="color:var(--muted);font-size:.78rem;text-transform:uppercase;">${c.symbol}</div>
-              </div>
+        <!-- Chart + order ticket -->
+        <div class="widget chart-panel">
+          <div class="selected-asset" data-selected-asset>
+            <img data-sa-image src="" alt="" width="32" height="32" style="display:none;">
+            <div>
+              <div class="sa-name" data-sa-name>Loading…</div>
+              <div class="sa-sym" data-sa-sym></div>
             </div>
-          </td>
-          <td style="font-family:'JetBrains Mono',monospace;">${fmtPrice(c.current_price)}</td>
-          <td class="${pctClass}" style="font-family:'JetBrains Mono',monospace;">${fmtPct(pct)}</td>
-          <td>${fmtCompact(c.market_cap)}</td>
-          <td>${fmtCompact(c.total_volume)}</td>
-          <td><a href="exchange.html?pair=${c.symbol.toUpperCase()}USDT" class="btn btn-ghost btn-sm">Trade</a></td>
-        </tr>`;
-      })
-      .join("");
-  }
+            <div class="sa-price" data-sa-price>—</div>
+            <div class="sa-pct" data-sa-pct></div>
+          </div>
 
-  // ---------- wiring ----------
-  if (searchInput) {
-    searchInput.addEventListener("input", e => {
-      currentQuery = e.target.value.trim();
-      render();
-    });
-  }
+          <div class="chart-container" data-chart-container>
+            <div class="chart-loading">Loading live chart…</div>
+          </div>
 
-  tabButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      tabButtons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentTab = btn.textContent.trim();
-      render();
-    });
-  });
+          <div class="order-ticket">
+            <div class="field-row">
+              <div class="field">
+                <label for="trade-amount">Amount to buy (USD)</label>
+                <input type="number" id="trade-amount" data-trade-amount placeholder="e.g. 100" min="1" step="0.01">
+                <div class="est-qty" data-est-qty>≈ 0 units at current price</div>
+              </div>
+              <button class="btn btn-primary btn-buy" data-buy-btn>Buy at market</button>
+            </div>
+            <div class="ticket-msg" data-ticket-msg></div>
+          </div>
+        </div>
+      </div>
 
-  // minimal styles for up/down coloring if not already defined in style.css
-  const style = document.createElement("style");
-  style.textContent = `
-    .text-up { color: #16c784 !important; }
-    .text-down { color: #ea3943 !important; }
-  `;
-  document.head.appendChild(style);
+      <!-- Open positions -->
+      <div class="widget" style="margin-bottom:24px;">
+        <div class="widget-head">
+          <h3>Open positions</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Asset</th><th>Opened</th><th>Amount</th><th>Entry</th><th>Current</th><th>Unrealized P/L</th><th></th></tr></thead>
+            <tbody data-positions-table>
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No open positions — place a trade to get started.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-  loadMarkets();
-  setInterval(loadMarkets, REFRESH_MS);
-})();
-</script>
+      <!-- Trade history -->
+      <div class="widget" style="margin-bottom:24px;">
+        <div class="widget-head">
+          <h3>Trade history</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Date &amp; time</th><th>Asset</th><th>Type</th><th>Amount</th><th>P/L</th><th>Status</th></tr></thead>
+            <tbody data-history-table>
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No closed trades yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VaultexBot promo -->
+      <div class="bot-promo">
+        <div class="bot-icon">◎</div>
+        <div class="bot-copy">
+          <h3>Not enough time to watch the charts?</h3>
+          <p>VaultexBot analyzes markets and executes trades around the clock using a consistent, rules-based strategy — so your capital stays active even when you're not at your screen. No emotional decisions, no missed sessions.</p>
+        </div>
+        <a href="#vaultexbot-vip" class="btn btn-primary">Explore VaultexBot</a>
+      </div>
+
+      <!-- VaultexBot VIP section -->
+      <div class="widget" id="vaultexbot-vip" style="margin-bottom:24px;">
+        <div class="vip-card">
+          <div style="flex:1;min-width:240px;">
+            <h3 style="margin:0 0 6px;">VaultexBot VIP</h3>
+            <p style="margin:0;color:var(--muted);font-size:.9rem;">VIP access gives you priority onboarding onto VaultexBot as automated trading rolls out, plus a dedicated line to our team while it's in early access.</p>
+            <ul>
+              <li>Automated execution — no manual chart-watching required</li>
+              <li>Runs against your existing dashboard balance, same as manual trades</li>
+              <li>Early access seats are limited during rollout</li>
+            </ul>
+          </div>
+          <div class="vip-cta">
+            <button class="btn btn-primary" data-bot-waitlist-btn>Join the VaultexBot waitlist</button>
+            <div class="ticket-msg ok" data-bot-waitlist-msg style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Notification dropdown panel -->
+<div id="notif-panel" class="widget" style="position:fixed;top:70px;right:24px;width:340px;z-index:300;display:none;box-shadow:var(--shadow-card);">
+  <div class="widget-head"><h3>Notifications</h3></div>
+  <div data-notif-list></div>
+</div>
+<style>#notif-panel.open{display:block;}</style>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/charts.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script src="../assets/js/trading.js"></script>
+<script src="../assets/js/notifications.js"></script>
 </body>
 </html>
