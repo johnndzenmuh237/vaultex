@@ -143,14 +143,13 @@
         <div class="val" id="availBalVal">$0.00</div>
       </div>
       <div class="bal-strip-actions">
-        <button class="btn btn-ghost btn-sm" id="quickAddFundsBtn">Add demo funds</button>
         <button class="btn btn-ghost btn-sm" id="stopBotBtn" style="display:none;">Deactivate bot</button>
         <a href="trade.html" class="btn btn-ghost btn-sm">Open Trade terminal</a>
       </div>
     </div>
     <div class="widget" id="zeroBalWarn" style="display:none;border-color:var(--coral);margin-bottom:22px;">
       <strong style="color:var(--coral);">No balance yet.</strong>
-      <span style="color:var(--muted);font-size:.85rem;"> VaultexBotTrade only runs against real available balance — add demo funds above or deposit from the Trade terminal to activate a package.</span>
+      <span style="color:var(--muted);font-size:.85rem;"> VaultexBotTrade only runs against your available balance — deposit from the Trade terminal to activate a package. New deposits are reflected here automatically.</span>
     </div>
 
     <!-- PACKAGES -->
@@ -230,6 +229,62 @@
     p => `Evaluating liquidity depth on ${p}…`,
     () => `Waiting for optimal entry conditions…`,
   ];
+
+  /* ============== SYNC DEMO BALANCE WITH REAL DEPOSITS ==============
+     Tracks the last real balance we saw for this user (per-uid key in
+     localStorage). Each time the real balance goes UP since we last
+     checked (a new deposit), we add that exact delta to the local
+     demo balance so newly deposited funds are available to the bot.
+
+     We deliberately do NOT sync balance DECREASES (withdrawals) into
+     the demo balance — by the time a withdrawal happens the demo
+     balance may already include simulated bot earnings, and
+     subtracting the withdrawal amount from it would produce a number
+     with no real meaning. This is a one-directional top-up on
+     deposits only, not a live mirror of the real balance.
+
+     This still runs entirely independently of runTick()/reconcile():
+     it only ever calls setBalance()/getBalance() (the local demo
+     store) and never writes to /api/account/summary, Firestore's
+     real balance field, or the withdrawals path.
+  ============================================================== */
+  const LS_REAL_SEEN = uid => `vaultex_real_balance_seen_${uid}`;
+
+  async function syncDemoBalanceWithDeposits(uid) {
+    if (!uid || !window.auth || !auth.currentUser) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/account/summary', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.success || typeof data.totalBalance !== 'number') return;
+
+      const key = LS_REAL_SEEN(uid);
+      const lastSeenRaw = localStorage.getItem(key);
+      const lastSeen = lastSeenRaw === null ? NaN : parseFloat(lastSeenRaw);
+      const realBal = data.totalBalance;
+
+      if (isNaN(lastSeen)) {
+        // First time ever seeing this user on this device: seed the
+        // demo balance from their real balance right now.
+        setBalance(realBal);
+      } else if (realBal > lastSeen) {
+        // Real balance grew since last check — a deposit happened.
+        // Top up the demo balance by exactly that delta.
+        const delta = realBal - lastSeen;
+        setBalance(getBalance() + delta);
+      }
+      // realBal <= lastSeen (withdrawal or no change): demo balance untouched.
+
+      localStorage.setItem(key, realBal.toString());
+    } catch (e) {
+      console.error('Failed to sync demo balance with real deposits', e);
+    } finally {
+      renderAll();
+    }
+  }
 
   /* ============== RECONCILE ELAPSED EARNINGS ON LOAD ============== */
   function reconcile() {
@@ -328,12 +383,6 @@
     renderAll();
   }
   $('stopBotBtn').addEventListener('click', deactivateBot);
-
-  $('quickAddFundsBtn').addEventListener('click', () => {
-    const amt = prompt('Add demo USDT balance (this is a local simulation, no real payment is made):', '1000');
-    const v = parseFloat(amt);
-    if (v > 0) { setBalance(getBalance() + v); renderAll(); }
-  });
 
   /* ============== HERO + STATUS LINE ============== */
   let scanTimer = null;
@@ -460,7 +509,21 @@
     if ([LS_BAL, LS_BOT_STATE, LS_BOT_LOG, LS_BOT_TX].includes(e.key)) renderAll();
   });
 
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { reconcile(); renderAll(); } });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      reconcile();
+      if (window.auth && auth.currentUser) syncDemoBalanceWithDeposits(auth.currentUser.uid);
+      renderAll();
+    }
+  });
+
+  // Wait for auth before doing the first deposit sync (mirrors the
+  // pattern used in dashboard.js).
+  if (window.auth) {
+    auth.onAuthStateChanged((user) => {
+      if (user) syncDemoBalanceWithDeposits(user.uid);
+    });
+  }
 })();
 </script>
 </body>
