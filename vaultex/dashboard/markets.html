@@ -76,7 +76,30 @@
   .chart-container { width: 100%; height: 380px; border-radius: 10px; overflow: hidden; }
   .chart-loading { color: var(--muted); font-size: .85rem; text-align: center; padding: 40px 0; }
 
+  .tf-tabs { display: flex; gap: 6px; }
+  .tf-tabs button {
+    padding: 6px 12px; font-size: .76rem; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .tf-tabs button.active { background: var(--ink-soft); color: var(--paper); border-color: var(--accent, #6C7CFF); }
+
+  .stat-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  }
+  .stat-strip .stat-item { text-align: left; }
+  .stat-strip .stat-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 3px; }
+  .stat-strip .stat-value { font-family: 'JetBrains Mono', monospace; font-size: .86rem; font-weight: 600; }
+
   .order-ticket { border-top: 1px solid var(--line); padding-top: 16px; }
+  .side-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .side-tabs button {
+    flex: 1; padding: 10px; font-size: .88rem; font-weight: 600; border-radius: 8px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .side-tabs button[data-side="buy"].active { background: rgba(22,199,132,.14); color: #16c784; border-color: #16c784; }
+  .side-tabs button[data-side="sell"].active { background: rgba(234,57,67,.14); color: #ea3943; border-color: #ea3943; }
+
   .order-ticket .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
   .order-ticket .field { flex: 1; min-width: 160px; }
   .order-ticket label { display: block; font-size: .76rem; color: var(--muted); margin-bottom: 6px; }
@@ -84,8 +107,10 @@
     width: 100%; padding: 11px 14px; border-radius: 8px; border: 1px solid var(--line);
     background: var(--ink-soft); color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: .95rem;
   }
-  .order-ticket .est-qty { font-size: .78rem; color: var(--muted); margin-top: 6px; }
-  .order-ticket .btn-buy { min-width: 160px; }
+  .order-ticket .avail-line { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+  .order-ticket .submit-btn { min-width: 160px; }
+  .order-ticket .submit-btn.buy { background: #16c784; border-color: #16c784; }
+  .order-ticket .submit-btn.sell { background: #ea3943; border-color: #ea3943; }
   .order-ticket .ticket-msg { font-size: .8rem; margin-top: 8px; min-height: 1.1em; }
   .order-ticket .ticket-msg.err { color: var(--coral, #ea3943); }
   .order-ticket .ticket-msg.ok { color: var(--mint, #16c784); }
@@ -95,6 +120,9 @@
 
   .pnl-up { color: #16c784; }
   .pnl-down { color: #ea3943; }
+  .side-badge { font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 5px; text-transform: uppercase; }
+  .side-badge.buy { background: rgba(22,199,132,.14); color: #16c784; }
+  .side-badge.sell { background: rgba(234,57,67,.14); color: #ea3943; }
 
   /* ---- VaultexBot promo ---- */
   .bot-promo {
@@ -131,6 +159,7 @@
     .chart-container { height: 300px; }
     .selected-asset .sa-price { font-size: 1.1rem; }
     .bot-promo, .vip-card { padding: 18px; }
+    .stat-strip { grid-template-columns: repeat(2, 1fr); row-gap: 12px; }
   }
 </style>
 </head>
@@ -200,34 +229,60 @@
             <div class="sa-pct" data-sa-pct></div>
           </div>
 
+          <div class="stat-strip" data-stat-strip>
+            <div class="stat-item"><div class="stat-label">24h High</div><div class="stat-value" data-stat-high>—</div></div>
+            <div class="stat-item"><div class="stat-label">24h Low</div><div class="stat-value" data-stat-low>—</div></div>
+            <div class="stat-item"><div class="stat-label">24h Volume</div><div class="stat-value" data-stat-volume>—</div></div>
+            <div class="stat-item"><div class="stat-label">Market Cap</div><div class="stat-value" data-stat-mcap>—</div></div>
+          </div>
+
+          <div class="flex" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div class="tf-tabs" data-tf-tabs>
+              <button data-tf="1" class="active">1D</button>
+              <button data-tf="7">7D</button>
+              <button data-tf="30">1M</button>
+              <button data-tf="90">3M</button>
+              <button data-tf="365">1Y</button>
+            </div>
+          </div>
+
           <div class="chart-container" data-chart-container>
             <div class="chart-loading">Loading live chart…</div>
           </div>
 
           <div class="order-ticket">
+            <div class="side-tabs" data-side-tabs>
+              <button data-side="buy" class="active">Buy</button>
+              <button data-side="sell">Sell</button>
+            </div>
+
             <div class="field-row">
               <div class="field">
-                <label for="trade-amount">Amount to buy (USD)</label>
-                <input type="number" id="trade-amount" data-trade-amount placeholder="e.g. 100" min="1" step="0.01">
-                <div class="est-qty" data-est-qty>≈ 0 units at current price</div>
+                <label for="trade-qty" data-qty-label>Lot size (units)</label>
+                <input type="number" id="trade-qty" data-trade-qty placeholder="0.00" min="0" step="any">
               </div>
-              <button class="btn btn-primary btn-buy" data-buy-btn>Buy at market</button>
+              <div class="field">
+                <label for="trade-amount" data-usd-label>Amount (USD)</label>
+                <input type="number" id="trade-amount" data-trade-amount placeholder="0.00" min="0" step="0.01">
+              </div>
+              <button class="btn submit-btn buy" data-submit-btn>Buy at market</button>
             </div>
+            <div class="avail-line" data-avail-line>Available balance: $0.00</div>
             <div class="ticket-msg" data-ticket-msg></div>
           </div>
         </div>
       </div>
 
-      <!-- Open positions -->
+      <!-- Holdings -->
       <div class="widget" style="margin-bottom:24px;">
         <div class="widget-head">
-          <h3>Open positions</h3>
+          <h3>Your holdings</h3>
         </div>
         <div class="table-scroll">
           <table class="data-table">
-            <thead><tr><th>Asset</th><th>Opened</th><th>Amount</th><th>Entry</th><th>Current</th><th>Unrealized P/L</th><th></th></tr></thead>
-            <tbody data-positions-table>
-              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No open positions — place a trade to get started.</td></tr>
+            <thead><tr><th>Asset</th><th>Lot size</th><th>Avg entry</th><th>Current price</th><th>Market value</th><th>Unrealized P/L</th><th></th></tr></thead>
+            <tbody data-holdings-table>
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">You don't hold any assets yet — place a buy order to get started.</td></tr>
             </tbody>
           </table>
         </div>
@@ -240,9 +295,9 @@
         </div>
         <div class="table-scroll">
           <table class="data-table">
-            <thead><tr><th>Date &amp; time</th><th>Asset</th><th>Type</th><th>Amount</th><th>P/L</th><th>Status</th></tr></thead>
+            <thead><tr><th>Date &amp; time</th><th>Asset</th><th>Side</th><th>Lot size</th><th>Price</th><th>Amount</th><th>P/L</th></tr></thead>
             <tbody data-history-table>
-              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No closed trades yet.</td></tr>
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No trades yet.</td></tr>
             </tbody>
           </table>
         </div>
