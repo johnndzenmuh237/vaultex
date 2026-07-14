@@ -12,57 +12,93 @@
 
 <style>
 /* ===== VaultexBotTrade — page-local styles (build on existing widget/btn/pill tokens) ===== */
+.demo-chip{display:inline-block;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px;vertical-align:middle;}
+
+/* ---- Hero / bot avatar with radar sweep ---- */
 .bot-hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:26px;margin-bottom:22px}
-.bot-avatar{position:relative;width:74px;height:74px;flex-shrink:0}
-.bot-avatar svg{width:100%;height:100%;position:relative;z-index:2}
-.bot-avatar .ring{position:absolute;inset:-8px;border-radius:50%;border:1.5px solid var(--mint);opacity:.5;animation:bot-pulse 2.2s ease-out infinite}
+.bot-avatar{position:relative;width:78px;height:78px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 50%, rgba(0,217,163,.14), transparent 70%)}
+.bot-avatar svg.bot-svg{width:100%;height:100%;position:relative;z-index:3}
+.bot-avatar .ring{position:absolute;inset:-8px;border-radius:50%;border:1.5px solid var(--mint);opacity:.5;animation:bot-pulse 2.2s ease-out infinite;z-index:1}
 .bot-avatar .ring.r2{animation-delay:.7s}
 .bot-avatar .ring.r3{animation-delay:1.4s}
-@keyframes bot-pulse{0%{transform:scale(.8);opacity:.55}100%{transform:scale(1.7);opacity:0}}
+@keyframes bot-pulse{0%{transform:scale(.75);opacity:.55}100%{transform:scale(1.75);opacity:0}}
+.bot-avatar .radar{position:absolute;inset:0;border-radius:50%;overflow:hidden;z-index:2;opacity:.9}
+.bot-avatar .radar::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg, rgba(0,217,163,.55), transparent 30%, transparent 100%);animation:radar-spin 2.4s linear infinite;}
+@keyframes radar-spin{to{transform:rotate(360deg)}}
 .bot-hero.idle .bot-avatar .ring{display:none}
-.bot-hero.idle .bot-avatar svg .eye{opacity:.35}
+.bot-hero.idle .bot-avatar .radar{display:none}
+.bot-hero.idle .bot-avatar svg .eye{opacity:.3}
+.bot-hero.idle .bot-avatar{background:none}
 
 .bot-hero-info{flex:1;min-width:220px}
-.bot-hero-info h1{font-family:var(--font-display);font-size:1.4rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.bot-status-line{font-family:var(--font-mono);font-size:.78rem;color:var(--mint);margin-top:6px;min-height:18px;display:flex;align-items:center;gap:8px}
-.bot-status-line .dot{width:6px;height:6px;border-radius:50%;background:var(--mint);animation:bot-blink 1.4s ease-in-out infinite}
+.bot-hero-info h1{font-family:var(--font-display);font-size:1.4rem;display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.bot-status-line{font-family:var(--font-mono);font-size:.78rem;color:var(--mint);margin-top:6px;min-height:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bot-status-line .dot{width:6px;height:6px;border-radius:50%;background:var(--mint);animation:bot-blink 1.4s ease-in-out infinite;flex-shrink:0}
 @keyframes bot-blink{0%,100%{opacity:1}50%{opacity:.25}}
 .bot-hero.idle .bot-status-line{color:var(--muted)}
 .bot-hero.idle .bot-status-line .dot{background:var(--muted);animation:none}
 
-.bot-hero-stats{display:flex;gap:26px;flex-wrap:wrap}
-.bot-hero-stat strong{display:block;font-family:var(--font-mono);font-size:1.15rem}
+/* signal-strength equalizer bars, next to status text */
+.eq-bars{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.eq-bars span{width:2.5px;background:var(--mint);border-radius:1px;animation:eq-bounce 1s ease-in-out infinite}
+.eq-bars span:nth-child(1){height:40%;animation-delay:0s}
+.eq-bars span:nth-child(2){height:100%;animation-delay:.15s}
+.eq-bars span:nth-child(3){height:65%;animation-delay:.3s}
+.eq-bars span:nth-child(4){height:85%;animation-delay:.45s}
+@keyframes eq-bounce{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.bot-hero.idle .eq-bars span{animation:none;transform:scaleY(.2);background:var(--muted)}
+
+.bot-hero-stats{display:flex;gap:24px;flex-wrap:wrap}
+.bot-hero-stat strong{display:block;font-family:var(--font-mono);font-size:1.15rem;transition:color .3s}
 .bot-hero-stat span{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .bot-hero-stat.earn strong{color:var(--mint)}
 
-.demo-chip{display:inline-block;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
+/* ---- Performance chart ---- */
+.perf-wrap{position:relative;height:150px;margin-top:6px}
+.perf-wrap canvas{width:100%;height:100%;display:block}
+.perf-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:.72rem;color:var(--muted);text-align:center;padding:0 20px}
 
+/* ---- Balance strip ---- */
 .bal-strip{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px;margin-bottom:22px}
 .bal-strip .lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .bal-strip .val{font-family:var(--font-mono);font-size:1.15rem;font-weight:700}
 .bal-strip .val.zero{color:var(--muted)}
 .bal-strip-actions{display:flex;gap:8px;flex-wrap:wrap}
 
+/* ---- Package grid ---- */
 .pkg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
 @media (max-width:1100px){ .pkg-grid{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:620px){ .pkg-grid{grid-template-columns:1fr} }
 
-.pkg-card{display:flex;flex-direction:column;gap:12px;position:relative;border:1px solid var(--line);transition:border-color .15s,transform .15s}
-.pkg-card.active-pkg{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint) inset}
-.pkg-card.locked{opacity:.62}
-.pkg-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--ink-raise, var(--ink));border:1px solid var(--line)}
+.pkg-card{display:flex;flex-direction:column;gap:10px;position:relative;border:1px solid var(--line);transition:border-color .2s,box-shadow .2s}
+.pkg-card.active-pkg{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint) inset, 0 0 20px -6px rgba(0,217,163,.5)}
+.pkg-card.locked{opacity:.6}
+.pkg-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pkg-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--ink-raise, var(--ink));border:1px solid var(--line);flex-shrink:0}
 .pkg-icon svg{width:20px;height:20px}
 .pkg-name{font-family:var(--font-display);font-size:1.02rem;font-weight:700}
 .pkg-min{font-size:.68rem;color:var(--muted);font-family:var(--font-mono)}
 .pkg-rate{font-family:var(--font-mono);font-size:1.5rem;font-weight:700;color:var(--mint)}
 .pkg-rate small{font-size:.62rem;color:var(--muted);font-weight:400}
+
+.pkg-spark{height:34px;border-radius:6px;overflow:hidden;background:var(--ink-raise, var(--ink))}
+.pkg-spark canvas{width:100%;height:100%;display:block}
+
+.pkg-status-row{display:flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:.66rem;color:var(--muted);min-height:16px}
+.pkg-status-row .sdot{width:5px;height:5px;border-radius:50%;background:var(--line);flex-shrink:0}
+.pkg-card.active-pkg .pkg-status-row{color:var(--mint)}
+.pkg-card.active-pkg .pkg-status-row .sdot{background:var(--mint);animation:bot-blink 1.2s ease-in-out infinite}
+.pkg-card.locked .pkg-status-row,.pkg-card:not(.active-pkg):not(.locked) .pkg-status-row{color:var(--muted)}
+.pkg-card:not(.active-pkg) .pkg-status-row .sdot{animation:standby-pulse 3s ease-in-out infinite}
+@keyframes standby-pulse{0%,100%{opacity:.3}50%{opacity:.8}}
+
 .pkg-feats{list-style:none;display:flex;flex-direction:column;gap:6px;font-size:.72rem;color:var(--muted)}
 .pkg-feats li{display:flex;gap:6px;align-items:flex-start}
 .pkg-feats li::before{content:"✓";color:var(--mint);flex-shrink:0}
 .pkg-card .btn{margin-top:auto}
-.pkg-badge{position:absolute;top:14px;right:14px;font-family:var(--font-mono);font-size:.6rem;padding:2px 8px;border-radius:10px}
-.pkg-badge.active{background:var(--mint-dim, rgba(0,217,163,.12));color:var(--mint);border:1px solid var(--mint)}
+.pkg-badge{position:absolute;top:14px;right:14px;font-family:var(--font-mono);font-size:.6rem;padding:2px 8px;border-radius:10px;background:var(--mint-dim, rgba(0,217,163,.12));color:var(--mint);border:1px solid var(--mint)}
 
+/* ---- Activity feed ---- */
 .feed-panel{display:flex;flex-direction:column;gap:0;max-height:340px;overflow-y:auto}
 .feed-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);font-family:var(--font-mono);font-size:.74rem;animation:feed-in .25s ease-out}
 .feed-row:last-child{border-bottom:none}
@@ -114,7 +150,8 @@
     <div class="widget bot-hero idle" id="botHero">
       <div class="bot-avatar">
         <span class="ring"></span><span class="ring r2"></span><span class="ring r3"></span>
-        <svg viewBox="0 0 64 64" fill="none">
+        <span class="radar"></span>
+        <svg class="bot-svg" viewBox="0 0 64 64" fill="none">
           <rect x="14" y="22" width="36" height="28" rx="8" fill="#1B2236" stroke="var(--mint)" stroke-width="2"/>
           <rect x="26" y="10" width="12" height="14" rx="4" fill="#1B2236" stroke="var(--mint)" stroke-width="2"/>
           <circle cx="32" cy="12" r="2.5" fill="var(--mint)"/>
@@ -127,7 +164,10 @@
       </div>
       <div class="bot-hero-info">
         <h1>VaultexBotTrade <span class="demo-chip">Demo</span></h1>
-        <div class="bot-status-line" id="botStatusLine"><span class="dot"></span><span id="botStatusText">Bot idle — activate a package below to begin.</span></div>
+        <div class="bot-status-line">
+          <span class="dot"></span><span id="botStatusText">Bot idle — activate a package below to begin.</span>
+          <span class="eq-bars"><span></span><span></span><span></span><span></span></span>
+        </div>
       </div>
       <div class="bot-hero-stats">
         <div class="bot-hero-stat earn"><strong id="statEarnings">$0.00</strong><span>Session earnings</span></div>
@@ -136,21 +176,29 @@
       </div>
     </div>
 
+    <!-- PERFORMANCE CHART -->
+    <div class="widget" style="margin-bottom:22px;">
+      <div class="widget-head"><h3>Bot performance</h3><span class="pill pill-neutral" id="perfPill">Idle</span></div>
+      <div class="perf-wrap">
+        <canvas id="perfChart"></canvas>
+        <div class="perf-empty" id="perfEmpty">Activate a package — this chart tracks your simulated bot balance live as trades close.</div>
+      </div>
+    </div>
+
     <!-- BALANCE STRIP -->
     <div class="widget bal-strip">
       <div>
-        <div class="lbl">Available balance (works with the bot)</div>
+        <div class="lbl">Demo balance (works with the bot)</div>
         <div class="val" id="availBalVal">$0.00</div>
       </div>
       <div class="bal-strip-actions">
         <button class="btn btn-ghost btn-sm" id="quickAddFundsBtn">Add demo funds</button>
         <button class="btn btn-ghost btn-sm" id="stopBotBtn" style="display:none;">Deactivate bot</button>
-        <a href="trade.html" class="btn btn-ghost btn-sm">Open Trade terminal</a>
       </div>
     </div>
     <div class="widget" id="zeroBalWarn" style="display:none;border-color:var(--coral);margin-bottom:22px;">
-      <strong style="color:var(--coral);">No balance yet.</strong>
-      <span style="color:var(--muted);font-size:.85rem;"> VaultexBotTrade only runs against real available balance — add demo funds above or deposit from the Trade terminal to activate a package.</span>
+      <strong style="color:var(--coral);">No demo balance yet.</strong>
+      <span style="color:var(--muted);font-size:.85rem;"> VaultexBotTrade only runs against available demo balance — add funds above to activate a package.</span>
     </div>
 
     <!-- PACKAGES -->
@@ -163,7 +211,7 @@
       <div class="feed-panel" id="feedPanel">
         <div class="feed-empty">▣&nbsp;&nbsp;Activate a package to see scanning, signals, and trades appear here live.</div>
       </div>
-      <p class="bot-note">VaultexBotTrade is a local, browser-only simulation for demo purposes. It reads your demo USDT balance, simulates market scanning and trade execution, and credits simulated earnings back to that same balance — no real exchange, broker, or payment provider is connected, and no real money is at risk or under management.</p>
+      <p class="bot-note">VaultexBotTrade is a local demo simulation tied to a separate demo balance — it is not connected to any real exchange, broker, or payment provider, and no real money is at risk or under management. Card sparklines show ambient simulated market activity; the performance chart above and the numbers on this page reflect your actual simulated bot balance.</p>
     </div>
 
   </main>
@@ -183,24 +231,15 @@
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
-  const fmtMoney = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmtSigned = n => (n >= 0 ? '+' : '−') + fmtMoney(Math.abs(n)).slice(1);
+  const fmtMoney = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtSigned = n => (n >= 0 ? '+' : '−') + fmtMoney(n);
+  const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
-  /* ============== SHARED VAULTEX DEMO STATE (same schema as dashboard.js) ============== */
-  const LS_BAL       = 'vaultex_balance_usdt';
-  const LS_BOT_STATE = 'vaultex_bot_state';
-  const LS_BOT_LOG    = 'vaultex_bot_log';
-  const LS_BOT_TX     = 'vaultex_bot_tx';
-
-  function getBalance() { return parseFloat(localStorage.getItem(LS_BAL) || '0'); }
-  function setBalance(v) { localStorage.setItem(LS_BAL, Math.max(0, v).toString()); }
-  function getBotState() { try { return JSON.parse(localStorage.getItem(LS_BOT_STATE) || 'null'); } catch(e){ return null; } }
-  function setBotState(s) { localStorage.setItem(LS_BOT_STATE, JSON.stringify(s)); }
-  function clearBotState() { localStorage.removeItem(LS_BOT_STATE); }
-  function getBotLog() { try { return JSON.parse(localStorage.getItem(LS_BOT_LOG) || '[]'); } catch(e){ return []; } }
-  function setBotLog(arr) { localStorage.setItem(LS_BOT_LOG, JSON.stringify(arr.slice(0, 40))); }
-  function getBotTx() { try { return JSON.parse(localStorage.getItem(LS_BOT_TX) || '[]'); } catch(e){ return []; } }
-  function setBotTx(arr) { localStorage.setItem(LS_BOT_TX, JSON.stringify(arr.slice(0, 80))); }
+  function getDb() {
+    if (window.db) return window.db;
+    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) return firebase.firestore();
+    return null;
+  }
 
   /* ============== PACKAGES ============== */
   const ICONS = {
@@ -230,85 +269,67 @@
     p => `Evaluating liquidity depth on ${p}…`,
     () => `Waiting for optimal entry conditions…`,
   ];
+  const PKG_STATUS_CYCLE = ['Scanning market…', 'Analyzing signal…', 'Confirming entry…', 'Executing trade…', 'Monitoring position…'];
 
-  /* ============== RECONCILE ELAPSED EARNINGS ON LOAD ============== */
-  function reconcile() {
-    const st = getBotState();
-    if (!st || !st.active) return;
+  /* ============== STATE ============== */
+  let uid = null;
+  let state = null;          // live Firestore doc cache
+  let unsubState = null;
+  let tickTimer = null;
+  let scanTimer = null;
+  let pkgStatusTimer = null;
+  let perfHistory = [];      // [{ts, balance}] derived from recentEarnings for the chart
+  const sparklines = {};     // pkgId -> {stop()}
+
+  /* ============== FIRESTORE HELPERS ============== */
+  function stateRef() { const db = getDb(); return db && uid ? db.collection('users').doc(uid).collection('botDemo').doc('state') : null; }
+
+  function applyLocalAndWrite(next) {
+    state = next;
+    stateRef()?.set(next, { merge: true }).catch(err => console.error('VaultexBotTrade write failed', err));
+    renderAll();
+  }
+
+  function reconcileAndListen() {
+    const ref = stateRef();
+    if (!ref) return;
+    unsubState && unsubState();
+    unsubState = ref.onSnapshot(doc => {
+      state = doc.exists ? doc.data() : { active:false, demoBalance:0, totalEarnings:0, recentActivity:[], recentEarnings:[] };
+      reconcileElapsed();
+      renderAll();
+    }, err => console.error('VaultexBotTrade listen failed', err));
+  }
+
+  function reconcileElapsed() {
+    if (!state || !state.active) return;
     const now = Date.now();
-    const elapsed = Math.max(0, now - (st.lastTickAt || now));
+    const elapsed = Math.max(0, now - (state.lastTickAt || now));
     if (elapsed < 4000) return;
     const cappedMs = Math.min(elapsed, 1000 * 60 * 60 * 24 * 3);
-    const bal = getBalance();
+    const bal = state.demoBalance || 0;
     if (bal > 0) {
-      const earn = bal * (st.dailyRate / 100) * (cappedMs / 86400000) * 0.9;
+      const earn = bal * (state.dailyRate / 100) * (cappedMs / 86400000) * 0.9;
       if (earn > 0) {
-        setBalance(bal + earn);
-        st.totalEarnings = (st.totalEarnings || 0) + earn;
-        const tx = getBotTx();
-        tx.unshift({ ts: now, label: 'VaultexBotTrade earning', amount: earn, packageName: st.packageName });
-        setBotTx(tx);
-        const log = getBotLog();
-        log.unshift({ ts: now, pair: 'Portfolio', side: 'While away', pnl: earn, kind: 'trade' });
-        setBotLog(log);
+        state.demoBalance = bal + earn;
+        state.totalEarnings = (state.totalEarnings || 0) + earn;
+        state.recentEarnings = [{ ts: now, label: 'VaultexBotTrade earning', amount: earn }, ...(state.recentEarnings || [])].slice(0, 15);
+        state.recentActivity = [{ ts: now, pair: 'Portfolio', side: 'While away', pnl: earn }, ...(state.recentActivity || [])].slice(0, 10);
       }
     }
-    st.lastTickAt = now;
-    setBotState(st);
-  }
-  reconcile();
-
-  /* ============== RENDER: BALANCE STRIP ============== */
-  function renderBalance() {
-    const bal = getBalance();
-    const el = $('availBalVal');
-    el.textContent = fmtMoney(bal);
-    el.classList.toggle('zero', bal <= 0);
-    $('zeroBalWarn').style.display = bal <= 0 ? '' : 'none';
-    return bal;
+    state.lastTickAt = now;
+    stateRef()?.set(state, { merge: true }).catch(()=>{});
   }
 
-  /* ============== RENDER: PACKAGES ============== */
-  function renderPackages() {
-    const bal = getBalance();
-    const st = getBotState();
-    const grid = $('pkgGrid');
-    grid.innerHTML = PACKAGES.map(pkg => {
-      const isActive = st && st.active && st.packageId === pkg.id;
-      const affordable = bal >= pkg.min;
-      return `
-        <div class="widget pkg-card ${isActive ? 'active-pkg' : ''} ${!affordable && !isActive ? 'locked' : ''}" data-pkg="${pkg.id}">
-          ${isActive ? '<span class="pkg-badge active">ACTIVE</span>' : ''}
-          <div class="pkg-icon">${pkg.icon}</div>
-          <div>
-            <div class="pkg-name">${pkg.name}</div>
-            <div class="pkg-min">Min. balance ${fmtMoney(pkg.min)}</div>
-          </div>
-          <div class="pkg-rate">${pkg.rateMin.toFixed(1)}–${pkg.rateMax.toFixed(1)}%<small> / day target</small></div>
-          <ul class="pkg-feats">${pkg.feats.map(f => `<li>${f}</li>`).join('')}</ul>
-          <button class="btn ${isActive ? 'btn-ghost' : 'btn-primary'} btn-block pkg-btn" data-pkg-btn="${pkg.id}" ${!affordable && !isActive ? 'disabled' : ''}>
-            ${isActive ? 'Active' : (affordable ? 'Activate' : `Requires ${fmtMoney(pkg.min)}`)}
-          </button>
-        </div>`;
-    }).join('');
-
-    grid.querySelectorAll('[data-pkg-btn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const pkgId = btn.dataset.pkgBtn;
-        const current = getBotState();
-        if (current && current.active && current.packageId === pkgId) return; // already active
-        activatePackage(pkgId);
-      });
-    });
-  }
-
+  /* ============== ACTIONS ============== */
   function activatePackage(pkgId) {
     const pkg = PACKAGES.find(p => p.id === pkgId);
-    const bal = getBalance();
-    if (!pkg || bal < pkg.min) { renderPackages(); return; }
+    const bal = (state && state.demoBalance) || 0;
+    if (!pkg || bal < pkg.min) return;
     const rate = pkg.rateMin + Math.random() * (pkg.rateMax - pkg.rateMin);
     const now = Date.now();
-    setBotState({
+    applyLocalAndWrite({
+      ...(state || {}),
       active: true,
       packageId: pkg.id,
       packageName: pkg.name,
@@ -316,40 +337,210 @@
       principal: bal,
       startedAt: now,
       lastTickAt: now,
-      totalEarnings: 0
+      totalEarnings: 0,
+      demoBalance: bal,
+      recentActivity: [{ ts: now, pair: 'System', side: `${pkg.name} activated`, pnl: 0 }, ...((state && state.recentActivity) || [])].slice(0, 10),
+      recentEarnings: (state && state.recentEarnings) || [],
     });
-    setBotLog([{ ts: now, pair: 'System', side: `${pkg.name} activated`, pnl: 0, kind: 'system' }, ...getBotLog()]);
-    renderAll();
   }
 
   function deactivateBot() {
-    const st = getBotState();
-    if (st) { st.active = false; setBotState(st); }
-    renderAll();
+    if (!state) return;
+    applyLocalAndWrite({ ...state, active: false });
   }
   $('stopBotBtn').addEventListener('click', deactivateBot);
 
   $('quickAddFundsBtn').addEventListener('click', () => {
-    const amt = prompt('Add demo USDT balance (this is a local simulation, no real payment is made):', '1000');
+    const amt = prompt('Add demo USDT balance (local simulation only, no real payment is made):', '1000');
     const v = parseFloat(amt);
-    if (v > 0) { setBalance(getBalance() + v); renderAll(); }
+    if (v > 0) {
+      applyLocalAndWrite({ ...(state || {}), demoBalance: ((state && state.demoBalance) || 0) + v });
+    }
   });
 
-  /* ============== HERO + STATUS LINE ============== */
-  let scanTimer = null;
+  function runTick() {
+    if (!state || !state.active) return;
+    const bal = state.demoBalance || 0;
+    if (bal <= 0) { deactivateBot(); return; }
+
+    const pair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
+    const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
+    const perTickTarget = bal * (state.dailyRate / 100) * (7 / 86400);
+    const isWin = Math.random() < 0.87;
+    const pnl = isWin
+      ? perTickTarget * (0.6 + Math.random() * 1.1)
+      : -perTickTarget * (0.15 + Math.random() * 0.35);
+
+    const now = Date.now();
+    const newBal = Math.max(0, bal + pnl);
+    const next = {
+      ...state,
+      demoBalance: newBal,
+      totalEarnings: (state.totalEarnings || 0) + pnl,
+      lastTickAt: now,
+      recentActivity: [{ ts: now, pair, side, pnl }, ...(state.recentActivity || [])].slice(0, 10),
+      recentEarnings: [{ ts: now, label: `VaultexBotTrade · ${pair} ${side}`, amount: pnl }, ...(state.recentEarnings || [])].slice(0, 15),
+    };
+    applyLocalAndWrite(next);
+
+    const earnEl = $('statEarnings');
+    earnEl.classList.remove('countup-flash'); void earnEl.offsetWidth; earnEl.classList.add('countup-flash');
+  }
+
+  function scheduleTick() {
+    clearTimeout(tickTimer);
+    if (!state || !state.active) return;
+    const delay = 4500 + Math.random() * 3500;
+    tickTimer = setTimeout(() => { runTick(); scheduleTick(); }, delay);
+  }
+
+  function cycleScanStatus() {
+    clearInterval(scanTimer);
+    scanTimer = setInterval(() => {
+      if (!state || !state.active) return;
+      const pair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
+      const phrase = SCAN_PHRASES[Math.floor(Math.random() * SCAN_PHRASES.length)](pair);
+      $('botStatusText').textContent = phrase;
+    }, 1800);
+  }
+  cycleScanStatus();
+
+  let pkgStatusIdx = 0;
+  function cyclePkgStatus() {
+    clearInterval(pkgStatusTimer);
+    pkgStatusTimer = setInterval(() => {
+      if (!state || !state.active) return;
+      pkgStatusIdx = (pkgStatusIdx + 1) % PKG_STATUS_CYCLE.length;
+      const el = document.querySelector(`.pkg-card.active-pkg .pkg-status-text`);
+      if (el) el.textContent = PKG_STATUS_CYCLE[pkgStatusIdx];
+    }, 1600);
+  }
+  cyclePkgStatus();
+
+  /* ============== SPARKLINES (ambient, decorative) ============== */
+  function startSparkline(canvas) {
+    if (!canvas) return { stop(){} };
+    const ctx = canvas.getContext('2d');
+    let points = Array.from({ length: 26 }, () => 50 + (Math.random() - 0.5) * 12);
+    function draw() {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (w < 2 || h < 2) return;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const col = cssVar('--mint') || '#00D9A3';
+      const trendUp = points[points.length - 1] >= points[0];
+      ctx.beginPath();
+      points.forEach((p, i) => {
+        const x = (i / (points.length - 1)) * w;
+        const y = h - (p / 100) * h;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = trendUp ? col : (cssVar('--coral') || '#FF5C72');
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+    draw();
+    const id = setInterval(() => {
+      points.shift();
+      let next = points[points.length - 1] + (Math.random() - 0.5) * 16;
+      next = Math.max(6, Math.min(94, next));
+      points.push(next);
+      draw();
+    }, 380 + Math.random() * 260);
+    return { stop() { clearInterval(id); } };
+  }
+
+  /* ============== PERFORMANCE CHART (real data) ============== */
+  function buildPerfHistory() {
+    if (!state || !state.active) { perfHistory = []; return; }
+    const entries = [...(state.recentEarnings || [])].reverse(); // oldest first
+    let running = state.principal || 0;
+    const pts = [{ ts: state.startedAt || Date.now(), balance: running }];
+    entries.forEach(e => { running += e.amount; pts.push({ ts: e.ts, balance: running }); });
+    if (pts[pts.length - 1].balance !== state.demoBalance) pts.push({ ts: Date.now(), balance: state.demoBalance });
+    perfHistory = pts;
+  }
+
+  function drawPerfChart() {
+    const canvas = $('perfChart');
+    const empty = $('perfEmpty');
+    if (!canvas) return;
+    if (!state || !state.active || perfHistory.length < 2) {
+      empty.style.display = 'flex';
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
+    empty.style.display = 'none';
+
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w < 4 || h < 4) return;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    // tiny ambient "breathing" noise on the last point only, purely visual —
+    // does not touch state or any displayed number, keeps the line from
+    // looking frozen between real ticks.
+    const pts = perfHistory.map(p => p.balance);
+    const breathe = Math.sin(Date.now() / 900) * (pts[pts.length - 1] * 0.0015);
+    pts[pts.length - 1] += breathe;
+
+    const pad = { top: 10, right: 8, bottom: 6, left: 8 };
+    const cW = w - pad.left - pad.right, cH = h - pad.top - pad.bottom;
+    const min = Math.min(...pts), max = Math.max(...pts);
+    const rng = (max - min) || 1, padv = rng * .15;
+    const minS = min - padv, maxS = max + padv, rngS = (maxS - minS) || 1;
+    const xOf = i => pad.left + (i / (pts.length - 1)) * cW;
+    const yOf = v => pad.top + cH - ((v - minS) / rngS) * cH;
+
+    const trendUp = pts[pts.length - 1] >= pts[0];
+    const col = trendUp ? (cssVar('--mint') || '#00D9A3') : (cssVar('--coral') || '#FF5C72');
+
+    const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+    grad.addColorStop(0, trendUp ? 'rgba(0,217,163,.22)' : 'rgba(255,92,114,.20)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    pts.forEach((v, i) => { const x = xOf(i), y = yOf(v); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.lineTo(xOf(pts.length - 1), pad.top + cH); ctx.lineTo(xOf(0), pad.top + cH); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+
+    ctx.beginPath(); ctx.strokeStyle = col; ctx.lineWidth = 1.8;
+    pts.forEach((v, i) => { const x = xOf(i), y = yOf(v); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.stroke();
+
+    // pulsing dot at the live end
+    const lx = xOf(pts.length - 1), ly = yOf(pts[pts.length - 1]);
+    const pulse = 2.5 + Math.abs(Math.sin(Date.now() / 500)) * 2;
+    ctx.beginPath(); ctx.arc(lx, ly, pulse, 0, Math.PI * 2); ctx.fillStyle = col; ctx.globalAlpha = .5; ctx.fill(); ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.arc(lx, ly, 2.5, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+  }
+
+  let perfAnimHandle = null;
+  function loopPerfChart() {
+    drawPerfChart();
+    perfAnimHandle = requestAnimationFrame(loopPerfChart);
+  }
+
+  /* ============== RENDER ============== */
   function renderHero() {
-    const st = getBotState();
     const hero = $('botHero');
-    const active = !!(st && st.active);
+    const active = !!(state && state.active);
     hero.classList.toggle('idle', !active);
     $('stopBotBtn').style.display = active ? '' : 'none';
     $('feedStatusPill').textContent = active ? 'Live' : 'Idle';
     $('feedStatusPill').className = 'pill ' + (active ? 'pill-up' : 'pill-neutral');
+    $('perfPill').textContent = active ? 'Live' : 'Idle';
+    $('perfPill').className = 'pill ' + (active ? 'pill-up' : 'pill-neutral');
 
     if (active) {
-      $('statEarnings').textContent = fmtSigned(st.totalEarnings || 0);
-      $('statRate').textContent = st.dailyRate.toFixed(2) + '%';
-      const runningMs = Date.now() - st.startedAt;
+      $('statEarnings').textContent = fmtSigned(state.totalEarnings || 0);
+      $('statRate').textContent = state.dailyRate.toFixed(2) + '%';
+      const runningMs = Date.now() - state.startedAt;
       const h = Math.floor(runningMs / 3600000), m = Math.floor((runningMs % 3600000) / 60000), s = Math.floor((runningMs % 60000) / 1000);
       $('statRuntime').textContent = `${h}h ${m}m ${s}s`;
     } else {
@@ -360,28 +551,89 @@
     }
   }
 
-  function cycleScanStatus() {
-    clearInterval(scanTimer);
-    scanTimer = setInterval(() => {
-      const st = getBotState();
-      if (!st || !st.active) return;
-      const pair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
-      const phrase = SCAN_PHRASES[Math.floor(Math.random() * SCAN_PHRASES.length)](pair);
-      $('botStatusText').textContent = phrase;
-    }, 1800);
+  function renderBalance() {
+    const bal = (state && state.demoBalance) || 0;
+    const el = $('availBalVal');
+    el.textContent = fmtMoney(bal) === '$0.00' ? '$0.00' : (bal >= 0 ? fmtMoney(bal) : '−' + fmtMoney(bal));
+    el.textContent = '$' + bal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    el.classList.toggle('zero', bal <= 0);
+    $('zeroBalWarn').style.display = bal <= 0 ? '' : 'none';
   }
-  cycleScanStatus();
 
-  /* ============== ACTIVITY FEED ============== */
+  function renderPackages() {
+    const bal = (state && state.demoBalance) || 0;
+    const grid = $('pkgGrid');
+    const activeId = state && state.active ? state.packageId : null;
+
+    // Only rebuild DOM (and restart sparklines) if the active package changed
+    // or this is the first render — otherwise just patch button state so the
+    // sparkline animations don't restart every tick.
+    const needsRebuild = grid.dataset.activeId !== String(activeId) || !grid.childElementCount;
+    grid.dataset.activeId = String(activeId);
+
+    if (needsRebuild) {
+      Object.values(sparklines).forEach(s => s.stop && s.stop());
+      grid.innerHTML = PACKAGES.map(pkg => {
+        const isActive = activeId === pkg.id;
+        return `
+          <div class="widget pkg-card ${isActive ? 'active-pkg' : ''}" data-pkg="${pkg.id}">
+            ${isActive ? '<span class="pkg-badge">ACTIVE</span>' : ''}
+            <div class="pkg-top">
+              <div class="pkg-icon">${pkg.icon}</div>
+              <div>
+                <div class="pkg-name">${pkg.name}</div>
+                <div class="pkg-min">Min. balance $${pkg.min.toLocaleString()}</div>
+              </div>
+            </div>
+            <div class="pkg-rate">${pkg.rateMin.toFixed(1)}–${pkg.rateMax.toFixed(1)}%<small> / day target</small></div>
+            <div class="pkg-spark"><canvas data-spark="${pkg.id}"></canvas></div>
+            <div class="pkg-status-row"><span class="sdot"></span><span class="pkg-status-text">${isActive ? 'Scanning market…' : 'Standby'}</span></div>
+            <ul class="pkg-feats">${pkg.feats.map(f => `<li>${f}</li>`).join('')}</ul>
+            <button class="btn ${isActive ? 'btn-ghost' : 'btn-primary'} btn-block pkg-btn" data-pkg-btn="${pkg.id}">
+              ${isActive ? 'Active' : 'Activate'}
+            </button>
+          </div>`;
+      }).join('');
+
+      grid.querySelectorAll('[data-spark]').forEach(c => { sparklines[c.dataset.spark] = startSparkline(c); });
+      grid.querySelectorAll('[data-pkg-btn]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pkgId = btn.dataset.pkgBtn;
+          if (state && state.active && state.packageId === pkgId) return;
+          activatePackage(pkgId);
+        });
+      });
+    }
+
+    // Patch affordability / active state without rebuilding
+    PACKAGES.forEach(pkg => {
+      const card = grid.querySelector(`[data-pkg="${pkg.id}"]`);
+      if (!card) return;
+      const isActive = activeId === pkg.id;
+      const affordable = bal >= pkg.min;
+      card.classList.toggle('locked', !affordable && !isActive);
+      const btn = card.querySelector('.pkg-btn');
+      if (btn && !isActive) {
+        btn.disabled = !affordable;
+        btn.textContent = affordable ? 'Activate' : `Requires $${pkg.min.toLocaleString()}`;
+        btn.className = 'btn btn-primary btn-block pkg-btn';
+      }
+      if (!isActive) {
+        const statusText = card.querySelector('.pkg-status-text');
+        if (statusText) statusText.textContent = 'Standby';
+      }
+    });
+  }
+
   function renderFeed() {
-    const log = getBotLog();
+    const log = (state && state.recentActivity) || [];
     const panel = $('feedPanel');
     if (!log.length) {
       panel.innerHTML = '<div class="feed-empty">▣&nbsp;&nbsp;Activate a package to see scanning, signals, and trades appear here live.</div>';
       return;
     }
     panel.innerHTML = log.slice(0, 30).map(l => {
-      const isSystem = l.kind === 'system';
+      const isSystem = l.side === 'System' || l.pair === 'System' || (l.pnl === 0 && !l.side);
       const up = l.pnl >= 0;
       const iconCls = isSystem ? 'scan' : (up ? 'long' : 'short');
       const iconGlyph = isSystem ? '⚙' : (up ? '↑' : '↓');
@@ -397,70 +649,32 @@
     }).join('');
   }
 
-  /* ============== LIVE TRADE TICK ============== */
-  let tickTimer = null;
-  function scheduleTick() {
-    clearTimeout(tickTimer);
-    const st = getBotState();
-    if (!st || !st.active) return;
-    const delay = 4500 + Math.random() * 3500;
-    tickTimer = setTimeout(() => {
-      runTick();
-      scheduleTick();
-    }, delay);
-  }
-
-  function runTick() {
-    const st = getBotState();
-    if (!st || !st.active) return;
-    const bal = getBalance();
-    if (bal <= 0) { deactivateBot(); return; }
-
-    const pair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
-    const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
-    // Per-tick slice of the daily target, positively biased so the bot
-    // demonstrates realistic-looking but net-positive movement.
-    const perTickTarget = bal * (st.dailyRate / 100) * (7 / 86400); // ~7s equivalent slice
-    const isWin = Math.random() < 0.87;
-    const pnl = isWin
-      ? perTickTarget * (0.6 + Math.random() * 1.1)
-      : -perTickTarget * (0.15 + Math.random() * 0.35);
-
-    const now = Date.now();
-    setBalance(Math.max(0, bal + pnl));
-    st.totalEarnings = (st.totalEarnings || 0) + pnl;
-    st.lastTickAt = now;
-    setBotState(st);
-
-    const log = getBotLog();
-    log.unshift({ ts: now, pair, side, pnl, kind: 'trade' });
-    setBotLog(log);
-
-    const tx = getBotTx();
-    tx.unshift({ ts: now, label: `VaultexBotTrade · ${pair} ${side}`, amount: pnl, packageName: st.packageName });
-    setBotTx(tx);
-
-    renderAll(true);
-    const earnEl = $('statEarnings');
-    earnEl.classList.remove('countup-flash'); void earnEl.offsetWidth; earnEl.classList.add('countup-flash');
-  }
-
-  /* ============== MAIN RENDER LOOP ============== */
-  function renderAll(skipPackages) {
+  function renderAll() {
     renderBalance();
-    if (!skipPackages) renderPackages();
+    renderPackages();
     renderHero();
     renderFeed();
+    buildPerfHistory();
     scheduleTick();
   }
 
-  renderAll();
-  setInterval(renderHero, 1000); // live runtime clock + reflects cross-tab changes
-  window.addEventListener('storage', (e) => {
-    if ([LS_BAL, LS_BOT_STATE, LS_BOT_LOG, LS_BOT_TX].includes(e.key)) renderAll();
-  });
+  /* ============== INIT ============== */
+  if (window.auth) {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        uid = user.uid;
+        reconcileAndListen();
+      } else {
+        uid = null; state = null;
+        unsubState && unsubState(); unsubState = null;
+        renderAll();
+      }
+    });
+  }
 
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { reconcile(); renderAll(); } });
+  setInterval(renderHero, 1000); // live runtime clock
+  loopPerfChart();               // continuous animated redraw (rAF)
+  window.addEventListener('resize', drawPerfChart);
 })();
 </script>
 </body>
