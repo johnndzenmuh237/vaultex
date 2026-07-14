@@ -177,6 +177,49 @@
   }
 
   /* ---------------------------------------------------------
+     RECENT TRANSACTIONS — merges real backend transactions with
+     VaultexBotTrade demo earnings (see below) into one table,
+     each demo row clearly tagged so it's never mistaken for a
+     real, withdrawal-eligible transaction.
+  --------------------------------------------------------- */
+  let _lastRealTx = [];   // from fetchAccountSummary()
+  let _lastBotTx = [];    // from the isolated botDemo Firestore doc
+
+  function renderTransactionsMerged() {
+    const txBody = document.querySelector('[data-tx-table]');
+    if (!txBody) return;
+
+    const rows = [
+      ..._lastRealTx.map(tx => ({
+        dateLabel: tx.date,
+        type: tx.type,
+        amount: `${tx.amount} ${tx.asset}`,
+        status: tx.status,
+        statusPill: tx.status === 'Completed' ? 'pill-up' : 'pill-down',
+        ts: tx._ts || 0,
+      })),
+      ..._lastBotTx.map(tx => ({
+        dateLabel: new Date(tx.ts).toLocaleString(),
+        type: `${tx.label} · Demo`,
+        amount: `${tx.amount >= 0 ? '+' : '−'}$${Math.abs(tx.amount).toFixed(2)} USDT`,
+        status: 'Simulated',
+        statusPill: 'pill-neutral',
+        ts: tx.ts,
+      })),
+    ].sort((a, b) => b.ts - a.ts).slice(0, 15);
+
+    txBody.innerHTML = rows.length
+      ? rows.map(r => `
+          <tr>
+            <td>${r.dateLabel}</td>
+            <td>${r.type}</td>
+            <td class="mono">${r.amount}</td>
+            <td><span class="pill ${r.statusPill}">${r.status}</span></td>
+          </tr>`).join('')
+      : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No transactions yet — your activity will show up here.</td></tr>`;
+  }
+
+  /* ---------------------------------------------------------
      WEEKLY TRADING P&L PILL
      ---------------------------------------------------------
      The balance-card pill above only ever showed the hardcoded
@@ -262,13 +305,110 @@
     renderPillNeutral();
   }
 
+  /* ---------------------------------------------------------
+     VAULTEXBOTTRADE (DEMO AUTOTRADING BOT) — OVERVIEW WIDGET
+     ---------------------------------------------------------
+     Read-only here by design: activation, deactivation and the
+     live trade-tick engine live on trading.html (where the
+     packages/UI are). This file only listens to
+     users/{uid}/botDemo/state and renders it.
+
+     IMPORTANT — isolation boundary: this path is entirely
+     separate from users/{uid}/trades (real Trading Center data,
+     feeds the weekly P&L pill above) and from
+     /api/account/summary (real totalBalance / withdrawals). The
+     bot never reads or writes either of those. Every value shown
+     here is explicitly labeled "Demo" / "Simulated" so it can
+     never be mistaken for real, withdrawal-eligible funds — this
+     boundary should stay in place even if Vaultex later goes
+     live with real custody.
+  --------------------------------------------------------- */
+
+  let _unsubBotDemo = null;
+
+  function renderBotWidgetEmpty() {
+    const el = document.querySelector('[data-bot-widget]');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="widget-head"><h3>VaultexBotTrade <span class="demo-chip">Demo</span></h3><span class="pill pill-neutral">Inactive</span></div>
+      <p style="color:var(--muted);font-size:.85rem;margin:6px 0 14px;">No AutoTrading package active yet. Add demo balance and activate a package on the Trading page to start.</p>
+      <a href="trading.html" class="btn btn-primary btn-sm">Go to AutoTrading</a>
+    `;
+  }
+
+  function renderBotWidgetState(state) {
+    const el = document.querySelector('[data-bot-widget]');
+    if (!el) return;
+
+    if (!state || !state.active) {
+      renderBotWidgetEmpty();
+      return;
+    }
+
+    const fmtMoney = n => '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtSigned = n => (n >= 0 ? '+' : '−') + fmtMoney(n);
+    const startedAt = state.startedAt && state.startedAt.toDate ? state.startedAt.toDate() : new Date(state.startedAt || Date.now());
+    const runningMs = Date.now() - startedAt.getTime();
+    const hrs = Math.floor(runningMs / 3600000);
+    const mins = Math.floor((runningMs % 3600000) / 60000);
+    const activity = Array.isArray(state.recentActivity) ? state.recentActivity.slice(0, 3) : [];
+
+    el.innerHTML = `
+      <div class="widget-head"><h3>VaultexBotTrade <span class="demo-chip">Demo</span></h3><span class="pill pill-up">Active · ${state.packageName}</span></div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin:6px 0 14px;">
+        <div><div style="font-family:var(--font-mono);font-size:1.3rem;color:var(--mint);font-weight:700;">${fmtSigned(state.totalEarnings || 0)}</div><div style="font-size:.68rem;color:var(--muted);">Simulated session earnings</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:1.3rem;">${(state.dailyRate || 0).toFixed(2)}%</div><div style="font-size:.68rem;color:var(--muted);">Target daily rate</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:1.3rem;">${hrs}h ${mins}m</div><div style="font-size:.68rem;color:var(--muted);">Running for</div></div>
+      </div>
+      ${activity.length ? `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">${activity.map(a => `
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;color:var(--muted);">
+          <span>${a.pair}${a.side ? ' · ' + a.side : ''}</span><span style="color:${a.pnl >= 0 ? 'var(--mint)' : 'var(--coral)'}">${fmtSigned(a.pnl)}</span>
+        </div>`).join('')}</div>` : ''}
+      <p style="color:var(--muted);font-size:.68rem;margin-bottom:10px;">Simulated demo balance only — separate from your real account balance above, no real funds involved.</p>
+      <a href="trading.html" class="btn btn-ghost btn-sm">Manage bot</a>
+    `;
+  }
+
+  function listenBotDemo(uid) {
+    const db = getDb();
+    if (!db || !uid) { renderBotWidgetEmpty(); return; }
+
+    if (_unsubBotDemo) {
+      _unsubBotDemo();
+      _unsubBotDemo = null;
+    }
+
+    _unsubBotDemo = db.collection('users').doc(uid).collection('botDemo').doc('state')
+      .onSnapshot(doc => {
+        const state = doc.exists ? doc.data() : null;
+        renderBotWidgetState(state);
+        _lastBotTx = (state && Array.isArray(state.recentEarnings)) ? state.recentEarnings : [];
+        renderTransactionsMerged();
+      }, err => {
+        console.error('Failed to load VaultexBotTrade demo state', err);
+        renderBotWidgetEmpty();
+        _lastBotTx = [];
+        renderTransactionsMerged();
+      });
+  }
+
+  function stopBotDemo() {
+    if (_unsubBotDemo) {
+      _unsubBotDemo();
+      _unsubBotDemo = null;
+    }
+    _lastBotTx = [];
+    renderBotWidgetEmpty();
+  }
+
   async function initAccountData() {
     const summary = await fetchAccountSummary();
 
     if (!summary) {
       renderBalanceZero();
       renderAllocationZero();
-      renderTransactionsEmpty();
+      _lastRealTx = [];
+      renderTransactionsMerged();
       renderQuickStatsZero();
       return;
     }
@@ -291,18 +431,9 @@
       });
     }
 
-    const txBody = document.querySelector('[data-tx-table]');
-    if (txBody && Array.isArray(summary.transactions)) {
-      txBody.innerHTML = summary.transactions.length
-        ? summary.transactions.map(tx => `
-          <tr>
-            <td>${tx.date}</td>
-            <td>${tx.type}</td>
-            <td class="mono">${tx.amount} ${tx.asset}</td>
-            <td><span class="pill ${tx.status === 'Completed' ? 'pill-up' : 'pill-down'}">${tx.status}</span></td>
-          </tr>`).join('')
-        : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No transactions yet.</td></tr>`;
-
+    if (Array.isArray(summary.transactions)) {
+      _lastRealTx = summary.transactions.map(tx => ({ ...tx, _ts: tx.ts || Date.parse(tx.date) || 0 }));
+      renderTransactionsMerged();
       renderQuickStats(summary.transactions);
     }
   }
@@ -314,12 +445,15 @@
       if (user) {
         initAccountData();
         listenWeeklyTradingPnl(user.uid);
+        listenBotDemo(user.uid);
       } else {
         renderBalanceZero();
         renderAllocationZero();
-        renderTransactionsEmpty();
+        _lastRealTx = [];
+        renderTransactionsMerged();
         renderQuickStatsZero();
         stopWeeklyTradingPnl();
+        stopBotDemo();
       }
     });
   }
