@@ -6,21 +6,31 @@
    rest of the Vaultex dashboard.
 
    Firestore shape used:
-     users/{uid}                       -> { balance: number, ... }
-     users/{uid}/trades/{tradeId}      -> {
+     users/{uid}                          -> { balance: number, ... }
+     users/{uid}/holdings/{coinId}        -> {
        coinId, symbol, name, image,
-       side: 'buy',
-       amountUSD, entryPrice, quantity,
-       status: 'open' | 'closed',
-       openedAt, closedAt, closePrice, pnl, pnlPercent
+       quantity, avgEntryPrice, updatedAt
+     }
+     users/{uid}/trades/{tradeId}         -> {
+       coinId, symbol, name, image,
+       side: 'buy' | 'sell',
+       quantity, price, amountUSD,
+       pnl, pnlPercent,   // only present on 'sell' entries
+       createdAt
      }
 
+   This is a real spot-trading model: Buy increases your
+   holding in an asset (and its cost-basis-weighted average
+   entry price); Sell reduces it and realizes P/L against
+   that average entry price. You can only sell what you hold
+   — there's no margin or shorting here.
+
    IMPORTANT — production note:
-   Balance debits/credits happen client-side via a Firestore
-   transaction here, same pattern as the rest of this app.
+   Balance/holdings writes happen client-side in a Firestore
+   transaction, same pattern as the rest of this app.
    Firestore security rules MUST restrict writes to a user's
-   own balance/trades. For a fully tamper-proof system, move
-   the buy/close logic into a Cloud Function later — this
+   own balance/holdings/trades. For a fully tamper-proof
+   system, move buy/sell into a Cloud Function later — this
    client-side version is fine to ship now and easy to swap.
    ========================================================= */
 
@@ -30,7 +40,7 @@
   const COINGECKO_MARKETS =
     'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&price_change_percentage=24h&sparkline=false';
 
-  const PRICE_REFRESH_MS = 15000;   // refresh selected price / open positions
+  const PRICE_REFRESH_MS = 15000;   // refresh market list / holdings valuation
   const MARKET_REFRESH_MS = 30000;  // refresh full market list
   const CHART_REFRESH_MS = 45000;   // refresh candles
 
@@ -38,13 +48,16 @@
     uid: null,
     db: null,
     balance: 0,
-    markets: [],           // full market list from CoinGecko
+    markets: [],            // full market list from CoinGecko
     marketQuery: '',
     marketTab: 'All',
-    selected: null,        // currently selected coin object
+    selected: null,         // currently selected coin object
+    side: 'buy',            // order ticket mode: 'buy' | 'sell'
+    timeframe: '1',         // CoinGecko OHLC "days" param
+    holdings: {},           // coinId -> { quantity, avgEntryPrice, ... }
     chart: null,
     series: null,
-    unsubTrades: null,
+    linking: false,         // re-entrancy guard for qty<->USD field sync
   };
 
   // ---------- DOM refs ----------
@@ -59,12 +72,21 @@
     els.saSym = document.querySelector('[data-sa-sym]');
     els.saPrice = document.querySelector('[data-sa-price]');
     els.saPct = document.querySelector('[data-sa-pct]');
+    els.statHigh = document.querySelector('[data-stat-high]');
+    els.statLow = document.querySelector('[data-stat-low]');
+    els.statVolume = document.querySelector('[data-stat-volume]');
+    els.statMcap = document.querySelector('[data-stat-mcap]');
+    els.tfTabs = document.querySelector('[data-tf-tabs]');
     els.chartContainer = document.querySelector('[data-chart-container]');
+    els.sideTabs = document.querySelector('[data-side-tabs]');
+    els.tradeQty = document.querySelector('[data-trade-qty]');
     els.tradeAmount = document.querySelector('[data-trade-amount]');
-    els.estQty = document.querySelector('[data-est-qty]');
-    els.buyBtn = document.querySelector('[data-buy-btn]');
+    els.qtyLabel = document.querySelector('[data-qty-label]');
+    els.usdLabel = document.querySelector('[data-usd-label]');
+    els.submitBtn = document.querySelector('[data-submit-btn]');
+    els.availLine = document.querySelector('[data-avail-line]');
     els.ticketMsg = document.querySelector('[data-ticket-msg]');
-    els.positionsTable = document.querySelector('[data-positions-table]');
+    els.holdingsTable = document.querySelector('[data-holdings-table]');
     els.historyTable = document.querySelector('[data-history-table]');
     els.botWaitlistBtn = document.querySelector('[data-bot-waitlist-btn]');
     els.botWaitlistMsg = document.querySelector('[data-bot-waitlist-msg]');
@@ -81,6 +103,14 @@
     if (n >= 0.01) return '$' + n.toFixed(4);
     return '$' + n.toPrecision(3);
   }
+  function fmtCompact(n) {
+    if (n == null) return '—';
+    return '$' + Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 2 }).format(n);
+  }
+  function fmtQty(n) {
+    if (n == null || isNaN(n)) return '0';
+    return Number(n).toLocaleString(undefined, { maximumFractionDigits: 6 });
+  }
   function fmtPct(n) {
     if (n == null || isNaN(n)) return '—';
     const sign = n > 0 ? '+' : '';
@@ -92,6 +122,11 @@
     return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
+  function currentPriceFor(coinId) {
+    const c = state.markets.find(m => m.id === coinId);
+    return c ? c.current_price : null;
+  }
+
   // ---------- market list ----------
   async function loadMarkets() {
     try {
@@ -100,17 +135,17 @@
       state.markets = await res.json();
       renderMarketList();
 
-      // default selection: first load only
       if (!state.selected && state.markets.length) {
         selectCoin(state.markets[0]);
       } else if (state.selected) {
-        // keep selected asset's live price/pct in sync with refreshed list
         const fresh = state.markets.find(c => c.id === state.selected.id);
         if (fresh) {
           state.selected = fresh;
           updateSelectedHeader();
+          updateAvailLine();
         }
       }
+      if (Object.keys(state.holdings).length) renderHoldings();
     } catch (err) {
       console.error('Trading Center: failed to load markets', err);
       if (!state.markets.length && els.marketRows) {
@@ -172,9 +207,10 @@
   function selectCoin(coin) {
     state.selected = coin;
     updateSelectedHeader();
-    renderMarketList(); // re-render to move the "active" highlight
-    updateEstQty();
-    loadChart(coin.id);
+    renderMarketList();
+    clearTicketFields();
+    updateAvailLine();
+    loadChart(coin.id, state.timeframe);
   }
 
   function updateSelectedHeader() {
@@ -189,13 +225,18 @@
     els.saPct.textContent = fmtPct(pct);
     els.saPct.style.background = pct >= 0 ? 'rgba(22,199,132,.14)' : 'rgba(234,57,67,.14)';
     els.saPct.style.color = pct >= 0 ? '#16c784' : '#ea3943';
+
+    if (els.statHigh) els.statHigh.textContent = fmtPrice(c.high_24h);
+    if (els.statLow) els.statLow.textContent = fmtPrice(c.low_24h);
+    if (els.statVolume) els.statVolume.textContent = fmtCompact(c.total_volume);
+    if (els.statMcap) els.statMcap.textContent = fmtCompact(c.market_cap);
   }
 
-  async function loadChart(coinId) {
+  async function loadChart(coinId, days) {
     if (!els.chartContainer || !window.LightweightCharts) return;
-    els.chartContainer.innerHTML = '';
 
     if (!state.chart) {
+      els.chartContainer.innerHTML = '';
       const styles = getComputedStyle(document.documentElement);
       state.chart = LightweightCharts.createChart(els.chartContainer, {
         layout: {
@@ -220,12 +261,10 @@
           state.chart.applyOptions({ width: els.chartContainer.clientWidth });
         }
       });
-    } else {
-      els.chartContainer.appendChild(state.chart.chartElement ? state.chart.chartElement() : els.chartContainer);
     }
 
     try {
-      const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=1`);
+      const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/ohlc?vs_currency=usd&days=${days}`);
       if (!res.ok) throw new Error('OHLC feed error: ' + res.status);
       const raw = await res.json();
       const candles = raw
@@ -239,12 +278,55 @@
   }
 
   // ---------- order ticket ----------
-  function updateEstQty() {
-    if (!els.estQty || !state.selected) return;
+  function clearTicketFields() {
+    if (els.tradeQty) els.tradeQty.value = '';
+    if (els.tradeAmount) els.tradeAmount.value = '';
+    setTicketMsg('', '');
+  }
+
+  function setSide(side) {
+    state.side = side;
+    if (els.sideTabs) {
+      els.sideTabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.side === side));
+    }
+    if (els.submitBtn) {
+      els.submitBtn.classList.remove('buy', 'sell');
+      els.submitBtn.classList.add(side);
+      els.submitBtn.textContent = side === 'buy' ? 'Buy at market' : 'Sell at market';
+    }
+    if (els.qtyLabel) els.qtyLabel.textContent = side === 'buy' ? 'Lot size (units to buy)' : 'Lot size (units to sell)';
+    if (els.usdLabel) els.usdLabel.textContent = side === 'buy' ? 'Amount (USD)' : 'Estimated proceeds (USD)';
+    clearTicketFields();
+    updateAvailLine();
+  }
+
+  function updateAvailLine() {
+    if (!els.availLine || !state.selected) return;
+    if (state.side === 'buy') {
+      els.availLine.textContent = `Available balance: ${fmtUSD(state.balance)}`;
+    } else {
+      const held = state.holdings[state.selected.id];
+      const qty = held ? held.quantity : 0;
+      els.availLine.textContent = `Available to sell: ${fmtQty(qty)} ${state.selected.symbol.toUpperCase()}`;
+    }
+  }
+
+  function syncFromQty() {
+    if (state.linking || !state.selected) return;
+    state.linking = true;
+    const qty = parseFloat(els.tradeQty.value) || 0;
+    const price = state.selected.current_price || 0;
+    els.tradeAmount.value = qty && price ? (qty * price).toFixed(2) : '';
+    state.linking = false;
+  }
+
+  function syncFromUsd() {
+    if (state.linking || !state.selected) return;
+    state.linking = true;
     const amount = parseFloat(els.tradeAmount.value) || 0;
     const price = state.selected.current_price || 0;
-    const qty = price > 0 ? amount / price : 0;
-    els.estQty.textContent = `≈ ${qty.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${state.selected.symbol.toUpperCase()} at ${fmtPrice(price)}`;
+    els.tradeQty.value = amount && price ? (amount / price).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') : '';
+    state.linking = false;
   }
 
   function setTicketMsg(text, kind) {
@@ -253,150 +335,188 @@
     els.ticketMsg.className = 'ticket-msg' + (kind ? ' ' + kind : '');
   }
 
-  async function placeBuy() {
+  async function submitOrder() {
     if (!state.uid || !state.selected) return;
-    const amount = parseFloat(els.tradeAmount.value);
+    const qty = parseFloat(els.tradeQty.value);
 
-    if (!amount || amount <= 0) {
-      setTicketMsg('Enter a valid amount to trade.', 'err');
+    if (!qty || qty <= 0) {
+      setTicketMsg('Enter a valid lot size.', 'err');
       return;
     }
-    if (amount > state.balance) {
+
+    if (state.side === 'buy') {
+      await placeBuy(qty);
+    } else {
+      await placeSell(qty);
+    }
+  }
+
+  async function placeBuy(qty) {
+    const coin = state.selected;
+    const amountUSD = qty * coin.current_price;
+
+    if (amountUSD > state.balance) {
       setTicketMsg('Amount exceeds your available balance.', 'err');
       return;
     }
 
-    els.buyBtn.disabled = true;
-    setTicketMsg('Placing trade…', '');
+    els.submitBtn.disabled = true;
+    setTicketMsg('Placing order…', '');
 
-    const coin = state.selected;
     const userRef = state.db.collection('users').doc(state.uid);
+    const holdingRef = userRef.collection('holdings').doc(coin.id);
     const tradeRef = userRef.collection('trades').doc();
 
     try {
       await state.db.runTransaction(async (tx) => {
-        const userSnap = await tx.get(userRef);
+        const [userSnap, holdingSnap] = await Promise.all([tx.get(userRef), tx.get(holdingRef)]);
         const currentBalance = (userSnap.exists && userSnap.data().balance) || 0;
-        if (amount > currentBalance) {
-          throw new Error('insufficient-balance');
-        }
-        tx.update(userRef, { balance: firebase.firestore.FieldValue.increment(-amount) });
+        if (amountUSD > currentBalance) throw new Error('insufficient-balance');
+
+        const prevQty = holdingSnap.exists ? holdingSnap.data().quantity : 0;
+        const prevAvg = holdingSnap.exists ? holdingSnap.data().avgEntryPrice : 0;
+        const newQty = prevQty + qty;
+        const newAvg = newQty > 0 ? ((prevQty * prevAvg) + (qty * coin.current_price)) / newQty : coin.current_price;
+
+        tx.update(userRef, { balance: firebase.firestore.FieldValue.increment(-amountUSD) });
+        tx.set(holdingRef, {
+          coinId: coin.id, symbol: coin.symbol, name: coin.name, image: coin.image,
+          quantity: newQty, avgEntryPrice: newAvg,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
         tx.set(tradeRef, {
-          coinId: coin.id,
-          symbol: coin.symbol,
-          name: coin.name,
-          image: coin.image,
-          side: 'buy',
-          amountUSD: amount,
-          entryPrice: coin.current_price,
-          quantity: amount / coin.current_price,
-          status: 'open',
-          openedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          coinId: coin.id, symbol: coin.symbol, name: coin.name, image: coin.image,
+          side: 'buy', quantity: qty, price: coin.current_price, amountUSD,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       });
-      setTicketMsg(`Trade placed — bought ${coin.symbol.toUpperCase()} at ${fmtPrice(coin.current_price)}.`, 'ok');
-      els.tradeAmount.value = '';
-      updateEstQty();
+      setTicketMsg(`Bought ${fmtQty(qty)} ${coin.symbol.toUpperCase()} at ${fmtPrice(coin.current_price)}.`, 'ok');
+      clearTicketFields();
     } catch (err) {
       console.error('Trading Center: buy failed', err);
-      setTicketMsg(
-        err.message === 'insufficient-balance'
-          ? 'Amount exceeds your available balance.'
-          : 'Could not place trade. Please try again.',
-        'err'
-      );
+      setTicketMsg(err.message === 'insufficient-balance' ? 'Amount exceeds your available balance.' : 'Could not place order. Please try again.', 'err');
     } finally {
-      els.buyBtn.disabled = false;
+      els.submitBtn.disabled = false;
     }
   }
 
-  // ---------- open positions ----------
-  function listenOpenPositions() {
-    if (!state.uid) return;
-    state.db.collection('users').doc(state.uid).collection('trades')
-      .where('status', '==', 'open')
-      .onSnapshot(snap => {
-        state.openPositions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderOpenPositions();
-      }, err => console.error('Trading Center: positions listener error', err));
-  }
+  async function placeSell(qty) {
+    const coin = state.selected;
+    const held = state.holdings[coin.id];
+    const heldQty = held ? held.quantity : 0;
 
-  function currentPriceFor(coinId) {
-    const c = state.markets.find(m => m.id === coinId);
-    return c ? c.current_price : null;
-  }
-
-  function renderOpenPositions() {
-    if (!els.positionsTable) return;
-    const positions = state.openPositions || [];
-    if (!positions.length) {
-      els.positionsTable.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No open positions — place a trade to get started.</td></tr>`;
+    if (qty > heldQty + 1e-9) {
+      setTicketMsg(`You only hold ${fmtQty(heldQty)} ${coin.symbol.toUpperCase()}.`, 'err');
       return;
     }
-    els.positionsTable.innerHTML = positions.map(p => {
-      const price = currentPriceFor(p.coinId) ?? p.entryPrice;
-      const currentValue = price * p.quantity;
-      const pnl = currentValue - p.amountUSD;
+
+    els.submitBtn.disabled = true;
+    setTicketMsg('Placing order…', '');
+
+    const userRef = state.db.collection('users').doc(state.uid);
+    const holdingRef = userRef.collection('holdings').doc(coin.id);
+    const tradeRef = userRef.collection('trades').doc();
+
+    try {
+      await state.db.runTransaction(async (tx) => {
+        const holdingSnap = await tx.get(holdingRef);
+        if (!holdingSnap.exists) throw new Error('no-holding');
+        const data = holdingSnap.data();
+        if (qty > data.quantity + 1e-9) throw new Error('insufficient-holding');
+
+        const proceeds = qty * coin.current_price;
+        const pnl = (coin.current_price - data.avgEntryPrice) * qty;
+        const pnlPercent = data.avgEntryPrice > 0 ? ((coin.current_price - data.avgEntryPrice) / data.avgEntryPrice) * 100 : 0;
+        const remainingQty = data.quantity - qty;
+
+        tx.update(userRef, { balance: firebase.firestore.FieldValue.increment(proceeds) });
+        if (remainingQty <= 1e-9) {
+          tx.delete(holdingRef);
+        } else {
+          tx.update(holdingRef, { quantity: remainingQty, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+        tx.set(tradeRef, {
+          coinId: coin.id, symbol: coin.symbol, name: coin.name, image: coin.image,
+          side: 'sell', quantity: qty, price: coin.current_price, amountUSD: proceeds,
+          pnl, pnlPercent,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+      setTicketMsg(`Sold ${fmtQty(qty)} ${coin.symbol.toUpperCase()} at ${fmtPrice(coin.current_price)}.`, 'ok');
+      clearTicketFields();
+    } catch (err) {
+      console.error('Trading Center: sell failed', err);
+      const msg = err.message === 'insufficient-holding' || err.message === 'no-holding'
+        ? `You only hold ${fmtQty(heldQty)} ${coin.symbol.toUpperCase()}.`
+        : 'Could not place order. Please try again.';
+      setTicketMsg(msg, 'err');
+    } finally {
+      els.submitBtn.disabled = false;
+    }
+  }
+
+  // ---------- holdings ----------
+  function listenHoldings() {
+    if (!state.uid) return;
+    state.db.collection('users').doc(state.uid).collection('holdings')
+      .onSnapshot(snap => {
+        state.holdings = {};
+        snap.forEach(d => { state.holdings[d.id] = d.data(); });
+        renderHoldings();
+        updateAvailLine();
+      }, err => console.error('Trading Center: holdings listener error', err));
+  }
+
+  function renderHoldings() {
+    if (!els.holdingsTable) return;
+    const ids = Object.keys(state.holdings);
+    if (!ids.length) {
+      els.holdingsTable.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">You don't hold any assets yet — place a buy order to get started.</td></tr>`;
+      return;
+    }
+    els.holdingsTable.innerHTML = ids.map(coinId => {
+      const h = state.holdings[coinId];
+      const price = currentPriceFor(coinId) ?? h.avgEntryPrice;
+      const marketValue = price * h.quantity;
+      const pnl = marketValue - (h.avgEntryPrice * h.quantity);
       const pnlClass = pnl >= 0 ? 'pnl-up' : 'pnl-down';
       return `
         <tr>
           <td>
             <div class="flex" style="gap:8px;align-items:center;">
-              <img src="${p.image}" width="20" height="20" style="border-radius:50%;" alt="${p.symbol}">
-              <span style="text-transform:uppercase;font-size:.85rem;">${p.symbol}</span>
+              <img src="${h.image}" width="20" height="20" style="border-radius:50%;" alt="${h.symbol}">
+              <span style="text-transform:uppercase;font-size:.85rem;">${h.symbol}</span>
             </div>
           </td>
-          <td>${fmtDate(p.openedAt)}</td>
-          <td>${fmtUSD(p.amountUSD)}</td>
-          <td>${fmtPrice(p.entryPrice)}</td>
+          <td>${fmtQty(h.quantity)}</td>
+          <td>${fmtPrice(h.avgEntryPrice)}</td>
           <td>${fmtPrice(price)}</td>
+          <td>${fmtUSD(marketValue)}</td>
           <td class="${pnlClass}">${pnl >= 0 ? '+' : ''}${fmtUSD(pnl)}</td>
-          <td><button class="btn btn-ghost btn-sm" data-close-trade="${p.id}">Close</button></td>
+          <td><button class="btn btn-ghost btn-sm" data-sell-holding="${coinId}">Sell</button></td>
         </tr>`;
     }).join('');
 
-    els.positionsTable.querySelectorAll('[data-close-trade]').forEach(btn => {
-      btn.addEventListener('click', () => closePosition(btn.dataset.closeTrade));
-    });
-  }
-
-  async function closePosition(tradeId) {
-    if (!state.uid) return;
-    const userRef = state.db.collection('users').doc(state.uid);
-    const tradeRef = userRef.collection('trades').doc(tradeId);
-
-    try {
-      await state.db.runTransaction(async (tx) => {
-        const tradeSnap = await tx.get(tradeRef);
-        if (!tradeSnap.exists || tradeSnap.data().status !== 'open') {
-          throw new Error('not-open');
+    els.holdingsTable.querySelectorAll('[data-sell-holding]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const coinId = btn.dataset.sellHolding;
+        const coin = state.markets.find(c => c.id === coinId);
+        if (coin) selectCoin(coin);
+        setSide('sell');
+        const held = state.holdings[coinId];
+        if (held && els.tradeQty) {
+          els.tradeQty.value = held.quantity;
+          syncFromQty();
         }
-        const trade = tradeSnap.data();
-        const price = currentPriceFor(trade.coinId) ?? trade.entryPrice;
-        const closeValue = price * trade.quantity;
-        const pnl = closeValue - trade.amountUSD;
-        const pnlPercent = trade.amountUSD > 0 ? (pnl / trade.amountUSD) * 100 : 0;
-
-        tx.update(userRef, { balance: firebase.firestore.FieldValue.increment(closeValue) });
-        tx.update(tradeRef, {
-          status: 'closed',
-          closedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          closePrice: price,
-          pnl,
-          pnlPercent,
-        });
       });
-    } catch (err) {
-      console.error('Trading Center: close position failed', err);
-    }
+    });
   }
 
   // ---------- trade history ----------
   function listenTradeHistory() {
     if (!state.uid) return;
     state.db.collection('users').doc(state.uid).collection('trades')
-      .where('status', '==', 'closed')
-      .orderBy('closedAt', 'desc')
+      .orderBy('createdAt', 'desc')
       .limit(50)
       .onSnapshot(snap => {
         renderTradeHistory(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -406,19 +526,22 @@
   function renderTradeHistory(trades) {
     if (!els.historyTable) return;
     if (!trades.length) {
-      els.historyTable.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No closed trades yet.</td></tr>`;
+      els.historyTable.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No trades yet.</td></tr>`;
       return;
     }
     els.historyTable.innerHTML = trades.map(t => {
-      const pnlClass = (t.pnl ?? 0) >= 0 ? 'pnl-up' : 'pnl-down';
+      const pnlCell = t.side === 'sell'
+        ? `<span class="${(t.pnl ?? 0) >= 0 ? 'pnl-up' : 'pnl-down'}">${(t.pnl ?? 0) >= 0 ? '+' : ''}${fmtUSD(t.pnl)} (${fmtPct(t.pnlPercent)})</span>`
+        : '—';
       return `
         <tr>
-          <td>${fmtDate(t.closedAt)}</td>
+          <td>${fmtDate(t.createdAt)}</td>
           <td style="text-transform:uppercase;">${t.symbol}</td>
-          <td>Spot buy</td>
+          <td><span class="side-badge ${t.side}">${t.side}</span></td>
+          <td>${fmtQty(t.quantity)}</td>
+          <td>${fmtPrice(t.price)}</td>
           <td>${fmtUSD(t.amountUSD)}</td>
-          <td class="${pnlClass}">${(t.pnl ?? 0) >= 0 ? '+' : ''}${fmtUSD(t.pnl)} (${fmtPct(t.pnlPercent)})</td>
-          <td><span class="pill pill-up">Completed</span></td>
+          <td>${pnlCell}</td>
         </tr>`;
     }).join('');
   }
@@ -429,6 +552,7 @@
     state.db.collection('users').doc(state.uid).onSnapshot(doc => {
       state.balance = (doc.exists && doc.data().balance) || 0;
       if (els.balanceChip) els.balanceChip.textContent = fmtUSD(state.balance);
+      updateAvailLine();
     }, err => console.error('Trading Center: balance listener error', err));
   }
 
@@ -474,18 +598,31 @@
         });
       });
     }
-    if (els.tradeAmount) {
-      els.tradeAmount.addEventListener('input', () => { updateEstQty(); setTicketMsg('', ''); });
+    if (els.tfTabs) {
+      els.tfTabs.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          els.tfTabs.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.timeframe = btn.dataset.tf;
+          if (state.selected) loadChart(state.selected.id, state.timeframe);
+        });
+      });
     }
-    if (els.buyBtn) {
-      els.buyBtn.addEventListener('click', placeBuy);
+    if (els.sideTabs) {
+      els.sideTabs.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => setSide(btn.dataset.side));
+      });
     }
+    if (els.tradeQty) els.tradeQty.addEventListener('input', () => { syncFromQty(); setTicketMsg('', ''); });
+    if (els.tradeAmount) els.tradeAmount.addEventListener('input', () => { syncFromUsd(); setTicketMsg('', ''); });
+    if (els.submitBtn) els.submitBtn.addEventListener('click', submitOrder);
     wireBotWaitlist();
   }
 
   function init() {
     cacheEls();
     wireStaticControls();
+    setSide('buy');
 
     if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) {
       console.error('Trading Center: Firebase is not initialized (check firebase-init.js load order).');
@@ -498,14 +635,14 @@
       if (!user) return; // auth-guard.js handles the redirect
       state.uid = user.uid;
       listenBalance();
-      listenOpenPositions();
+      listenHoldings();
       listenTradeHistory();
     });
 
     loadMarkets();
     setInterval(loadMarkets, MARKET_REFRESH_MS);
-    setInterval(() => { if (state.openPositions && state.openPositions.length) renderOpenPositions(); }, PRICE_REFRESH_MS);
-    setInterval(() => { if (state.selected) loadChart(state.selected.id); }, CHART_REFRESH_MS);
+    setInterval(() => { if (Object.keys(state.holdings).length) renderHoldings(); }, PRICE_REFRESH_MS);
+    setInterval(() => { if (state.selected) loadChart(state.selected.id, state.timeframe); }, CHART_REFRESH_MS);
   }
 
   document.addEventListener('DOMContentLoaded', init);
