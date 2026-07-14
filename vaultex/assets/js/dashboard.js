@@ -48,12 +48,6 @@
 
   /* ---------------------------------------------------------
      SIDEBAR / MOBILE DRAWER
-     ---------------------------------------------------------
-     Below 768px the sidebar becomes an off-canvas drawer
-     (see responsive.css). This wires up a backdrop, body-scroll
-     lock, Escape-to-close, click-outside-to-close, and closes
-     automatically when a nav link is tapped or the viewport is
-     resized back to desktop width.
   --------------------------------------------------------- */
   const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
   const sidebar = document.querySelector('.dash-sidebar');
@@ -90,14 +84,10 @@
       if (e.key === 'Escape' && sidebar.classList.contains('open')) closeSidebar();
     });
 
-    // Close the drawer once the user actually navigates
     sidebar.addEventListener('click', (e) => {
       if (e.target.closest('a')) closeSidebar();
     });
 
-    // If the viewport is resized past the mobile breakpoint while the
-    // drawer is open, drop the "open" state so it doesn't get stuck
-    // mid-transition or leave the backdrop/body-lock behind.
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768 && sidebar.classList.contains('open')) {
         closeSidebar();
@@ -108,28 +98,29 @@
   /* ---------------------------------------------------------
      ACCOUNT BALANCE / ALLOCATION / TRANSACTIONS
      ---------------------------------------------------------
-     IMPORTANT: This data must come from your real backend
-     once Coinbase Custody + exchange order routing are
-     connected (e.g. a server endpoint or Cloud Function that
-     holds Custody API credentials — never call Custody APIs
-     directly from the browser).
-
-     Until that endpoint exists, the dashboard shows a real,
-     honest ZERO state (the account genuinely holds nothing
-     yet) rather than a "loading" or "connecting" message —
-     there is nothing being loaded, the balance simply is $0
-     until the user makes a deposit.
-
-     Wire it up by replacing fetchAccountSummary() below with
-     a real call, e.g.:
-       const res = await fetch('/api/account/summary', { credentials: 'same-origin' });
-       return res.ok ? res.json() : null;
+     Pulls real data from the backend (functions/withdrawals.js
+     -> GET /api/account/summary), so an admin-approved
+     withdrawal is reflected here as soon as the page loads or
+     initAccountData() re-runs. Falls back to the honest
+     zero-state below only if there's no session yet or the
+     request fails — never invents numbers.
   --------------------------------------------------------- */
 
   async function fetchAccountSummary() {
-    // Placeholder: no backend wired yet. Returns null so the UI
-    // renders the zero-balance state below instead of inventing numbers.
-    return null;
+    const user = auth.currentUser;
+    if (!user) return null;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/api/account/summary", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.success ? data : null;
+    } catch (e) {
+      console.error("Failed to load account summary", e);
+      return null;
+    }
   }
 
   function renderBalanceZero() {
@@ -175,7 +166,17 @@
     document.querySelectorAll('.quick-stat strong').forEach(el => { el.textContent = '$0'; });
   }
 
-  (async function initAccountData() {
+  function renderQuickStats(transactions) {
+    const withdrawn30d = transactions
+      .filter(tx => tx.type === 'Withdrawal' && tx.status === 'Completed')
+      .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+    const stats = document.querySelectorAll('.quick-stat strong');
+    // Third quick-stat card is "Withdrawn (30d)" per dashboard.html markup.
+    if (stats[2]) stats[2].textContent = `$${withdrawn30d.toLocaleString()}`;
+  }
+
+  async function initAccountData() {
     const summary = await fetchAccountSummary();
 
     if (!summary) {
@@ -186,8 +187,6 @@
       return;
     }
 
-    // Real-data rendering path — fill in once fetchAccountSummary()
-    // returns actual figures from your backend.
     const balanceEl = document.querySelector('.balance-amount');
     if (balanceEl && typeof summary.totalBalance === 'number') {
       const [whole, cents] = summary.totalBalance.toFixed(2).split('.');
@@ -217,8 +216,24 @@
             <td><span class="pill ${tx.status === 'Completed' ? 'pill-up' : 'pill-down'}">${tx.status}</span></td>
           </tr>`).join('')
         : `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No transactions yet.</td></tr>`;
+
+      renderQuickStats(summary.transactions);
     }
-  })();
+  }
+
+  // Wait for the auth session before fetching anything — matches
+  // the pattern used in withdrawal.js / admin-withdrawal.js.
+  if (window.auth) {
+    auth.onAuthStateChanged((user) => {
+      if (user) initAccountData();
+      else {
+        renderBalanceZero();
+        renderAllocationZero();
+        renderTransactionsEmpty();
+        renderQuickStatsZero();
+      }
+    });
+  }
 
   /* ---- Tab switching (generic, used across widgets) ---- */
   document.querySelectorAll('.tab-row').forEach(row => {
