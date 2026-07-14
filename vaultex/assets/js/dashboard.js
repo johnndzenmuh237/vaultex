@@ -237,13 +237,13 @@
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     _unsubWeeklyPnl = db.collection('users').doc(uid).collection('trades')
-      .where('status', '==', 'closed')
+      .where('side', '==', 'sell')
       .onSnapshot(snap => {
         let weeklyPnl = 0;
         snap.forEach(doc => {
           const t = doc.data();
-          const closedAt = t.closedAt && t.closedAt.toDate ? t.closedAt.toDate() : null;
-          if (closedAt && closedAt >= sevenDaysAgo && typeof t.pnl === 'number') {
+          const createdAt = t.createdAt && t.createdAt.toDate ? t.createdAt.toDate() : null;
+          if (createdAt && createdAt >= sevenDaysAgo && typeof t.pnl === 'number') {
             weeklyPnl += t.pnl;
           }
         });
