@@ -52,6 +52,7 @@
 .nft-price-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:auto}
 .nft-price{font-family:var(--font-mono);font-weight:700;font-size:1.05rem;color:var(--mint)}
 .nft-price-usd{color:var(--muted);font-size:.68rem;font-family:var(--font-mono)}
+.nft-mint-btn{margin-top:10px}
 
 .owned-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:48px}
 @media (max-width:1100px){ .owned-grid{grid-template-columns:repeat(3,1fr)} }
@@ -332,13 +333,13 @@
       const affordable = bal >= item.priceUsd;
       let btnHtml;
       if(!loggedIn){
-        btnHtml = `<a href="dashboard.html" class="btn btn-ghost btn-sm">Connect wallet</a>`;
+        btnHtml = `<a href="dashboard.html" class="btn btn-ghost btn-block nft-mint-btn">Connect wallet</a>`;
       } else if(isOwned){
-        btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Owned</button>`;
+        btnHtml = `<button class="btn btn-ghost btn-block nft-mint-btn" disabled>Owned</button>`;
       } else if(!affordable){
-        btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Insufficient balance</button>`;
+        btnHtml = `<button class="btn btn-ghost btn-block nft-mint-btn" disabled>Insufficient balance</button>`;
       } else {
-        btnHtml = `<button class="btn btn-primary btn-sm" data-mint="${item.id}">Mint (demo)</button>`;
+        btnHtml = `<button class="btn btn-primary btn-block nft-mint-btn" data-mint="${item.id}">Mint</button>`;
       }
       return `<div class="nft-card">
         <div class="nft-media">
@@ -354,10 +355,9 @@
             <div>
               <div class="nft-price">${fmtUSD(item.priceUsd)}</div>
               <div class="nft-price-usd">Demo USDT</div>
-              <a href="staking.html" class="btn btn-ghost btn-xs" style="margin-top:4px;">Stake balance</a>
             </div>
-            ${btnHtml}
           </div>
+          ${btnHtml}
         </div>
       </div>`;
     }).join('');
