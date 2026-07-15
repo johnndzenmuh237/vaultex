@@ -31,6 +31,8 @@
 .wallet-required{border:1px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;color:var(--muted);margin-bottom:36px}
 .wallet-required strong{color:var(--paper);display:block;margin-bottom:6px;font-family:var(--font-display);font-size:1.05rem}
 
+.btn-xs{padding:3px 9px;font-size:.66rem;border-radius:5px}
+
 .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;flex-wrap:wrap;gap:10px}
 .section-head h2{font-family:var(--font-display);font-size:1.3rem}
 .section-head span{color:var(--muted);font-size:.85rem}
@@ -100,8 +102,7 @@
     </nav>
     <div class="nav-actions">
       <button class="theme-toggle" aria-label="Toggle theme">☾</button>
-      <button class="btn btn-ghost btn-sm wallet-connect-btn" id="walletConnectBtn"><span class="dot"></span><span id="walletConnectLabel">Connect wallet</span></button>
-      <a href="auth/login.html" class="btn btn-ghost btn-sm">Log in</a>
+      <a href="dashboard.html" class="btn btn-ghost btn-sm">Connect wallet</a>
       <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
       <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
@@ -116,7 +117,7 @@
     <a href="pricing.html">Pricing</a>
     <a href="about.html">About</a>
     <a href="careers.html">Careers</a>
-    <a href="auth/login.html">Log in</a>
+    <a href="dashboard.html">Connect wallet</a>
     <a href="auth/register.html" class="btn btn-primary btn-block" style="margin-top:16px;">Get started</a>
   </div>
 </header>
@@ -136,7 +137,7 @@
     <p style="margin:0 auto;">List your collectibles for free on select networks, and pay no platform fee on your first sale each month.</p>
     <div class="demo-banner">
       <span class="chip demo-chip">Demo</span>
-      <span>This marketplace is a local simulation. "Connect wallet" creates a simulated demo wallet address on this device — it is not a real MetaMask/WalletConnect connection and never touches a real blockchain. Once you deposit into your real Vaultex account, a matching demo USDT balance appears here to spend on collectibles; nothing here is a real crypto asset or transferable NFT.</span>
+      <span>This marketplace is a local simulation. "Connect wallet" takes you to your Vaultex dashboard to log in — this isn't a real MetaMask/WalletConnect connection and nothing here touches a real blockchain. Once you deposit into your real Vaultex account, a matching demo USDT balance appears here to spend on collectibles; nothing here is a real crypto asset or transferable NFT.</span>
     </div>
   </div>
 </section>
@@ -145,8 +146,8 @@
   <div class="container">
 
     <div class="wallet-required" id="walletRequiredNotice">
-      <strong>Connect your demo wallet to start collecting</strong>
-      <span>Click "Connect wallet" in the top-right to generate a simulated demo wallet address, then browse and mint below.</span>
+      <strong>Connect your wallet to start collecting</strong>
+      <span>Click "Connect wallet" in the top-right to go to your Vaultex dashboard and log in, then come back here to browse and mint.</span>
     </div>
 
     <div class="section-head"><h2>Featured collectibles</h2><span>Prices update live in demo USDT</span></div>
@@ -228,7 +229,6 @@
   const LS_BAL     = 'vaultex_demo_nft_balance_usdt';
   const LS_OWNED   = 'vaultex_demo_nft_owned';
   const LS_HIST    = 'vaultex_demo_nft_history';
-  const LS_WALLET  = 'vaultex_demo_nft_wallet_address';
 
   function getBalance(){ return parseFloat(localStorage.getItem(LS_BAL)||'0'); }
   function setBalance(v){ localStorage.setItem(LS_BAL, String(Math.max(0,v))); }
@@ -236,57 +236,13 @@
   function setOwned(o){ localStorage.setItem(LS_OWNED, JSON.stringify(o)); }
   function getHistory(){ try{ return JSON.parse(localStorage.getItem(LS_HIST)||'[]'); }catch(e){ return []; } }
   function setHistory(h){ localStorage.setItem(LS_HIST, JSON.stringify(h.slice(0,50))); }
-  function getWallet(){ return localStorage.getItem(LS_WALLET) || null; }
 
   /* ---------------------------------------------------------
-     DEMO WALLET CONNECT
-     ---------------------------------------------------------
-     Not a real MetaMask/WalletConnect integration — never calls
-     window.ethereum or any provider. Generates a locally-stored
-     mock address purely so the marketplace UI has something to
-     gate purchases on. Clearly labeled "Demo" everywhere in the UI.
+     "Connect wallet" is now a plain nav link to dashboard.html
+     (real Vaultex login), not a local demo wallet toggle. Minting
+     is gated on being logged in to a real Vaultex account
+     (auth.currentUser) instead — see renderGrid() below.
   --------------------------------------------------------- */
-  function randomHexAddress(){
-    const chars = '0123456789abcdef';
-    let addr = '0x';
-    for(let i=0;i<40;i++) addr += chars[Math.floor(Math.random()*16)];
-    return addr;
-  }
-  function shortAddr(addr){ return addr.slice(0,6)+'…'+addr.slice(-4); }
-
-  function connectWallet(){
-    let addr = getWallet();
-    if(!addr){
-      addr = randomHexAddress();
-      localStorage.setItem(LS_WALLET, addr);
-    }
-    renderWalletButton();
-    renderAll();
-  }
-  function disconnectWallet(){
-    localStorage.removeItem(LS_WALLET);
-    renderWalletButton();
-    renderAll();
-  }
-  function renderWalletButton(){
-    const addr = getWallet();
-    const btn = $('walletConnectBtn');
-    const label = $('walletConnectLabel');
-    if(addr){
-      btn.classList.add('connected');
-      label.textContent = shortAddr(addr);
-    } else {
-      btn.classList.remove('connected');
-      label.textContent = 'Connect wallet';
-    }
-  }
-  $('walletConnectBtn').addEventListener('click', () => {
-    if(getWallet()){
-      if(confirm('Disconnect demo wallet '+shortAddr(getWallet())+'?')) disconnectWallet();
-    } else {
-      connectWallet();
-    }
-  });
 
   /* ---------------------------------------------------------
      SYNC DEMO USDT BALANCE WITH REAL DEPOSITS
@@ -375,16 +331,16 @@
   /* ===== render: grid ===== */
   function renderGrid(){
     const owned = getOwned();
-    const connected = !!getWallet();
-    $('walletRequiredNotice').style.display = connected ? 'none' : '';
+    const loggedIn = !!(window.auth && auth.currentUser);
+    $('walletRequiredNotice').style.display = loggedIn ? 'none' : '';
 
     $('nftGrid').innerHTML = NFTS.map(item=>{
       const isOwned = owned.includes(item.id);
       const bal = getBalance();
       const affordable = bal >= item.priceUsd;
       let btnHtml;
-      if(!connected){
-        btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Connect wallet</button>`;
+      if(!loggedIn){
+        btnHtml = `<a href="dashboard.html" class="btn btn-ghost btn-sm">Connect wallet</a>`;
       } else if(isOwned){
         btnHtml = `<button class="btn btn-ghost btn-sm" disabled>Owned</button>`;
       } else if(!affordable){
@@ -406,6 +362,7 @@
             <div>
               <div class="nft-price">${fmtUSD(item.priceUsd)}</div>
               <div class="nft-price-usd">Demo USDT</div>
+              <a href="staking.html" class="btn btn-ghost btn-xs" style="margin-top:4px;">Stake balance</a>
             </div>
             ${btnHtml}
           </div>
@@ -419,7 +376,7 @@
   }
 
   function mintItem(id){
-    if(!getWallet()) return;
+    if(!(window.auth && auth.currentUser)) return;
     const item = NFTS.find(n=>n.id===id);
     if(!item) return;
     const owned = getOwned();
@@ -497,7 +454,6 @@
   }
 
   /* ===== init ===== */
-  renderWalletButton();
   renderAll();
 
   document.addEventListener('visibilitychange', () => {
