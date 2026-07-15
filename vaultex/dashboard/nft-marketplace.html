@@ -138,11 +138,6 @@
 <section class="section-sm">
   <div class="container">
 
-    <div class="wallet-required" id="walletRequiredNotice">
-      <strong>Connect your wallet to start collecting</strong>
-      <span>Click "Connect wallet" in the top-right to go to your Vaultex dashboard and log in, then come back here to browse and mint.</span>
-    </div>
-
     <div class="section-head"><h2>Featured collectibles</h2><span>Prices update live in demo USDT</span></div>
     <div class="nft-grid" id="nftGrid"></div>
 
@@ -324,17 +319,13 @@
   /* ===== render: grid ===== */
   function renderGrid(){
     const owned = getOwned();
-    const loggedIn = !!(window.auth && auth.currentUser);
-    $('walletRequiredNotice').style.display = loggedIn ? 'none' : '';
 
     $('nftGrid').innerHTML = NFTS.map(item=>{
       const isOwned = owned.includes(item.id);
       const bal = getBalance();
       const affordable = bal >= item.priceUsd;
       let btnHtml;
-      if(!loggedIn){
-        btnHtml = `<a href="dashboard.html" class="btn btn-ghost btn-block nft-mint-btn">Connect wallet</a>`;
-      } else if(isOwned){
+      if(isOwned){
         btnHtml = `<button class="btn btn-ghost btn-block nft-mint-btn" disabled>Owned</button>`;
       } else if(!affordable){
         btnHtml = `<button class="btn btn-ghost btn-block nft-mint-btn" disabled>Insufficient balance</button>`;
@@ -368,7 +359,6 @@
   }
 
   function mintItem(id){
-    if(!(window.auth && auth.currentUser)) return;
     const item = NFTS.find(n=>n.id===id);
     if(!item) return;
     const owned = getOwned();
