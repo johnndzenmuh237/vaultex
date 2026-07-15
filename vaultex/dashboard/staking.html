@@ -214,7 +214,7 @@ img{display:block}
 
 <div class="wallet-strip">
   <div class="container">
-    <div class="w-stat"><span class="lbl">Demo USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
+    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">Demo USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Total staked (est.)</span><span class="val" id="totalStakedVal">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Unclaimed rewards (est.)</span><span class="val" id="totalRewardVal" style="color:var(--mint)">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Est. weekly profit</span><span class="val" id="totalWeeklyVal" style="color:var(--mint)">$0.00</span></div>
@@ -228,7 +228,7 @@ img{display:block}
     <p>Pick a staking plan for each asset — flexible or fixed-term — and track your rewards accrue in real time, down to the second.</p>
     <div class="demo-banner">
       <span class="chip">Demo</span>
-      <span>This is a simulated staking environment with its own demo wallet — it is completely separate from your real Vaultex account balance and involves no real crypto or payment provider. Your demo USDT balance here reflects deposits to your real Vaultex account; stake it to see how plans, lock-ups, and rewards work.</span>
+      <span>This is a simulated staking environment with its own demo wallet — it is completely separate from your real Vaultex account balance and involves no real crypto or payment provider. Once you deposit into your real Vaultex account, a matching demo USDT balance appears here for you to stake and see how plans, lock-ups, and rewards work.</span>
     </div>
   </div>
 </section>
@@ -392,6 +392,22 @@ img{display:block}
   function setHistory(h){ localStorage.setItem(LS_HIST, JSON.stringify(h)); }
 
   /* ---------------------------------------------------------
+     ONE-TIME MIGRATION — clear the legacy auto-seeded balance
+     ---------------------------------------------------------
+     An earlier version of this page seeded a flat $10,000 demo
+     balance into LS_BAL on first visit (before deposit-syncing
+     existed). That value can still be sitting in a browser's
+     localStorage from that earlier session. Wipe it out once so
+     every user's demo balance goes back to being driven purely by
+     syncDemoBalanceWithDeposits() below — never by a hardcoded seed.
+  --------------------------------------------------------- */
+  const LS_MIGRATED_FLAG = 'vaultex_demo_staking_migrated_v2';
+  if(!localStorage.getItem(LS_MIGRATED_FLAG)){
+    localStorage.removeItem(LS_BAL);
+    localStorage.setItem(LS_MIGRATED_FLAG, '1');
+  }
+
+  /* ---------------------------------------------------------
      SYNC DEMO USDT BALANCE WITH REAL DEPOSITS
      ---------------------------------------------------------
      Same pattern as trade.html's AutoTrading bot: on auth and on
@@ -517,7 +533,13 @@ img{display:block}
 
   /* ===== header + summary cards ===== */
   function renderHeader(){
-    $('usdtBal').textContent = fmtUSD(getBalance());
+    const bal = getBalance();
+    $('usdtBal').textContent = fmtUSD(bal);
+    // The demo USDT balance is only shown once a real deposit has
+    // synced a nonzero amount in — before that there's nothing to
+    // show, and displaying a static "$0.00" reads like an invented
+    // pre-loaded balance rather than "you haven't funded this yet".
+    $('usdtBalStat').style.display = bal > 0 ? '' : 'none';
     const stakes = getStakes();
     let staked=0, reward=0, weekly=0;
     stakes.forEach(s=>{
