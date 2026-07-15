@@ -277,25 +277,25 @@
   }
 
   /* ===== catalog =====
-     Artwork comes from DiceBear (dicebear.com) — a free, open-source
-     generative-avatar API. Each item's image is deterministically
-     generated from its id, so every card gets unique, real,
-     rendering art with no copyright/licensing concerns. This is
-     placeholder generative art for the demo, not actual licensed
-     NFT collection artwork.
+     Artwork comes from Pollinations (image.pollinations.ai) — a free,
+     open-source, zero-auth text-to-image API. Each item's image is
+     generated from a prompt themed to its collection and pinned with
+     a fixed seed, so every card gets unique, on-theme AI art that
+     reloads identically. This is placeholder generative art for the
+     demo, not actual licensed NFT collection artwork.
   */
-  function artUrl(seed, style){
-    return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundType=gradientLinear`;
+  function artUrl(seed, prompt){
+    return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=500&height=500&seed=${encodeURIComponent(seed)}&nologo=true`;
   }
   const NFTS = [
-    { id:'aurora-042', name:'Aurora #042', collection:'Aurora', img:artUrl('aurora-042','shapes'), priceUsd:1640 },
-    { id:'glitch-city-11', name:'Glitch City #11', collection:'Glitch City', img:artUrl('glitch-city-11','bottts'), priceUsd:2800 },
-    { id:'driftwood-7', name:'Driftwood #7', collection:'Driftwood', img:artUrl('driftwood-7','identicon'), priceUsd:620 },
-    { id:'nightfall-88', name:'Nightfall #88', collection:'Nightfall', img:artUrl('nightfall-88','rings'), priceUsd:4200 },
-    { id:'aurora-017', name:'Aurora #017', collection:'Aurora', img:artUrl('aurora-017','shapes'), priceUsd:1180 },
-    { id:'glitch-city-29', name:'Glitch City #29', collection:'Glitch City', img:artUrl('glitch-city-29','bottts'), priceUsd:3050 },
-    { id:'driftwood-14', name:'Driftwood #14', collection:'Driftwood', img:artUrl('driftwood-14','identicon'), priceUsd:540 },
-    { id:'nightfall-03', name:'Nightfall #03', collection:'Nightfall', img:artUrl('nightfall-03','rings'), priceUsd:5100 },
+    { id:'aurora-042', name:'Aurora #042', collection:'Aurora', img:artUrl('aurora-042','vibrant aurora borealis abstract digital art, flowing ribbons of green and violet light over a dark sky, nft collectible art style'), priceUsd:1640 },
+    { id:'glitch-city-11', name:'Glitch City #11', collection:'Glitch City', img:artUrl('glitch-city-11','cyberpunk city skyline glitch art, neon distortion and datamosh effect, nft collectible art style'), priceUsd:2800 },
+    { id:'driftwood-7', name:'Driftwood #7', collection:'Driftwood', img:artUrl('driftwood-7','weathered driftwood on a misty beach, abstract textured digital art, muted earth tones, nft collectible art style'), priceUsd:620 },
+    { id:'nightfall-88', name:'Nightfall #88', collection:'Nightfall', img:artUrl('nightfall-88','deep nightfall sky abstract digital art, stars fading into indigo and black gradient, nft collectible art style'), priceUsd:4200 },
+    { id:'aurora-017', name:'Aurora #017', collection:'Aurora', img:artUrl('aurora-017','swirling aurora borealis abstract digital art, teal and magenta light waves over mountains, nft collectible art style'), priceUsd:1180 },
+    { id:'glitch-city-29', name:'Glitch City #29', collection:'Glitch City', img:artUrl('glitch-city-29','futuristic city street glitch art, chromatic aberration and pixel distortion, neon signage, nft collectible art style'), priceUsd:3050 },
+    { id:'driftwood-14', name:'Driftwood #14', collection:'Driftwood', img:artUrl('driftwood-14','sun-bleached driftwood tangled with sea rope, abstract coastal digital art, warm sandy palette, nft collectible art style'), priceUsd:540 },
+    { id:'nightfall-03', name:'Nightfall #03', collection:'Nightfall', img:artUrl('nightfall-03','moody nightfall skyline abstract digital art, crescent moon and scattered stars, deep navy gradient, nft collectible art style'), priceUsd:5100 },
   ];
 
   /* ===== render: wallet strip ===== */
