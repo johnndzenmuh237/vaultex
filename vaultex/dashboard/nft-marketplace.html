@@ -277,25 +277,115 @@
   }
 
   /* ===== catalog =====
-     Artwork comes from Pollinations (image.pollinations.ai) — a free,
-     open-source, zero-auth text-to-image API. Each item's image is
-     generated from a prompt themed to its collection and pinned with
-     a fixed seed, so every card gets unique, on-theme AI art that
-     reloads identically. This is placeholder generative art for the
-     demo, not actual licensed NFT collection artwork.
+     Artwork is generated locally as inline SVG — no external image
+     requests at all, so cards always render even with no network
+     access or a strict CSP. Each theme (aurora / glitch-city /
+     driftwood / nightfall) has its own generative pattern, seeded
+     per item id so every card is unique but stable across reloads.
+     This is placeholder generative art for the demo, not actual
+     licensed NFT collection artwork.
   */
-  function artUrl(seed, prompt){
-    return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=500&height=500&seed=${encodeURIComponent(seed)}&nologo=true`;
+  function seededRandom(seed){
+    let h = 0;
+    for(let i=0;i<seed.length;i++){ h = (Math.imul(31,h) + seed.charCodeAt(i))|0; }
+    return function(){
+      h = (Math.imul(h, 1597334677) + 1)|0;
+      return ((h >>> 8) & 0xffffff) / 0xffffff;
+    };
+  }
+
+  function artAurora(seed){
+    const r = seededRandom(seed);
+    const bands = [['#0f2a3f','#1c4a5c'],['#1f6f5c','#28a37a'],['#5b2a86','#8b4fc9'],['#0a3d5c','#17b6a0']];
+    let ribbons = '';
+    for(let i=0;i<5;i++){
+      const c = bands[Math.floor(r()*bands.length)];
+      const y = 40 + i*70 + r()*30;
+      const amp = 30 + r()*40;
+      ribbons += `<path d="M0,${y} Q125,${y-amp} 250,${y} T500,${y}" stroke="${c[1]}" stroke-width="${18+r()*22}" fill="none" opacity="${0.35+r()*0.3}" stroke-linecap="round"/>`;
+    }
+    let stars = '';
+    for(let i=0;i<24;i++){ stars += `<circle cx="${r()*500}" cy="${r()*220}" r="${0.6+r()*1.4}" fill="#fff" opacity="${0.3+r()*0.5}"/>`; }
+    return `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bg-${seed}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#050b14"/><stop offset="100%" stop-color="#0d2338"/></linearGradient></defs>
+      <rect width="500" height="500" fill="url(#bg-${seed})"/>
+      ${stars}${ribbons}
+      <path d="M0,500 L0,420 Q125,380 250,420 T500,400 L500,500 Z" fill="#0a0e14" opacity="0.9"/>
+    </svg>`;
+  }
+
+  function artGlitch(seed){
+    const r = seededRandom(seed);
+    const neon = ['#ff2ea6','#2ee8ff','#9b5cff','#f2ff3d'];
+    let bars = '';
+    for(let i=0;i<9;i++){
+      const y = r()*500, h = 4+r()*26, x = r()*160, w = 100+r()*400;
+      bars += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${neon[Math.floor(r()*neon.length)]}" opacity="${0.5+r()*0.4}"/>`;
+    }
+    let towers = '';
+    for(let i=0;i<7;i++){
+      const w = 30+r()*45, h = 100+r()*260, x = i*72+r()*10;
+      towers += `<rect x="${x}" y="${500-h}" width="${w}" height="${h}" fill="#111827"/>`;
+      for(let j=0;j<Math.floor(h/28);j++){
+        if(r()>0.4) towers += `<rect x="${x+6}" y="${500-h+j*28+6}" width="6" height="6" fill="${neon[Math.floor(r()*neon.length)]}" opacity="0.85"/>`;
+      }
+    }
+    return `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bg-${seed}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0b0f1a"/><stop offset="100%" stop-color="#1a0f2e"/></linearGradient></defs>
+      <rect width="500" height="500" fill="url(#bg-${seed})"/>
+      ${towers}${bars}
+    </svg>`;
+  }
+
+  function artDriftwood(seed){
+    const r = seededRandom(seed);
+    const wood = ['#8a5a3b','#a5714b','#6b4327','#c99a6b'];
+    let grain = '';
+    for(let i=0;i<10;i++){
+      const y = 30+i*45+r()*15;
+      grain += `<path d="M0,${y} Q125,${y+r()*30-15} 250,${y} T500,${y}" stroke="${wood[Math.floor(r()*wood.length)]}" stroke-width="${3+r()*6}" fill="none" opacity="${0.5+r()*0.35}"/>`;
+    }
+    let knots = '';
+    for(let i=0;i<4;i++){
+      const cx = r()*500, cy = r()*500;
+      knots += `<ellipse cx="${cx}" cy="${cy}" rx="${10+r()*14}" ry="${6+r()*8}" fill="#3f2716" opacity="0.55"/>`;
+    }
+    return `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bg-${seed}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8d3ad"/><stop offset="100%" stop-color="#c9a876"/></linearGradient></defs>
+      <rect width="500" height="500" fill="url(#bg-${seed})"/>
+      ${grain}${knots}
+    </svg>`;
+  }
+
+  function artNightfall(seed){
+    const r = seededRandom(seed);
+    let stars = '';
+    for(let i=0;i<60;i++){ stars += `<circle cx="${r()*500}" cy="${r()*500}" r="${0.5+r()*1.6}" fill="#fff" opacity="${0.3+r()*0.6}"/>`; }
+    const moonX = 130+r()*240, moonY = 110+r()*80, moonR = 45+r()*20;
+    return `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bg-${seed}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#050510"/><stop offset="100%" stop-color="#141033"/></linearGradient></defs>
+      <rect width="500" height="500" fill="url(#bg-${seed})"/>
+      ${stars}
+      <circle cx="${moonX}" cy="${moonY}" r="${moonR}" fill="#f4ecd8" opacity="0.92"/>
+      <circle cx="${moonX+moonR*0.42}" cy="${moonY-moonR*0.18}" r="${moonR*0.92}" fill="#141033"/>
+      <path d="M0,500 L0,440 Q125,400 250,440 T500,420 L500,500 Z" fill="#0a0a16"/>
+    </svg>`;
+  }
+
+  const ART_BY_THEME = { aurora: artAurora, glitch: artGlitch, driftwood: artDriftwood, nightfall: artNightfall };
+  function artUrl(seed, theme){
+    const svg = ART_BY_THEME[theme](seed);
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
   const NFTS = [
-    { id:'aurora-042', name:'Aurora #042', collection:'Aurora', img:artUrl('aurora-042','vibrant aurora borealis abstract digital art, flowing ribbons of green and violet light over a dark sky, nft collectible art style'), priceUsd:1640 },
-    { id:'glitch-city-11', name:'Glitch City #11', collection:'Glitch City', img:artUrl('glitch-city-11','cyberpunk city skyline glitch art, neon distortion and datamosh effect, nft collectible art style'), priceUsd:2800 },
-    { id:'driftwood-7', name:'Driftwood #7', collection:'Driftwood', img:artUrl('driftwood-7','weathered driftwood on a misty beach, abstract textured digital art, muted earth tones, nft collectible art style'), priceUsd:620 },
-    { id:'nightfall-88', name:'Nightfall #88', collection:'Nightfall', img:artUrl('nightfall-88','deep nightfall sky abstract digital art, stars fading into indigo and black gradient, nft collectible art style'), priceUsd:4200 },
-    { id:'aurora-017', name:'Aurora #017', collection:'Aurora', img:artUrl('aurora-017','swirling aurora borealis abstract digital art, teal and magenta light waves over mountains, nft collectible art style'), priceUsd:1180 },
-    { id:'glitch-city-29', name:'Glitch City #29', collection:'Glitch City', img:artUrl('glitch-city-29','futuristic city street glitch art, chromatic aberration and pixel distortion, neon signage, nft collectible art style'), priceUsd:3050 },
-    { id:'driftwood-14', name:'Driftwood #14', collection:'Driftwood', img:artUrl('driftwood-14','sun-bleached driftwood tangled with sea rope, abstract coastal digital art, warm sandy palette, nft collectible art style'), priceUsd:540 },
-    { id:'nightfall-03', name:'Nightfall #03', collection:'Nightfall', img:artUrl('nightfall-03','moody nightfall skyline abstract digital art, crescent moon and scattered stars, deep navy gradient, nft collectible art style'), priceUsd:5100 },
+    { id:'aurora-042', name:'Aurora #042', collection:'Aurora', img:artUrl('aurora-042','aurora'), priceUsd:1640 },
+    { id:'glitch-city-11', name:'Glitch City #11', collection:'Glitch City', img:artUrl('glitch-city-11','glitch'), priceUsd:2800 },
+    { id:'driftwood-7', name:'Driftwood #7', collection:'Driftwood', img:artUrl('driftwood-7','driftwood'), priceUsd:620 },
+    { id:'nightfall-88', name:'Nightfall #88', collection:'Nightfall', img:artUrl('nightfall-88','nightfall'), priceUsd:4200 },
+    { id:'aurora-017', name:'Aurora #017', collection:'Aurora', img:artUrl('aurora-017','aurora'), priceUsd:1180 },
+    { id:'glitch-city-29', name:'Glitch City #29', collection:'Glitch City', img:artUrl('glitch-city-29','glitch'), priceUsd:3050 },
+    { id:'driftwood-14', name:'Driftwood #14', collection:'Driftwood', img:artUrl('driftwood-14','driftwood'), priceUsd:540 },
+    { id:'nightfall-03', name:'Nightfall #03', collection:'Nightfall', img:artUrl('nightfall-03','nightfall'), priceUsd:5100 },
   ];
 
   /* ===== render: wallet strip ===== */
