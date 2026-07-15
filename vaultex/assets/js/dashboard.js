@@ -178,12 +178,12 @@
 
   /* ---------------------------------------------------------
      RECENT TRANSACTIONS — merges real backend transactions with
-     VaultexBotTrade demo earnings (see below) into one table,
-     each demo row clearly tagged so it's never mistaken for a
+     VaultexBotTrade earnings (see below) into one table,
+     each row clearly tagged so it's never mistaken for a
      real, withdrawal-eligible transaction.
   --------------------------------------------------------- */
   let _lastRealTx = [];   // from fetchAccountSummary()
-  let _lastBotTx = [];    // from the isolated botDemo Firestore doc
+  let _lastBotTx = [];    // from the isolated botTrade Firestore doc
 
   function renderTransactionsMerged() {
     const txBody = document.querySelector('[data-tx-table]');
