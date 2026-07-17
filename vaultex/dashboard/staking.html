@@ -222,7 +222,8 @@ img{display:block}
 
 <section class="hero">
   <div class="container text-center" style="max-width:680px;margin:0 auto">
-    <div class="eyebrow" style="justify-content:center">Staking <span class="demo-chip">STK</span></div>
+    <div class="eyebrow" style="justify-content:center">Staking <span class="demo-chip">STK
+    </span></div>
     <h1>Choose a plan. Stake. Watch it grow.</h1>
     <p>Pick a staking plan for each asset — flexible or fixed-term — and track your rewards accrue in real time, down to the second.</p>
   </div>
@@ -340,7 +341,6 @@ img{display:block}
     </div>
     <div class="footer-bottom">
       <span style="color:var(--muted);font-size:.85rem">© 2026 Vaultex. All rights reserved.</span>
-      <span style="color:var(--muted);font-size:.8rem">Digital assets are volatile and carry risk of loss. Demo environment — no real funds are involved.</span>
     </div>
   </div>
 </footer>
@@ -569,7 +569,7 @@ img{display:block}
         <td class="mono">${pool.min} ${pool.symbol.toUpperCase()}</td>
         <td class="avail-cell ${avail<=0?'zero':''}">${fmtAmt(avail)} ${pool.symbol.toUpperCase()}</td>
         <td><div class="row-actions">
-          ${disabled ? `<button class="btn btn-ghost btn-sm" data-need="${pool.symbol}">Get demo ${pool.symbol.toUpperCase()}</button>` : `<button class="btn btn-primary btn-sm" data-stake="${pool.symbol}">Stake</button>`}
+          ${disabled ? `<button class="btn btn-ghost btn-sm" data-need="${pool.symbol}">Get ${pool.symbol.toUpperCase()}</button>` : `<button class="btn btn-primary btn-sm" data-stake="${pool.symbol}">Stake</button>`}
         </div></td>
       </tr>`;
     }).join('');
