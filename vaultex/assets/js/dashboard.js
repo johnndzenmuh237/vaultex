@@ -1,7 +1,3 @@
-/* =========================================================
-   DASHBOARD.JS — dashboard widgets & interactions
-   ========================================================= */
-
 (function () {
   'use strict';
 
@@ -17,6 +13,7 @@
     { href: 'deposits.html',        icon: '⬇', label: 'Deposits' },
     { href: 'withdrawals.html',     icon: '⬆', label: 'Withdrawals' },
     { href: 'trading-history.html', icon: '⌗', label: 'Trading history' },
+    { href: 'earnings.html',        icon: '⚡', label: 'Earnings' },
   ];
 
   const ACCOUNT_ITEMS = [
@@ -178,7 +175,7 @@
 
   /* ---------------------------------------------------------
      RECENT TRANSACTIONS — merges real backend transactions with
-     VaultexBotTrade earnings (see below) into one table,
+     VaultexBotTrade  earnings (see below) into one table,
      each row clearly tagged so it's never mistaken for a
      real, withdrawal-eligible transaction.
   --------------------------------------------------------- */
