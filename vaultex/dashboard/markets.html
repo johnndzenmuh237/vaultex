@@ -57,7 +57,7 @@
   }
   .market-row:hover { background: var(--ink-soft); }
   .market-row.active { background: var(--ink-soft); border-color: var(--accent, #6C7CFF); }
-  .market-row .m-icon { border-radius: 50%; flex-shrink: 0; width: 26px; height: 26px; }
+  .market-row .m-icon { border-radius: 50%; flex-shrink: 0; width: 26px; height: 26px; object-fit: contain; background: #fff; padding: 2px; box-sizing: border-box; }
   .market-row .m-name { font-weight: 600; font-size: .85rem; line-height: 1.2; }
   .market-row .m-sym { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
   .market-row .m-right { margin-left: auto; text-align: right; }
@@ -68,7 +68,7 @@
   /* ---- Chart + order panel ---- */
   .chart-panel { display: flex; flex-direction: column; gap: 16px; position: relative; }
   .selected-asset { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .selected-asset img, .selected-asset .sa-icon { border-radius: 50%; width: 32px; height: 32px; flex-shrink: 0; }
+  .selected-asset img, .selected-asset .sa-icon { border-radius: 50%; width: 32px; height: 32px; flex-shrink: 0; object-fit: contain; background: #fff; padding: 2px; box-sizing: border-box; }
   .selected-asset .sa-name { font-weight: 700; font-size: 1.05rem; }
   .selected-asset .sa-sym { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
   .selected-asset .sa-price { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 600; margin-left: auto; }
@@ -382,7 +382,7 @@
         <div class="widget-head" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
           <div>
             <h3 style="margin:0 0 4px;">3 free signals — updated daily</h3>
-            <p style="margin:0;font-size:.85rem;color:var(--muted);max-width:560px;">Every day we scan the crypto market — price momentum, 24h volume and volatility across major coins — and surface 3 fresh signals. A new set is generated daily.</p>
+            <p style="margin:0;font-size:.85rem;color:var(--muted);max-width:560px;">Every day our engine pulls live price data for the market's most active coins and runs it through RSI, moving-average trend, MACD momentum and ATR volatility checks, then surfaces the 3 strongest setups. A new set is computed daily.</p>
           </div>
           <div data-signals-updated style="font-size:.76rem;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;"></div>
         </div>
@@ -392,6 +392,7 @@
         <div class="signals-locked-note" data-signals-locked-note style="display:none;">
           <span>🔒</span><span>Fund your available balance to view details and trade today's signals.</span>
         </div>
+        <p style="margin:12px 0 0;font-size:.72rem;color:var(--muted);">Signals are generated from technical indicators (RSI, EMA trend, MACD, ATR, volume) on live market data. They reflect a rules-based read of current conditions, not a guarantee of future performance — trade at your own discretion.</p>
       </div>
 
       <!-- VaultexBot note -->
@@ -446,13 +447,24 @@
  * real account is totalBalance, used purely to top up this demo
  * balance when a real deposit is detected (see syncBalanceWithDeposits).
  *
- * DAILY SIGNALS — deterministically generated once per calendar day
- * from the day's date string, so every visitor sees the same 3
- * signals on a given day and they persist (via localStorage) across
- * reloads until the date rolls over, at which point a fresh set is
- * generated from the day's live market snapshot. No exchange
- * connection or real order is placed by this feature — it is
- * informational only, and is gated behind having a positive
+ * DAILY SIGNALS — a real, indicator-based scan, not a placeholder.
+ * Once per calendar day, the top ~40 most liquid USDT pairs (by 24h
+ * quote volume) are each pulled from Binance's public klines endpoint
+ * (1h candles) and run through:
+ *   - RSI(14)                  — overbought/oversold
+ *   - EMA(20) vs EMA(50)       — trend direction
+ *   - MACD(12,26,9) histogram  — momentum confirmation
+ *   - ATR(14)                  — volatility, used to size target/stop
+ *   - Volume vs its 20-candle average — conviction/confirmation
+ * Each coin gets a directional score from how many of these agree;
+ * the 3 highest-conviction setups across the scanned pool become the
+ * day's signals, with target/stop distances derived from that coin's
+ * own ATR (so they scale with each coin's real volatility instead of
+ * a fixed %). Results are cached in localStorage for the day so the
+ * scan isn't re-run on every page load — a fresh scan runs the first
+ * time the page loads after the date rolls over.
+ * No exchange connection or real order is placed by this feature —
+ * it is informational only, and is gated behind having a positive
  * available balance before it can be viewed in full / acted on.
  */
 (function () {
@@ -509,7 +521,15 @@
     }
   }
 
-  /* ===== deterministic coin avatar (no external image dependency) ===== */
+  /* ===== real coin logos, with generated-avatar fallback =====
+     Logos are pulled from CoinCap's free public icon CDN (no key
+     required). If a symbol has no icon there (delisted/very new
+     coins), the <img> below fails to load and a global error
+     listener (registered further down) swaps in the generated
+     letter-avatar instead — so every coin always shows *something*. */
+  function coinLogoUrl(base) {
+    return `https://assets.coincap.io/assets/icons/${base.toLowerCase()}@2x.png`;
+  }
   function avatarSVG(symbol) {
     let h = 0;
     for (let i = 0; i < symbol.length; i++) h = (Math.imul(31, h) + symbol.charCodeAt(i)) | 0;
@@ -522,29 +542,78 @@
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 
-  /* ===== small deterministic PRNG (mulberry32) seeded from a string ===== */
-  function hashStr(str) {
-    let h = 1779033703 ^ str.length;
-    for (let i = 0; i < str.length; i++) {
-      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-      h = (h << 13) | (h >>> 19);
-    }
-    return () => {
-      h = Math.imul(h ^ (h >>> 16), 2246822507);
-      h = Math.imul(h ^ (h >>> 13), 3266489909);
-      return ((h ^= h >>> 16) >>> 0);
-    };
+  /* ===== technical-indicator math (RSI / EMA / MACD / ATR) =====
+     Plain implementations, no dependency — operate on arrays of
+     numbers pulled straight from Binance klines. */
+  function average(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+
+  function emaSeries(values, period) {
+    const k = 2 / (period + 1);
+    const out = [];
+    let prev;
+    values.forEach((v, i) => {
+      prev = i === 0 ? v : v * k + prev * (1 - k);
+      out.push(prev);
+    });
+    return out;
   }
-  function mulberry32(a) {
-    return function () {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+  const lastEMA = (values, period) => emaSeries(values, period).slice(-1)[0];
+
+  function calcRSI(closes, period = 14) {
+    if (closes.length <= period) return 50;
+    let gains = 0, losses = 0;
+    for (let i = 1; i <= period; i++) {
+      const diff = closes[i] - closes[i - 1];
+      if (diff >= 0) gains += diff; else losses -= diff;
+    }
+    let avgGain = gains / period, avgLoss = losses / period;
+    for (let i = period + 1; i < closes.length; i++) {
+      const diff = closes[i] - closes[i - 1];
+      const gain = diff > 0 ? diff : 0;
+      const loss = diff < 0 ? -diff : 0;
+      avgGain = (avgGain * (period - 1) + gain) / period;
+      avgLoss = (avgLoss * (period - 1) + loss) / period;
+    }
+    if (avgLoss === 0) return 100;
+    const rs = avgGain / avgLoss;
+    return 100 - 100 / (1 + rs);
+  }
+
+  function calcMACDHistogram(closes) {
+    const emaFast = emaSeries(closes, 12);
+    const emaSlow = emaSeries(closes, 26);
+    const macdLine = closes.map((_, i) => emaFast[i] - emaSlow[i]);
+    const signalLine = emaSeries(macdLine, 9);
+    return macdLine[macdLine.length - 1] - signalLine[signalLine.length - 1];
+  }
+
+  function calcATR(highs, lows, closes, period = 14) {
+    const trs = [];
+    for (let i = 1; i < highs.length; i++) {
+      trs.push(Math.max(
+        highs[i] - lows[i],
+        Math.abs(highs[i] - closes[i - 1]),
+        Math.abs(lows[i] - closes[i - 1])
+      ));
+    }
+    const last = trs.slice(-period);
+    return average(last);
   }
 
   /* ===== state ===== */
+
+  // Delegated fallback: image load errors don't bubble, so listen in
+  // the capture phase. Any <img data-coin-base="XYZ"> that fails to
+  // load its real logo gets swapped for the generated letter-avatar.
+  document.addEventListener('error', e => {
+    const img = e.target;
+    if (img && img.tagName === 'IMG' && img.dataset && img.dataset.coinBase) {
+      const base = img.dataset.coinBase;
+      delete img.dataset.coinBase;
+      img.src = avatarSVG(base);
+    }
+  }, true);
+
   let TICKER_MAP = new Map();   // symbol -> {symbol, base, price, pct, high, low, volume, quoteVolume, count}
   let LIST_ROWS = [];           // top rows shown in the market list
   let selectedSymbol = 'BTCUSDT';
@@ -630,7 +699,7 @@
       const pctClass = r.pct >= 0 ? 'pnl-up' : 'pnl-down';
       const active = r.symbol === selectedSymbol ? 'active' : '';
       return `<button class="market-row ${active}" data-symbol="${r.symbol}">
-        <img class="m-icon" src="${avatarSVG(r.base)}" alt="">
+        <img class="m-icon" src="${coinLogoUrl(r.base)}" data-coin-base="${r.base}" alt="" loading="lazy">
         <div><div class="m-name">${r.base}</div><div class="m-sym">${r.base}/USDT</div></div>
         <div class="m-right">
           <div class="m-price">${fmtPrice(r.price)}</div>
@@ -646,7 +715,7 @@
   function updateSelectedAssetHeader() {
     const t = TICKER_MAP.get(selectedSymbol);
     if (!t) return;
-    $('[data-sa-image]').innerHTML = `<img class="sa-icon" src="${avatarSVG(t.base)}" alt="">`;
+    $('[data-sa-image]').innerHTML = `<img class="sa-icon" src="${coinLogoUrl(t.base)}" data-coin-base="${t.base}" alt="">`;
     $('[data-sa-name]').textContent = t.base;
     $('[data-sa-sym]').textContent = `${t.base}/USDT`;
     $('[data-sa-price]').textContent = fmtPrice(t.price);
@@ -952,45 +1021,116 @@
       </tr>`).join('');
   }
 
-  /* ===== daily free signals ===== */
-  function generateOrLoadSignals(pool) {
+  /* ===== daily free signals — real technical-analysis scan ===== */
+  let signalsLoading = false;
+
+  async function fetchIndicatorsFor(row) {
+    try {
+      const res = await fetch(`${REST}/klines?symbol=${row.symbol}&interval=1h&limit=100`);
+      if (!res.ok) return null;
+      const kl = await res.json();
+      if (kl.length < 55) return null; // need enough candles for EMA50/MACD to be meaningful
+
+      const closes = kl.map(k => parseFloat(k[4]));
+      const highs = kl.map(k => parseFloat(k[2]));
+      const lows = kl.map(k => parseFloat(k[3]));
+      const vols = kl.map(k => parseFloat(k[5]));
+
+      const rsi = calcRSI(closes, 14);
+      const ema20 = lastEMA(closes, 20);
+      const ema50 = lastEMA(closes, 50);
+      const macdHist = calcMACDHistogram(closes);
+      const atr = calcATR(highs, lows, closes, 14);
+      const avgVol = average(vols.slice(-21, -1));
+      const volRatio = avgVol ? vols[vols.length - 1] / avgVol : 1;
+
+      return {
+        symbol: row.symbol, base: row.base, lastPrice: closes[closes.length - 1],
+        rsi, ema20, ema50, macdHist, atr, volRatio,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function scoreIndicators(ind) {
+    const trendSignal = ind.ema20 > ind.ema50 ? 1 : -1;
+    const macdSignal = ind.macdHist > 0 ? 1 : -1;
+    let rsiSignal = 0;
+    if (ind.rsi < 40) rsiSignal = 1;       // oversold → bullish bias
+    else if (ind.rsi > 60) rsiSignal = -1; // overbought → bearish bias
+
+    const score = trendSignal + macdSignal + rsiSignal;
+    let agree = 1; // trend always counts
+    if (Math.sign(macdSignal) === Math.sign(trendSignal)) agree++;
+    if (rsiSignal !== 0 && Math.sign(rsiSignal) === Math.sign(trendSignal)) agree++;
+
+    const side = score > 0 ? 'BUY' : score < 0 ? 'SELL' : null;
+    return { score, agree, side, trendSignal, macdSignal, rsiSignal };
+  }
+
+  async function analyzeAndGenerateSignals(pool) {
+    const CHUNK = 8; // fetch in small batches so we don't burst-hit the public API
+    const analyzed = [];
+    for (let i = 0; i < pool.length; i += CHUNK) {
+      const chunk = pool.slice(i, i + CHUNK);
+      const chunkResults = await Promise.all(chunk.map(fetchIndicatorsFor));
+      chunkResults.forEach(r => { if (r) analyzed.push(r); });
+    }
+
+    const scored = analyzed
+      .map(ind => ({ ...ind, ...scoreIndicators(ind) }))
+      .filter(x => x.side); // drop coins with no clear directional agreement
+
+    scored.sort((a, b) =>
+      (Math.abs(b.score) + Math.min(b.volRatio, 2) * 0.5) -
+      (Math.abs(a.score) + Math.min(a.volRatio, 2) * 0.5)
+    );
+
+    return scored.slice(0, 3).map(c => {
+      const confidence = Math.round(Math.max(58, Math.min(95, 55 + c.agree * 12 + Math.min(c.volRatio, 2) * 4)));
+      const entry = c.lastPrice;
+      const target = c.side === 'BUY' ? entry + 1.5 * c.atr : entry - 1.5 * c.atr;
+      const stop = c.side === 'BUY' ? entry - 1 * c.atr : entry + 1 * c.atr;
+      return {
+        symbol: c.symbol, base: c.base, side: c.side, entry, target, stop, confidence,
+        indicators: {
+          rsi: Math.round(c.rsi),
+          trend: c.trendSignal > 0 ? 'Uptrend (EMA20>EMA50)' : 'Downtrend (EMA20<EMA50)',
+          macd: c.macdSignal > 0 ? 'Bullish' : 'Bearish',
+          volRatio: Math.round(c.volRatio * 100) / 100,
+        },
+      };
+    });
+  }
+
+  async function generateOrLoadSignals(pool) {
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD, rolls over once per day
     let stored = null;
     try { stored = JSON.parse(localStorage.getItem(LS_SIGNALS) || 'null'); } catch (e) { stored = null; }
-    if (stored && stored.date === today && Array.isArray(stored.signals) && stored.signals.length === 3) {
+    if (stored && stored.date === today && Array.isArray(stored.signals) && stored.signals.length) {
       return stored;
     }
 
-    const rand = mulberry32(hashStr(today)());
-    // Fisher–Yates shuffle of the day's most liquid pool, seeded by date
-    const shuffled = pool.slice();
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const picks = shuffled.slice(0, 3);
-
-    const signals = picks.map(r => {
-      const side = r.pct >= 0 ? (rand() < 0.82 ? 'BUY' : 'SELL') : (rand() < 0.7 ? 'SELL' : 'BUY');
-      const confidence = Math.round(66 + rand() * 27); // 66–93%
-      const targetPct = 1.4 + rand() * 3.6;  // 1.4%–5%
-      const stopPct = 0.7 + rand() * 1.6;    // 0.7%–2.3%
-      const entry = r.price;
-      const target = side === 'BUY' ? entry * (1 + targetPct / 100) : entry * (1 - targetPct / 100);
-      const stop = side === 'BUY' ? entry * (1 - stopPct / 100) : entry * (1 + stopPct / 100);
-      return { symbol: r.symbol, base: r.base, side, entry, target, stop, confidence };
-    });
+    const signals = await analyzeAndGenerateSignals(pool);
+    if (!signals.length) return null; // API hiccup — caller will retry on next tick without caching a bad result
 
     const record = { date: today, generatedAt: new Date().toISOString(), signals };
     try { localStorage.setItem(LS_SIGNALS, JSON.stringify(record)); } catch (e) { /* ignore quota errors */ }
     return record;
   }
 
-  function initSignalsIfNeeded() {
-    if (signalsData) { renderSignals(); return; }
+  async function initSignalsIfNeeded() {
+    if (signalsData || signalsLoading) { renderSignals(); return; }
     if (!LIST_ROWS.length) return;
+    signalsLoading = true;
     const pool = LIST_ROWS.slice(0, 40); // scan the most liquid, actively-traded coins
-    signalsData = generateOrLoadSignals(pool);
+    try {
+      signalsData = await generateOrLoadSignals(pool);
+    } catch (e) {
+      console.error('Vaultex trading: signal analysis failed', e);
+    }
+    signalsLoading = false;
     renderSignals();
   }
 
@@ -1019,7 +1159,7 @@
         : `<button class="btn btn-primary btn-sm" data-trade-signal="${s.symbol}" data-signal-side="${sideClass}">View &amp; trade signal</button>`;
       return `<div class="signal-card ${locked ? 'locked' : ''}">
         <div class="signal-card-head">
-          <img class="m-icon" src="${avatarSVG(s.base)}" alt="" style="width:26px;height:26px;border-radius:50%;">
+          <img class="m-icon" src="${coinLogoUrl(s.base)}" data-coin-base="${s.base}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:contain;background:#fff;padding:2px;box-sizing:border-box;">
           <div><div class="m-name">${s.base}</div><div class="m-sym">${s.base}/USDT</div></div>
           <span class="side-badge ${sideClass}" style="margin-left:auto;">${s.side}</span>
         </div>
@@ -1028,6 +1168,11 @@
           <div class="signal-row"><span>Target</span><span>${locked ? '••••' : fmtPrice(s.target)}</span></div>
           <div class="signal-row"><span>Stop</span><span>${locked ? '••••' : fmtPrice(s.stop)}</span></div>
           <div class="signal-row"><span>Confidence</span><span>${s.confidence}%</span></div>
+          ${s.indicators ? `
+          <div class="signal-row" style="border-top:1px solid var(--line);padding-top:6px;margin-top:2px;"><span>RSI(14)</span><span>${s.indicators.rsi}</span></div>
+          <div class="signal-row"><span>Trend</span><span>${s.indicators.trend}</span></div>
+          <div class="signal-row"><span>MACD</span><span>${s.indicators.macd}</span></div>
+          <div class="signal-row"><span>Volume vs avg</span><span>${s.indicators.volRatio}x</span></div>` : ''}
         </div>
         ${ctaHtml}
       </div>`;
