@@ -15,7 +15,8 @@
      touching your global CSS files. Feel free to move any of
      this into dashboard.css / responsive.css later. */
 
-  .trading-wrap { max-width: 1400px; margin: 0 auto; }
+  .trading-wrap { max-width: 1400px; margin: 0 auto; overflow-x: hidden; }
+  .trading-wrap, .trading-wrap *, .trading-wrap *::before, .trading-wrap *::after { box-sizing: border-box; }
 
   .trading-header {
     display: flex; justify-content: space-between; align-items: flex-end;
@@ -32,12 +33,12 @@
   .balance-chip .value { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 600; }
 
   .trading-layout {
-    display: grid; grid-template-columns: 300px 1fr;
+    display: grid; grid-template-columns: 300px minmax(0, 1fr);
     gap: 20px; margin-bottom: 24px; align-items: start;
   }
 
   /* ---- Market list panel ---- */
-  .market-list-panel { display: flex; flex-direction: column; padding: 16px; }
+  .market-list-panel { display: flex; flex-direction: column; padding: 16px; min-width: 0; }
   .market-search {
     width: 100%; padding: 10px 14px; margin-bottom: 10px;
     border-radius: 8px; border: 1px solid var(--line);
@@ -66,7 +67,7 @@
   .market-empty { text-align: center; color: var(--muted); font-size: .85rem; padding: 24px 8px; }
 
   /* ---- Chart + order panel ---- */
-  .chart-panel { display: flex; flex-direction: column; gap: 16px; position: relative; }
+  .chart-panel { display: flex; flex-direction: column; gap: 16px; position: relative; min-width: 0; }
   .selected-asset { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .selected-asset img, .selected-asset .sa-icon { border-radius: 50%; width: 32px; height: 32px; flex-shrink: 0; object-fit: contain; background: #fff; padding: 2px; box-sizing: border-box; }
   .selected-asset .sa-name { font-weight: 700; font-size: 1.05rem; }
@@ -96,12 +97,12 @@
   .fullscreen-toggle svg { width: 14px; height: 14px; display: block; }
 
   .stat-strip {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
     padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
   }
-  .stat-strip .stat-item { text-align: left; }
+  .stat-strip .stat-item { text-align: left; min-width: 0; }
   .stat-strip .stat-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; margin-bottom: 3px; }
-  .stat-strip .stat-value { font-family: 'JetBrains Mono', monospace; font-size: .86rem; font-weight: 600; }
+  .stat-strip .stat-value { font-family: 'JetBrains Mono', monospace; font-size: .86rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .order-ticket { border-top: 1px solid var(--line); padding-top: 16px; }
   .side-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -112,8 +113,8 @@
   .side-tabs button[data-side="buy"].active { background: rgba(22,199,132,.14); color: #16c784; border-color: #16c784; }
   .side-tabs button[data-side="sell"].active { background: rgba(234,57,67,.14); color: #ea3943; border-color: #ea3943; }
 
-  .order-ticket .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-  .order-ticket .field { flex: 1; min-width: 160px; }
+  .order-ticket .field-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; min-width: 0; }
+  .order-ticket .field { flex: 1 1 160px; min-width: 0; }
   .order-ticket label { display: block; font-size: .76rem; color: var(--muted); margin-bottom: 6px; }
   .order-ticket input[type="number"] {
     width: 100%; padding: 11px 14px; border-radius: 8px; border: 1px solid var(--line);
