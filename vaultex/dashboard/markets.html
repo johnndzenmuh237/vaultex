@@ -225,6 +225,340 @@
     .chart-panel.is-fullscreen { padding: 24px 32px; }
     .chart-panel.is-fullscreen .chart-container { min-height: 460px; }
   }
+  /* ==========================
+   VaultexBot Promotion
+========================== */
+
+.bot-promo{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:45px;
+padding:45px;
+margin-top:50px;
+border-radius:28px;
+background:linear-gradient(135deg,#081018,#10283c);
+border:1px solid rgba(0,255,170,.15);
+position:relative;
+overflow:hidden;
+}
+
+.bot-promo::before{
+content:"";
+position:absolute;
+inset:0;
+background:
+linear-gradient(90deg,
+transparent,
+rgba(255,255,255,.04),
+transparent);
+animation:shine 5s linear infinite;
+}
+
+@keyframes shine{
+
+0%{transform:translateX(-100%);}
+
+100%{transform:translateX(100%);}
+
+}
+
+/* Bot */
+
+.bot-visual{
+
+position:relative;
+width:180px;
+height:180px;
+flex-shrink:0;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+}
+
+.bot-head{
+
+width:90px;
+height:90px;
+border-radius:50%;
+background:#0e2438;
+border:3px solid #00f5b8;
+position:relative;
+animation:floatBot 3s ease-in-out infinite;
+
+box-shadow:0 0 35px rgba(0,255,170,.4);
+
+}
+
+@keyframes floatBot{
+
+50%{
+
+transform:translateY(-8px);
+
+}
+
+}
+
+.eye{
+
+position:absolute;
+top:35px;
+width:14px;
+height:14px;
+background:#00ffb3;
+border-radius:50%;
+box-shadow:0 0 15px #00ffb3;
+
+animation:blink 4s infinite;
+
+}
+
+.left{left:23px;}
+.right{right:23px;}
+
+@keyframes blink{
+
+96%{height:14px;}
+
+98%{height:2px;}
+
+100%{height:14px;}
+
+}
+
+.bot-ring{
+
+position:absolute;
+width:160px;
+height:160px;
+border-radius:50%;
+border:2px dashed rgba(0,255,180,.35);
+
+animation:spin 12s linear infinite;
+
+}
+
+@keyframes spin{
+
+100%{
+
+transform:rotate(360deg);
+
+}
+
+}
+
+.scan-line{
+
+position:absolute;
+width:180px;
+height:3px;
+background:#00ff99;
+
+box-shadow:0 0 20px #00ff99;
+
+animation:scan 3s linear infinite;
+
+}
+
+@keyframes scan{
+
+0%{
+
+top:15px;
+
+}
+
+50%{
+
+top:160px;
+
+}
+
+100%{
+
+top:15px;
+
+}
+
+}
+
+/* Profit bubbles */
+
+.trade{
+
+position:absolute;
+background:#00ffb3;
+color:#001b14;
+padding:5px 10px;
+border-radius:30px;
+font-size:13px;
+font-weight:700;
+
+animation:profitFloat 5s infinite;
+
+}
+
+.trade1{
+
+top:0;
+left:-10px;
+
+}
+
+.trade2{
+
+right:-15px;
+top:45px;
+animation-delay:1s;
+
+}
+
+.trade3{
+
+bottom:5px;
+left:15px;
+animation-delay:2s;
+
+}
+
+@keyframes profitFloat{
+
+50%{
+
+transform:translateY(-12px);
+
+}
+
+}
+
+/* Signals */
+
+.signal-dot{
+
+position:absolute;
+width:10px;
+height:10px;
+border-radius:50%;
+background:#00ff8c;
+
+box-shadow:0 0 15px #00ff8c;
+
+}
+
+.s1{
+
+top:15px;
+right:18px;
+animation:pulse 1.8s infinite;
+
+}
+
+.s2{
+
+bottom:20px;
+right:30px;
+animation:pulse 2.4s infinite;
+
+}
+
+.s3{
+
+left:10px;
+bottom:40px;
+animation:pulse 2s infinite;
+
+}
+
+@keyframes pulse{
+
+50%{
+
+transform:scale(1.8);
+
+opacity:.4;
+
+}
+
+}
+
+/* Text */
+
+.bot-badge{
+
+display:inline-block;
+
+padding:8px 18px;
+
+background:rgba(0,255,180,.15);
+
+color:#00ffb3;
+
+border-radius:40px;
+
+font-size:13px;
+
+margin-bottom:15px;
+
+font-weight:600;
+
+}
+
+.bot-copy h3{
+
+font-size:34px;
+margin-bottom:18px;
+
+}
+
+.bot-copy p{
+
+opacity:.85;
+line-height:1.8;
+margin-bottom:18px;
+
+}
+
+.bot-copy ul{
+
+padding-left:20px;
+
+}
+
+.bot-copy li{
+
+margin-bottom:12px;
+
+}
+
+.bot-promo .btn{
+
+align-self:center;
+white-space:nowrap;
+
+}
+
+/* Mobile */
+
+@media(max-width:900px){
+
+.bot-promo{
+
+flex-direction:column;
+text-align:center;
+
+}
+
+.bot-copy ul{
+
+text-align:left;
+
+}
+
+}
 </style>
 </head>
 <body>
