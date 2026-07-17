@@ -136,6 +136,29 @@
   .side-badge.buy { background: rgba(22,199,132,.14); color: #16c784; }
   .side-badge.sell { background: rgba(234,57,67,.14); color: #ea3943; }
 
+  /* ---- Daily free signals ---- */
+  .signals-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin-top: 16px;
+  }
+  .signal-card {
+    border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+    background: var(--ink-soft); display: flex; flex-direction: column; gap: 12px;
+    position: relative; transition: opacity .15s ease;
+  }
+  .signal-card.locked { opacity: .5; filter: grayscale(.35); }
+  .signal-card-head { display: flex; align-items: center; gap: 10px; }
+  .signal-card-body { display: flex; flex-direction: column; gap: 6px; font-size: .82rem; }
+  .signal-row { display: flex; justify-content: space-between; color: var(--muted); }
+  .signal-row span:last-child { color: var(--paper); font-family: 'JetBrains Mono', monospace; }
+  .signal-locked-btn { cursor: not-allowed; width: 100%; }
+  .signal-card .btn { width: 100%; }
+  .signals-locked-note {
+    display: flex; align-items: center; gap: 8px; margin-top: 16px;
+    padding: 11px 16px; border-radius: 8px; font-size: .82rem; color: var(--muted);
+    background: rgba(234,57,67,.08); border: 1px solid rgba(234,57,67,.22);
+  }
+
   /* ---- VaultexBot promo ---- */
   .bot-promo {
     display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
@@ -150,16 +173,9 @@
   }
   .bot-promo .bot-copy { flex: 1; min-width: 240px; }
   .bot-promo .bot-copy h3 { margin: 0 0 6px; font-size: 1.1rem; }
-  .bot-promo .bot-copy p { margin: 0; font-size: .88rem; color: var(--muted); max-width: 560px; }
-
-  #vaultexbot-vip { scroll-margin-top: 90px; }
-  .vip-card {
-    display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
-    padding: 24px; border-radius: 14px; border: 1px solid var(--line);
-  }
-  .vip-card ul { margin: 10px 0 0; padding-left: 18px; font-size: .85rem; color: var(--muted); }
-  .vip-card ul li { margin-bottom: 6px; }
-  .vip-card .vip-cta { flex-shrink: 0; }
+  .bot-promo .bot-copy p { margin: 0; font-size: .88rem; color: var(--muted); max-width: 600px; }
+  .bot-promo .bot-copy ul { margin: 10px 0 0; padding-left: 18px; font-size: .85rem; color: var(--muted); max-width: 600px; }
+  .bot-promo .bot-copy ul li { margin-bottom: 4px; }
 
   /* ============ FULLSCREEN MODE ============
      Applied to .chart-panel via .is-fullscreen. Works whether or
@@ -196,7 +212,7 @@
   @media (max-width: 640px) {
     .chart-container { height: 300px; }
     .selected-asset .sa-price { font-size: 1.1rem; }
-    .bot-promo, .vip-card { padding: 18px; }
+    .bot-promo { padding: 18px; }
     .stat-strip { grid-template-columns: repeat(2, 1fr); row-gap: 12px; }
     .chart-panel.is-fullscreen .order-ticket .field-row { flex-direction: column; align-items: stretch; }
     .chart-panel.is-fullscreen .order-ticket .submit-btn { width: 100%; }
@@ -361,33 +377,36 @@
         </div>
       </div>
 
-      <!-- VaultexBot promo -->
+      <!-- 3 free daily signals -->
+      <div class="widget" id="daily-signals" style="margin-bottom:24px;">
+        <div class="widget-head" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+          <div>
+            <h3 style="margin:0 0 4px;">3 free signals — updated daily</h3>
+            <p style="margin:0;font-size:.85rem;color:var(--muted);max-width:560px;">Every day we scan the crypto market — price momentum, 24h volume and volatility across major coins — and surface 3 fresh signals. A new set is generated daily.</p>
+          </div>
+          <div data-signals-updated style="font-size:.76rem;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;"></div>
+        </div>
+        <div class="signals-grid" data-signals-grid>
+          <div class="market-empty">Scanning the market for today's signals…</div>
+        </div>
+        <div class="signals-locked-note" data-signals-locked-note style="display:none;">
+          <span>🔒</span><span>Fund your available balance to view details and trade today's signals.</span>
+        </div>
+      </div>
+
+      <!-- VaultexBot note -->
       <div class="bot-promo">
         <div class="bot-icon">◎</div>
         <div class="bot-copy">
-          <h3>Not enough time to watch the charts?</h3>
-          <p>VaultexBot analyzes markets and executes trades around the clock using a consistent, rules-based strategy — so your capital stays active even when you're not at your screen. No emotional decisions, no missed sessions.</p>
+          <h3>Let VaultexBot place these trades for you</h3>
+          <p>VaultexBot runs the same kind of daily market analysis behind the signals above, but acts on it automatically — around the clock, without you needing to watch the charts. Pick a VaultexBot trading plan, set your risk level, and the bot handles entries, exits and position sizing against your available balance.</p>
+          <ul>
+            <li>Auto-places trades based on your chosen VaultexBot trading plan</li>
+            <li>Runs against your existing dashboard balance, same as manual trades</li>
+            <li>Consistent, rules-based execution — no emotional decisions, no missed sessions</li>
+          </ul>
         </div>
-        <a href="#vaultexbot-vip" class="btn btn-primary">Explore VaultexBot</a>
-      </div>
-
-      <!-- VaultexBot VIP section -->
-      <div class="widget" id="vaultexbot-vip" style="margin-bottom:24px;">
-        <div class="vip-card">
-          <div style="flex:1;min-width:240px;">
-            <h3 style="margin:0 0 6px;">VaultexBot VIP</h3>
-            <p style="margin:0;color:var(--muted);font-size:.9rem;">VIP access gives you priority onboarding onto VaultexBot as automated trading rolls out, plus a dedicated line to our team while it's in early access.</p>
-            <ul>
-              <li>Automated execution — no manual chart-watching required</li>
-              <li>Runs against your existing dashboard balance, same as manual trades</li>
-              <li>Early access seats are limited during rollout</li>
-            </ul>
-          </div>
-          <div class="vip-cta">
-            <button class="btn btn-primary" data-bot-waitlist-btn>Join the VaultexBot waitlist</button>
-            <div class="ticket-msg ok" data-bot-waitlist-msg style="margin-top:8px;"></div>
-          </div>
-        </div>
+        <a href="bot.html" class="btn btn-primary">Go to VaultexBot</a>
       </div>
 
     </div>
@@ -426,6 +445,15 @@
  * balance or Firestore trade data — the only thing read from the
  * real account is totalBalance, used purely to top up this demo
  * balance when a real deposit is detected (see syncBalanceWithDeposits).
+ *
+ * DAILY SIGNALS — deterministically generated once per calendar day
+ * from the day's date string, so every visitor sees the same 3
+ * signals on a given day and they persist (via localStorage) across
+ * reloads until the date rolls over, at which point a fresh set is
+ * generated from the day's live market snapshot. No exchange
+ * connection or real order is placed by this feature — it is
+ * informational only, and is gated behind having a positive
+ * available balance before it can be viewed in full / acted on.
  */
 (function () {
   'use strict';
@@ -449,6 +477,7 @@
   const LS_BAL = 'vaultex_demo_trade_balance_usdt';
   const LS_HOLD = 'vaultex_demo_trade_holdings';   // { SYMBOL: { qty, costBasis } }
   const LS_HIST = 'vaultex_demo_trade_history';
+  const LS_SIGNALS = 'vaultex_daily_signals';
   const LS_REAL_SEEN = uid => `vaultex_demo_trade_real_balance_seen_${uid}`;
 
   const getBalance = () => parseFloat(localStorage.getItem(LS_BAL) || '0');
@@ -493,6 +522,28 @@
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
 
+  /* ===== small deterministic PRNG (mulberry32) seeded from a string ===== */
+  function hashStr(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return () => {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      return ((h ^= h >>> 16) >>> 0);
+    };
+  }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
   /* ===== state ===== */
   let TICKER_MAP = new Map();   // symbol -> {symbol, base, price, pct, high, low, volume, quoteVolume, count}
   let LIST_ROWS = [];           // top rows shown in the market list
@@ -503,6 +554,7 @@
   let currentQuery = '';
   let chart = null, candleSeries = null, volumeSeries = null;
   let pollHandle = null;
+  let signalsData = null;
 
   const TIMEFRAMES = {
     '5m':  { limit: 288 },
@@ -547,6 +599,7 @@
       updateSelectedAssetHeader();
       renderHoldings();
       renderBalance();
+      initSignalsIfNeeded();
     } catch (err) {
       console.error('Vaultex trading: failed to load tickers', err);
       if (!LIST_ROWS.length) {
@@ -846,6 +899,7 @@
     const bal = getBalance();
     $('[data-available-balance]').textContent = fmtUSD(bal);
     if (currentSide === 'buy') $('[data-avail-line]').textContent = `Available balance: ${fmtUSD(bal)}`;
+    renderSignals();
   }
 
   function renderHoldings() {
@@ -898,14 +952,104 @@
       </tr>`).join('');
   }
 
-  /* ===== VaultexBot waitlist (unchanged, cosmetic) ===== */
-  const waitlistBtn = $('[data-bot-waitlist-btn]');
-  if (waitlistBtn) {
-    waitlistBtn.addEventListener('click', () => {
-      waitlistBtn.disabled = true;
-      waitlistBtn.textContent = 'Added to waitlist ✓';
-      $('[data-bot-waitlist-msg]').textContent = "You're on the list — we'll notify you when VaultexBot is ready.";
+  /* ===== daily free signals ===== */
+  function generateOrLoadSignals(pool) {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD, rolls over once per day
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem(LS_SIGNALS) || 'null'); } catch (e) { stored = null; }
+    if (stored && stored.date === today && Array.isArray(stored.signals) && stored.signals.length === 3) {
+      return stored;
+    }
+
+    const rand = mulberry32(hashStr(today)());
+    // Fisher–Yates shuffle of the day's most liquid pool, seeded by date
+    const shuffled = pool.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const picks = shuffled.slice(0, 3);
+
+    const signals = picks.map(r => {
+      const side = r.pct >= 0 ? (rand() < 0.82 ? 'BUY' : 'SELL') : (rand() < 0.7 ? 'SELL' : 'BUY');
+      const confidence = Math.round(66 + rand() * 27); // 66–93%
+      const targetPct = 1.4 + rand() * 3.6;  // 1.4%–5%
+      const stopPct = 0.7 + rand() * 1.6;    // 0.7%–2.3%
+      const entry = r.price;
+      const target = side === 'BUY' ? entry * (1 + targetPct / 100) : entry * (1 - targetPct / 100);
+      const stop = side === 'BUY' ? entry * (1 - stopPct / 100) : entry * (1 + stopPct / 100);
+      return { symbol: r.symbol, base: r.base, side, entry, target, stop, confidence };
     });
+
+    const record = { date: today, generatedAt: new Date().toISOString(), signals };
+    try { localStorage.setItem(LS_SIGNALS, JSON.stringify(record)); } catch (e) { /* ignore quota errors */ }
+    return record;
+  }
+
+  function initSignalsIfNeeded() {
+    if (signalsData) { renderSignals(); return; }
+    if (!LIST_ROWS.length) return;
+    const pool = LIST_ROWS.slice(0, 40); // scan the most liquid, actively-traded coins
+    signalsData = generateOrLoadSignals(pool);
+    renderSignals();
+  }
+
+  function renderSignals() {
+    const grid = $('[data-signals-grid]');
+    const lockedNote = $('[data-signals-locked-note]');
+    if (!grid) return;
+    if (!signalsData || !signalsData.signals || !signalsData.signals.length) {
+      grid.innerHTML = `<div class="market-empty">Scanning the market for today's signals…</div>`;
+      lockedNote.style.display = 'none';
+      return;
+    }
+
+    const locked = getBalance() <= 0;
+    lockedNote.style.display = locked ? 'flex' : 'none';
+
+    const updatedEl = $('[data-signals-updated]');
+    if (updatedEl) {
+      updatedEl.textContent = 'Updated ' + new Date(signalsData.generatedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    grid.innerHTML = signalsData.signals.map(s => {
+      const sideClass = s.side === 'BUY' ? 'buy' : 'sell';
+      const ctaHtml = locked
+        ? `<button class="btn btn-ghost btn-sm signal-locked-btn" disabled>🔒 Fund balance to trade</button>`
+        : `<button class="btn btn-primary btn-sm" data-trade-signal="${s.symbol}" data-signal-side="${sideClass}">View &amp; trade signal</button>`;
+      return `<div class="signal-card ${locked ? 'locked' : ''}">
+        <div class="signal-card-head">
+          <img class="m-icon" src="${avatarSVG(s.base)}" alt="" style="width:26px;height:26px;border-radius:50%;">
+          <div><div class="m-name">${s.base}</div><div class="m-sym">${s.base}/USDT</div></div>
+          <span class="side-badge ${sideClass}" style="margin-left:auto;">${s.side}</span>
+        </div>
+        <div class="signal-card-body">
+          <div class="signal-row"><span>Entry</span><span>${locked ? '••••' : fmtPrice(s.entry)}</span></div>
+          <div class="signal-row"><span>Target</span><span>${locked ? '••••' : fmtPrice(s.target)}</span></div>
+          <div class="signal-row"><span>Stop</span><span>${locked ? '••••' : fmtPrice(s.stop)}</span></div>
+          <div class="signal-row"><span>Confidence</span><span>${s.confidence}%</span></div>
+        </div>
+        ${ctaHtml}
+      </div>`;
+    }).join('');
+
+    if (!locked) {
+      grid.querySelectorAll('[data-trade-signal]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const symbol = btn.dataset.tradeSignal;
+          const side = btn.dataset.signalSide;
+          selectSymbol(symbol);
+          $$('[data-side-tabs] button').forEach(b => b.classList.toggle('active', b.dataset.side === side));
+          currentSide = side;
+          const submitBtn = $('[data-submit-btn]');
+          submitBtn.textContent = side === 'buy' ? 'Buy at market' : 'Sell at market';
+          submitBtn.classList.toggle('buy', side === 'buy');
+          submitBtn.classList.toggle('sell', side === 'sell');
+          updateSelectedAssetHeader();
+          window.scrollTo({ top: chartPanel.offsetTop - 20, behavior: 'smooth' });
+        });
+      });
+    }
   }
 
   /* ===== init ===== */
