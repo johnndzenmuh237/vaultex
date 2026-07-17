@@ -52,11 +52,12 @@
   .market-rows { max-height: 520px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
   .market-row {
     display: flex; align-items: center; gap: 10px; padding: 9px 8px;
-    border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+    border-radius: 8px; cursor: pointer; border: 1px solid transparent; width: 100%;
+    text-align: left; background: none;
   }
   .market-row:hover { background: var(--ink-soft); }
   .market-row.active { background: var(--ink-soft); border-color: var(--accent, #6C7CFF); }
-  .market-row img { border-radius: 50%; flex-shrink: 0; }
+  .market-row .m-icon { border-radius: 50%; flex-shrink: 0; width: 26px; height: 26px; }
   .market-row .m-name { font-weight: 600; font-size: .85rem; line-height: 1.2; }
   .market-row .m-sym { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
   .market-row .m-right { margin-left: auto; text-align: right; }
@@ -65,9 +66,9 @@
   .market-empty { text-align: center; color: var(--muted); font-size: .85rem; padding: 24px 8px; }
 
   /* ---- Chart + order panel ---- */
-  .chart-panel { display: flex; flex-direction: column; gap: 16px; }
+  .chart-panel { display: flex; flex-direction: column; gap: 16px; position: relative; }
   .selected-asset { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .selected-asset img { border-radius: 50%; }
+  .selected-asset img, .selected-asset .sa-icon { border-radius: 50%; width: 32px; height: 32px; flex-shrink: 0; }
   .selected-asset .sa-name { font-weight: 700; font-size: 1.05rem; }
   .selected-asset .sa-sym { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
   .selected-asset .sa-price { font-family: 'JetBrains Mono', monospace; font-size: 1.3rem; font-weight: 600; margin-left: auto; }
@@ -76,12 +77,23 @@
   .chart-container { width: 100%; height: 380px; border-radius: 10px; overflow: hidden; }
   .chart-loading { color: var(--muted); font-size: .85rem; text-align: center; padding: 40px 0; }
 
-  .tf-tabs { display: flex; gap: 6px; }
+  .chart-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .tf-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
   .tf-tabs button {
     padding: 6px 12px; font-size: .76rem; border-radius: 6px;
     border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
   }
   .tf-tabs button.active { background: var(--ink-soft); color: var(--paper); border-color: var(--accent, #6C7CFF); }
+
+  .fullscreen-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; font-size: .76rem; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+    flex-shrink: 0;
+  }
+  .fullscreen-toggle:hover { color: var(--paper); border-color: var(--accent, #6C7CFF); }
+  .fullscreen-toggle svg { width: 14px; height: 14px; display: block; }
 
   .stat-strip {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
@@ -109,8 +121,8 @@
   }
   .order-ticket .avail-line { font-size: .78rem; color: var(--muted); margin-top: 6px; }
   .order-ticket .submit-btn { min-width: 160px; }
-  .order-ticket .submit-btn.buy { background: #16c784; border-color: #16c784; }
-  .order-ticket .submit-btn.sell { background: #ea3943; border-color: #ea3943; }
+  .order-ticket .submit-btn.buy { background: #16c784; border-color: #16c784; color: #04150F; }
+  .order-ticket .submit-btn.sell { background: #ea3943; border-color: #ea3943; color: #2b0406; }
   .order-ticket .ticket-msg { font-size: .8rem; margin-top: 8px; min-height: 1.1em; }
   .order-ticket .ticket-msg.err { color: var(--coral, #ea3943); }
   .order-ticket .ticket-msg.ok { color: var(--mint, #16c784); }
@@ -149,6 +161,32 @@
   .vip-card ul li { margin-bottom: 6px; }
   .vip-card .vip-cta { flex-shrink: 0; }
 
+  /* ============ FULLSCREEN MODE ============
+     Applied to .chart-panel via .is-fullscreen. Works whether or
+     not the native Fullscreen API is available/granted (iOS Safari
+     in particular often blocks it on arbitrary elements), because
+     the CSS itself does the heavy lifting — requestFullscreen is
+     just an enhancement layered on top when supported.
+  */
+  body.trading-fullscreen-active { overflow: hidden; }
+  .chart-panel.is-fullscreen {
+    position: fixed; inset: 0; z-index: 2000;
+    background: var(--ink); border-radius: 0; margin: 0;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 12px;
+    overflow-y: auto;
+  }
+  .chart-panel.is-fullscreen .chart-container { flex: 1 1 auto; height: auto; min-height: 260px; }
+  .chart-panel.is-fullscreen .selected-asset { padding-top: env(safe-area-inset-top); }
+  .fullscreen-exit-btn { display: none; }
+  .chart-panel.is-fullscreen .fullscreen-exit-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    position: absolute; top: 14px; right: 14px;
+    padding: 6px 12px; border-radius: 6px; font-size: .76rem;
+    border: 1px solid var(--line); background: var(--ink-soft); color: var(--paper); cursor: pointer; z-index: 2;
+  }
+  .chart-panel.is-fullscreen .fullscreen-toggle { display: none; }
+
   @media (max-width: 1024px) {
     .trading-layout { grid-template-columns: 1fr; }
     .market-list-panel { order: 2; }
@@ -160,6 +198,15 @@
     .selected-asset .sa-price { font-size: 1.1rem; }
     .bot-promo, .vip-card { padding: 18px; }
     .stat-strip { grid-template-columns: repeat(2, 1fr); row-gap: 12px; }
+    .chart-panel.is-fullscreen .order-ticket .field-row { flex-direction: column; align-items: stretch; }
+    .chart-panel.is-fullscreen .order-ticket .submit-btn { width: 100%; }
+  }
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .chart-panel.is-fullscreen .chart-container { min-height: 360px; }
+  }
+  @media (min-width: 1025px) {
+    .chart-panel.is-fullscreen { padding: 24px 32px; }
+    .chart-panel.is-fullscreen .chart-container { min-height: 460px; }
   }
 </style>
 </head>
@@ -194,7 +241,7 @@
       <div class="trading-header">
         <div>
           <h2>Markets &amp; manual trading</h2>
-          <p>Trades are placed against your real dashboard balance — no simulated funds.</p>
+          <p>Live prices and charts stream straight from the market — trades post to your demo trading balance, topped up automatically from your real deposits.</p>
         </div>
         <div class="balance-chip">
           <div class="label">Available balance</div>
@@ -218,9 +265,14 @@
         </div>
 
         <!-- Chart + order ticket -->
-        <div class="widget chart-panel">
+        <div class="widget chart-panel" data-chart-panel>
+          <button class="fullscreen-exit-btn" data-fullscreen-exit>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v4a2 2 0 0 1-2 2H3M21 9h-4a2 2 0 0 1-2-2V3M3 15h4a2 2 0 0 1 2 2v4M15 21v-4a2 2 0 0 1 2-2h4"/></svg>
+            Exit full screen
+          </button>
+
           <div class="selected-asset" data-selected-asset>
-            <img data-sa-image src="" alt="" width="32" height="32" style="display:none;">
+            <div class="sa-icon" data-sa-image></div>
             <div>
               <div class="sa-name" data-sa-name>Loading…</div>
               <div class="sa-sym" data-sa-sym></div>
@@ -233,17 +285,23 @@
             <div class="stat-item"><div class="stat-label">24h High</div><div class="stat-value" data-stat-high>—</div></div>
             <div class="stat-item"><div class="stat-label">24h Low</div><div class="stat-value" data-stat-low>—</div></div>
             <div class="stat-item"><div class="stat-label">24h Volume</div><div class="stat-value" data-stat-volume>—</div></div>
-            <div class="stat-item"><div class="stat-label">Market Cap</div><div class="stat-value" data-stat-mcap>—</div></div>
+            <div class="stat-item"><div class="stat-label">24h Trades</div><div class="stat-value" data-stat-trades>—</div></div>
           </div>
 
-          <div class="flex" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div class="chart-toolbar">
             <div class="tf-tabs" data-tf-tabs>
-              <button data-tf="1" class="active">1D</button>
-              <button data-tf="7">7D</button>
-              <button data-tf="30">1M</button>
-              <button data-tf="90">3M</button>
-              <button data-tf="365">1Y</button>
+              <button data-tf="5m">5M</button>
+              <button data-tf="15m">15M</button>
+              <button data-tf="1h" class="active">1H</button>
+              <button data-tf="4h">4H</button>
+              <button data-tf="1d">1D</button>
+              <button data-tf="1w">1W</button>
+              <button data-tf="1M">1M</button>
             </div>
+            <button class="fullscreen-toggle" data-fullscreen-toggle>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+              Full screen
+            </button>
           </div>
 
           <div class="chart-container" data-chart-container>
@@ -344,7 +402,6 @@
 <style>#notif-panel.open{display:block;}</style>
 
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/charts.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -352,7 +409,518 @@
 <script src="../assets/js/auth-guard.js"></script>
 <script src="../assets/js/dashboard.js"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-<script src="../assets/js/trading.js"></script>
 <script src="../assets/js/notifications.js"></script>
+
+<script>
+/**
+ * Vaultex — Trading Center
+ * Live market list, live multi-timeframe candlestick chart, and a
+ * demo order ticket — all powered by Binance's public market-data
+ * REST API (no API key required, CORS-enabled). Chart rendering
+ * uses lightweight-charts (already loaded above).
+ *
+ * DEMO TRADING BALANCE — isolated on purpose, same pattern used on
+ * staking.html / nft-marketplace.html. Keys are prefixed
+ * "vaultex_demo_trade_" and are entirely separate from any other
+ * page's demo pool. This page never writes to the real account
+ * balance or Firestore trade data — the only thing read from the
+ * real account is totalBalance, used purely to top up this demo
+ * balance when a real deposit is detected (see syncBalanceWithDeposits).
+ */
+(function () {
+  'use strict';
+  const REST = 'https://api.binance.com/api/v3';
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  const fmtUSD = n => '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtQty = n => (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  const fmtPrice = n => {
+    if (n == null) return '—';
+    if (n >= 1) return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (n >= 0.01) return '$' + n.toFixed(4);
+    return '$' + n.toPrecision(3);
+  };
+  const fmtCompact = n => n == null ? '—' : Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 2 }).format(n);
+  const fmtPct = n => n == null ? '—' : `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+
+  /* ===== demo balance / holdings / history storage ===== */
+  const LS_BAL = 'vaultex_demo_trade_balance_usdt';
+  const LS_HOLD = 'vaultex_demo_trade_holdings';   // { SYMBOL: { qty, costBasis } }
+  const LS_HIST = 'vaultex_demo_trade_history';
+  const LS_REAL_SEEN = uid => `vaultex_demo_trade_real_balance_seen_${uid}`;
+
+  const getBalance = () => parseFloat(localStorage.getItem(LS_BAL) || '0');
+  const setBalance = v => localStorage.setItem(LS_BAL, String(Math.max(0, v)));
+  const getHoldings = () => { try { return JSON.parse(localStorage.getItem(LS_HOLD) || '{}'); } catch (e) { return {}; } };
+  const setHoldings = h => localStorage.setItem(LS_HOLD, JSON.stringify(h));
+  const getHistory = () => { try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch (e) { return []; } };
+  const setHistory = h => localStorage.setItem(LS_HIST, JSON.stringify(h.slice(0, 100)));
+
+  async function syncBalanceWithDeposits(uid) {
+    if (!uid || !window.auth || !auth.currentUser) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/account/summary', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.success || typeof data.totalBalance !== 'number') return;
+      const key = LS_REAL_SEEN(uid);
+      const lastSeenRaw = localStorage.getItem(key);
+      const lastSeen = lastSeenRaw === null ? NaN : parseFloat(lastSeenRaw);
+      const realBal = data.totalBalance;
+      if (isNaN(lastSeen)) setBalance(realBal);
+      else if (realBal > lastSeen) setBalance(getBalance() + (realBal - lastSeen));
+      localStorage.setItem(key, realBal.toString());
+    } catch (e) {
+      console.error('Failed to sync demo trading balance with real deposits', e);
+    } finally {
+      renderBalance();
+    }
+  }
+
+  /* ===== deterministic coin avatar (no external image dependency) ===== */
+  function avatarSVG(symbol) {
+    let h = 0;
+    for (let i = 0; i < symbol.length; i++) h = (Math.imul(31, h) + symbol.charCodeAt(i)) | 0;
+    const hue = Math.abs(h) % 360;
+    const initials = symbol.slice(0, 3);
+    const svg = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="hsl(${hue},55%,32%)"/>
+      <text x="20" y="25" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="hsl(${hue},70%,85%)" text-anchor="middle">${initials}</text>
+    </svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  /* ===== state ===== */
+  let TICKER_MAP = new Map();   // symbol -> {symbol, base, price, pct, high, low, volume, quoteVolume, count}
+  let LIST_ROWS = [];           // top rows shown in the market list
+  let selectedSymbol = 'BTCUSDT';
+  let currentInterval = '1h';
+  let currentSide = 'buy';
+  let currentTab = 'All';
+  let currentQuery = '';
+  let chart = null, candleSeries = null, volumeSeries = null;
+  let pollHandle = null;
+
+  const TIMEFRAMES = {
+    '5m':  { limit: 288 },
+    '15m': { limit: 192 },
+    '1h':  { limit: 168 },
+    '4h':  { limit: 180 },
+    '1d':  { limit: 180 },
+    '1w':  { limit: 104 },
+    '1M':  { limit: 60 },
+  };
+
+  const EXCLUDE_RE = /(UP|DOWN|BULL|BEAR)USDT$/;
+
+  /* ===== ticker list ===== */
+  async function loadTickers() {
+    try {
+      const res = await fetch(`${REST}/ticker/24hr`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const map = new Map();
+      const usdtRows = [];
+      data.forEach(t => {
+        if (!t.symbol.endsWith('USDT') || EXCLUDE_RE.test(t.symbol)) return;
+        const row = {
+          symbol: t.symbol,
+          base: t.symbol.slice(0, -4),
+          price: parseFloat(t.lastPrice),
+          pct: parseFloat(t.priceChangePercent),
+          high: parseFloat(t.highPrice),
+          low: parseFloat(t.lowPrice),
+          volume: parseFloat(t.volume),
+          quoteVolume: parseFloat(t.quoteVolume),
+          count: t.count,
+        };
+        map.set(t.symbol, row);
+        usdtRows.push(row);
+      });
+      TICKER_MAP = map;
+      usdtRows.sort((a, b) => b.quoteVolume - a.quoteVolume);
+      LIST_ROWS = usdtRows.slice(0, 150);
+      renderMarketRows();
+      updateSelectedAssetHeader();
+      renderHoldings();
+      renderBalance();
+    } catch (err) {
+      console.error('Vaultex trading: failed to load tickers', err);
+      if (!LIST_ROWS.length) {
+        $('[data-market-rows]').innerHTML = `<div class="market-empty">Live market feed temporarily unavailable. Retrying…</div>`;
+      }
+    }
+  }
+
+  function getFilteredRows() {
+    let rows = LIST_ROWS;
+    if (currentTab === 'Gainers') rows = [...rows].filter(r => r.pct > 0).sort((a, b) => b.pct - a.pct);
+    else if (currentTab === 'Losers') rows = [...rows].filter(r => r.pct < 0).sort((a, b) => a.pct - b.pct);
+    if (currentQuery) {
+      const q = currentQuery.toLowerCase();
+      rows = rows.filter(r => r.base.toLowerCase().includes(q) || r.symbol.toLowerCase().includes(q));
+    }
+    return rows;
+  }
+
+  function renderMarketRows() {
+    const rows = getFilteredRows();
+    const container = $('[data-market-rows]');
+    if (!rows.length) {
+      container.innerHTML = `<div class="market-empty">No assets match your search.</div>`;
+      return;
+    }
+    container.innerHTML = rows.map(r => {
+      const pctClass = r.pct >= 0 ? 'pnl-up' : 'pnl-down';
+      const active = r.symbol === selectedSymbol ? 'active' : '';
+      return `<button class="market-row ${active}" data-symbol="${r.symbol}">
+        <img class="m-icon" src="${avatarSVG(r.base)}" alt="">
+        <div><div class="m-name">${r.base}</div><div class="m-sym">${r.base}/USDT</div></div>
+        <div class="m-right">
+          <div class="m-price">${fmtPrice(r.price)}</div>
+          <div class="m-pct ${pctClass}">${fmtPct(r.pct)}</div>
+        </div>
+      </button>`;
+    }).join('');
+    container.querySelectorAll('[data-symbol]').forEach(btn => {
+      btn.addEventListener('click', () => selectSymbol(btn.dataset.symbol));
+    });
+  }
+
+  function updateSelectedAssetHeader() {
+    const t = TICKER_MAP.get(selectedSymbol);
+    if (!t) return;
+    $('[data-sa-image]').innerHTML = `<img class="sa-icon" src="${avatarSVG(t.base)}" alt="">`;
+    $('[data-sa-name]').textContent = t.base;
+    $('[data-sa-sym]').textContent = `${t.base}/USDT`;
+    $('[data-sa-price]').textContent = fmtPrice(t.price);
+    const pctEl = $('[data-sa-pct]');
+    pctEl.textContent = fmtPct(t.pct);
+    pctEl.style.background = t.pct >= 0 ? 'rgba(22,199,132,.14)' : 'rgba(234,57,67,.14)';
+    pctEl.style.color = t.pct >= 0 ? '#16c784' : '#ea3943';
+
+    $('[data-stat-high]').textContent = fmtPrice(t.high);
+    $('[data-stat-low]').textContent = fmtPrice(t.low);
+    $('[data-stat-volume]').textContent = fmtCompact(t.volume) + ' ' + t.base;
+    $('[data-stat-trades]').textContent = t.count != null ? t.count.toLocaleString('en-US') : '—';
+
+    $('[data-qty-label]').textContent = `Lot size (${t.base})`;
+    $('[data-avail-line]').textContent = currentSide === 'buy'
+      ? `Available balance: ${fmtUSD(getBalance())}`
+      : `Available: ${fmtQty((getHoldings()[t.symbol] || {}).qty || 0)} ${t.base}`;
+  }
+
+  function selectSymbol(symbol) {
+    if (symbol === selectedSymbol) return;
+    selectedSymbol = symbol;
+    $$('.market-row').forEach(el => el.classList.toggle('active', el.dataset.symbol === symbol));
+    updateSelectedAssetHeader();
+    loadCandles();
+  }
+
+  /* ===== chart ===== */
+  function ensureChart() {
+    if (chart) return;
+    const container = $('[data-chart-container]');
+    container.innerHTML = '';
+    chart = LightweightCharts.createChart(container, {
+      layout: { background: { color: 'transparent' }, textColor: getComputedStyle(document.body).getPropertyValue('--muted').trim() || '#8993AB' },
+      grid: { vertLines: { color: 'rgba(128,128,128,.08)' }, horzLines: { color: 'rgba(128,128,128,.08)' } },
+      rightPriceScale: { borderColor: 'rgba(128,128,128,.15)' },
+      timeScale: { borderColor: 'rgba(128,128,128,.15)', timeVisible: true, secondsVisible: false },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+      width: container.clientWidth,
+      height: container.clientHeight || 380,
+    });
+    candleSeries = chart.addCandlestickSeries({
+      upColor: '#16c784', downColor: '#ea3943', borderVisible: false,
+      wickUpColor: '#16c784', wickDownColor: '#ea3943',
+    });
+    volumeSeries = chart.addHistogramSeries({
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+      color: 'rgba(108,124,255,.35)',
+    });
+    volumeSeries.priceScale().applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
+
+    window.addEventListener('resize', resizeChart);
+  }
+
+  function resizeChart() {
+    if (!chart) return;
+    const container = $('[data-chart-container]');
+    chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+  }
+
+  function toBinanceCandle(k) {
+    return { time: Math.floor(k[0] / 1000), open: parseFloat(k[1]), high: parseFloat(k[2]), low: parseFloat(k[3]), close: parseFloat(k[4]) };
+  }
+  function toVolumeBar(k) {
+    const close = parseFloat(k[4]), open = parseFloat(k[1]);
+    return { time: Math.floor(k[0] / 1000), value: parseFloat(k[5]), color: close >= open ? 'rgba(22,199,132,.35)' : 'rgba(234,57,67,.35)' };
+  }
+
+  async function loadCandles() {
+    ensureChart();
+    const { limit } = TIMEFRAMES[currentInterval];
+    try {
+      const res = await fetch(`${REST}/klines?symbol=${selectedSymbol}&interval=${currentInterval}&limit=${limit}`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const klines = await res.json();
+      const candles = klines.map(toBinanceCandle);
+      const vols = klines.map(toVolumeBar);
+      candleSeries.setData(candles);
+      volumeSeries.setData(vols);
+      chart.timeScale().fitContent();
+      resizeChart();
+    } catch (err) {
+      console.error('Vaultex trading: failed to load candles', err);
+    }
+  }
+
+  async function refreshLatestCandle() {
+    if (!candleSeries) return;
+    try {
+      const res = await fetch(`${REST}/klines?symbol=${selectedSymbol}&interval=${currentInterval}&limit=2`);
+      if (!res.ok) return;
+      const klines = await res.json();
+      if (!klines.length) return;
+      const last = toBinanceCandle(klines[klines.length - 1]);
+      const lastVol = toVolumeBar(klines[klines.length - 1]);
+      candleSeries.update(last);
+      volumeSeries.update(lastVol);
+    } catch (e) { /* silent — next poll will retry */ }
+  }
+
+  async function refreshTicker() {
+    try {
+      const res = await fetch(`${REST}/ticker/24hr?symbol=${selectedSymbol}`);
+      if (!res.ok) return;
+      const t = await res.json();
+      const row = {
+        symbol: t.symbol, base: t.symbol.slice(0, -4), price: parseFloat(t.lastPrice), pct: parseFloat(t.priceChangePercent),
+        high: parseFloat(t.highPrice), low: parseFloat(t.lowPrice), volume: parseFloat(t.volume), quoteVolume: parseFloat(t.quoteVolume), count: t.count,
+      };
+      TICKER_MAP.set(t.symbol, row);
+      updateSelectedAssetHeader();
+      renderHoldings();
+    } catch (e) { /* silent */ }
+  }
+
+  function startPolling() {
+    if (pollHandle) clearInterval(pollHandle);
+    pollHandle = setInterval(() => {
+      refreshLatestCandle();
+      refreshTicker();
+    }, 6000);
+    setInterval(loadTickers, 30000);
+  }
+
+  /* ===== timeframe tabs ===== */
+  $$('.tf-tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.tf-tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentInterval = btn.dataset.tf;
+      loadCandles();
+    });
+  });
+
+  /* ===== market list search / tabs ===== */
+  $('[data-market-search]').addEventListener('input', e => { currentQuery = e.target.value.trim(); renderMarketRows(); });
+  $$('[data-market-tabs] button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('[data-market-tabs] button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      renderMarketRows();
+    });
+  });
+
+  /* ===== fullscreen ===== */
+  const chartPanel = $('[data-chart-panel]');
+  function isFullscreenActive() { return chartPanel.classList.contains('is-fullscreen'); }
+  async function enterFullscreen() {
+    chartPanel.classList.add('is-fullscreen');
+    document.body.classList.add('trading-fullscreen-active');
+    if (chartPanel.requestFullscreen) {
+      try { await chartPanel.requestFullscreen(); } catch (e) { /* fall back to CSS-only fullscreen */ }
+    }
+    requestAnimationFrame(resizeChart);
+  }
+  async function exitFullscreen() {
+    chartPanel.classList.remove('is-fullscreen');
+    document.body.classList.remove('trading-fullscreen-active');
+    if (document.fullscreenElement) {
+      try { await document.exitFullscreen(); } catch (e) {}
+    }
+    requestAnimationFrame(resizeChart);
+  }
+  $('[data-fullscreen-toggle]').addEventListener('click', () => { isFullscreenActive() ? exitFullscreen() : enterFullscreen(); });
+  $('[data-fullscreen-exit]').addEventListener('click', exitFullscreen);
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && isFullscreenActive()) exitFullscreen(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isFullscreenActive()) exitFullscreen(); });
+
+  /* ===== order ticket ===== */
+  $$('[data-side-tabs] button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('[data-side-tabs] button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSide = btn.dataset.side;
+      const submitBtn = $('[data-submit-btn]');
+      submitBtn.textContent = currentSide === 'buy' ? 'Buy at market' : 'Sell at market';
+      submitBtn.classList.toggle('buy', currentSide === 'buy');
+      submitBtn.classList.toggle('sell', currentSide === 'sell');
+      updateSelectedAssetHeader();
+      $('[data-ticket-msg]').textContent = '';
+    });
+  });
+
+  const qtyInput = $('[data-trade-qty]');
+  const usdInput = $('[data-trade-amount]');
+  let syncingFields = false;
+  function currentPrice() { const t = TICKER_MAP.get(selectedSymbol); return t ? t.price : 0; }
+  qtyInput.addEventListener('input', () => {
+    if (syncingFields) return;
+    syncingFields = true;
+    const qty = parseFloat(qtyInput.value) || 0;
+    usdInput.value = qty && currentPrice() ? (qty * currentPrice()).toFixed(2) : '';
+    syncingFields = false;
+  });
+  usdInput.addEventListener('input', () => {
+    if (syncingFields) return;
+    syncingFields = true;
+    const usd = parseFloat(usdInput.value) || 0;
+    qtyInput.value = usd && currentPrice() ? (usd / currentPrice()).toFixed(6) : '';
+    syncingFields = false;
+  });
+
+  $('[data-submit-btn]').addEventListener('click', () => {
+    const msgEl = $('[data-ticket-msg]');
+    msgEl.className = 'ticket-msg';
+    const t = TICKER_MAP.get(selectedSymbol);
+    const qty = parseFloat(qtyInput.value) || 0;
+    const price = t ? t.price : 0;
+    if (!t || !price || qty <= 0) { msgEl.textContent = 'Enter a valid amount.'; msgEl.classList.add('err'); return; }
+    const cost = qty * price;
+    const holdings = getHoldings();
+
+    if (currentSide === 'buy') {
+      if (cost > getBalance()) { msgEl.textContent = 'Amount exceeds your available balance.'; msgEl.classList.add('err'); return; }
+      setBalance(getBalance() - cost);
+      const pos = holdings[selectedSymbol] || { qty: 0, costBasis: 0 };
+      pos.costBasis = (pos.costBasis * pos.qty + cost) / (pos.qty + qty || 1);
+      pos.qty += qty;
+      holdings[selectedSymbol] = pos;
+      setHoldings(holdings);
+      logHistory('buy', qty, price, cost, null);
+      msgEl.textContent = `Bought ${fmtQty(qty)} ${t.base} at ${fmtPrice(price)}.`;
+      msgEl.classList.add('ok');
+    } else {
+      const pos = holdings[selectedSymbol];
+      if (!pos || qty > pos.qty) { msgEl.textContent = 'Amount exceeds your holdings.'; msgEl.classList.add('err'); return; }
+      const pnl = (price - pos.costBasis) * qty;
+      pos.qty -= qty;
+      if (pos.qty <= 0.0000001) delete holdings[selectedSymbol]; else holdings[selectedSymbol] = pos;
+      setHoldings(holdings);
+      setBalance(getBalance() + cost);
+      logHistory('sell', qty, price, cost, pnl);
+      msgEl.textContent = `Sold ${fmtQty(qty)} ${t.base} at ${fmtPrice(price)}.`;
+      msgEl.classList.add('ok');
+    }
+    qtyInput.value = ''; usdInput.value = '';
+    renderBalance(); renderHoldings(); renderHistory(); updateSelectedAssetHeader();
+  });
+
+  function logHistory(side, qty, price, amount, pnl) {
+    const hist = getHistory();
+    hist.unshift({ ts: Date.now(), symbol: selectedSymbol, base: TICKER_MAP.get(selectedSymbol).base, side, qty, price, amount, pnl });
+    setHistory(hist);
+  }
+
+  /* ===== render: balance / holdings / history ===== */
+  function renderBalance() {
+    const bal = getBalance();
+    $('[data-available-balance]').textContent = fmtUSD(bal);
+    if (currentSide === 'buy') $('[data-avail-line]').textContent = `Available balance: ${fmtUSD(bal)}`;
+  }
+
+  function renderHoldings() {
+    const holdings = getHoldings();
+    const symbols = Object.keys(holdings);
+    const tbody = $('[data-holdings-table]');
+    if (!symbols.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">You don't hold any assets yet — place a buy order to get started.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = symbols.map(sym => {
+      const pos = holdings[sym];
+      const t = TICKER_MAP.get(sym);
+      const price = t ? t.price : pos.costBasis;
+      const base = t ? t.base : sym.replace(/USDT$/, '');
+      const value = pos.qty * price;
+      const pnl = (price - pos.costBasis) * pos.qty;
+      const pnlClass = pnl >= 0 ? 'pnl-up' : 'pnl-down';
+      return `<tr>
+        <td>${base}</td>
+        <td class="mono">${fmtQty(pos.qty)}</td>
+        <td class="mono">${fmtPrice(pos.costBasis)}</td>
+        <td class="mono">${fmtPrice(price)}</td>
+        <td class="mono">${fmtUSD(value)}</td>
+        <td class="mono ${pnlClass}">${pnl >= 0 ? '+' : ''}${fmtUSD(pnl)}</td>
+        <td><button class="btn btn-ghost btn-sm" data-quick-sell="${sym}">Sell</button></td>
+      </tr>`;
+    }).join('');
+    tbody.querySelectorAll('[data-quick-sell]').forEach(btn => {
+      btn.addEventListener('click', () => { selectSymbol(btn.dataset.quickSell); $$('[data-side-tabs] button').forEach(b => b.classList.toggle('active', b.dataset.side === 'sell')); currentSide = 'sell'; $('[data-submit-btn]').textContent = 'Sell at market'; $('[data-submit-btn]').classList.add('sell'); $('[data-submit-btn]').classList.remove('buy'); window.scrollTo({ top: chartPanel.offsetTop - 20, behavior: 'smooth' }); });
+    });
+  }
+
+  function renderHistory() {
+    const hist = getHistory();
+    const tbody = $('[data-history-table]');
+    if (!hist.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No trades yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = hist.map(h => `
+      <tr>
+        <td>${new Date(h.ts).toLocaleString()}</td>
+        <td>${h.base}</td>
+        <td><span class="side-badge ${h.side}">${h.side}</span></td>
+        <td class="mono">${fmtQty(h.qty)}</td>
+        <td class="mono">${fmtPrice(h.price)}</td>
+        <td class="mono">${fmtUSD(h.amount)}</td>
+        <td class="mono ${h.pnl == null ? '' : (h.pnl >= 0 ? 'pnl-up' : 'pnl-down')}">${h.pnl == null ? '—' : (h.pnl >= 0 ? '+' : '') + fmtUSD(h.pnl)}</td>
+      </tr>`).join('');
+  }
+
+  /* ===== VaultexBot waitlist (unchanged, cosmetic) ===== */
+  const waitlistBtn = $('[data-bot-waitlist-btn]');
+  if (waitlistBtn) {
+    waitlistBtn.addEventListener('click', () => {
+      waitlistBtn.disabled = true;
+      waitlistBtn.textContent = 'Added to waitlist ✓';
+      $('[data-bot-waitlist-msg]').textContent = "You're on the list — we'll notify you when VaultexBot is ready.";
+    });
+  }
+
+  /* ===== init ===== */
+  renderBalance();
+  renderHoldings();
+  renderHistory();
+  loadTickers().then(() => { loadCandles(); startPolling(); });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && window.auth && auth.currentUser) syncBalanceWithDeposits(auth.currentUser.uid);
+  });
+  if (window.auth) {
+    auth.onAuthStateChanged(user => { if (user) syncBalanceWithDeposits(user.uid); });
+  }
+})();
+</script>
 </body>
 </html>
