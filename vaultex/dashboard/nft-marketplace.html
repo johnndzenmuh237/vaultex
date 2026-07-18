@@ -12,12 +12,21 @@
 
 <style>
 /* ===== NFT Marketplace — page-local styles (build on existing tokens) ===== */
-.demo-ribbon{background:var(--gold);color:#2b1c00;text-align:center;font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;padding:6px 12px;text-transform:uppercase}
-.demo-chip{display:inline-block;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
+.promo-ribbon{background:var(--gold);color:#2b1c00;text-align:center;font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;padding:6px 12px;text-transform:uppercase}
+.badge-chip{display:inline-block;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle}
 
 .wallet-connect-btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono)}
 .wallet-connect-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .wallet-connect-btn.connected .dot{background:var(--mint)}
+
+/* Stylish gradient "Connect wallet" button, matching the accent
+   treatment used across the other Vaultex pages. */
+.btn-wallet{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#00E5FF 0%,#7C5CFF 100%);color:#08111a;font-weight:700;border:none;border-radius:8px;padding:8px 18px;font-size:.83rem;letter-spacing:.01em;text-decoration:none;box-shadow:0 0 0 1px rgba(124,92,255,.25),0 4px 14px rgba(0,229,255,.18);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;}
+.btn-wallet:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 0 0 1px rgba(124,92,255,.35),0 6px 20px rgba(0,229,255,.28);}
+.btn-wallet:active{filter:brightness(.96);transform:translateY(0);}
+.btn-wallet::before{content:"⚡";font-size:.8rem;line-height:1;}
+.btn-wallet-mobile{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#00E5FF 0%,#7C5CFF 100%);color:#08111a !important;font-weight:700;border-radius:8px;margin-top:6px;}
+.btn-wallet-mobile::before{content:"⚡";font-size:.85rem;}
 
 .wallet-strip{background:var(--ink-soft, var(--ink-raise));border-bottom:1px solid var(--line)}
 .wallet-strip .container{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:12px 24px}
@@ -25,8 +34,8 @@
 .w-stat .lbl{color:var(--muted)}
 .w-stat .val{color:var(--paper);font-weight:700}
 
-.demo-banner{background:var(--gold-dim, rgba(242,184,75,.10));border:1px solid var(--gold);border-radius:12px;padding:12px 16px;font-size:.82rem;color:var(--paper);display:flex;gap:10px;align-items:flex-start;max-width:680px;margin:20px auto 0}
-.demo-banner .chip{flex-shrink:0}
+.info-banner{background:var(--gold-dim, rgba(242,184,75,.10));border:1px solid var(--gold);border-radius:12px;padding:12px 16px;font-size:.82rem;color:var(--paper);display:flex;gap:10px;align-items:flex-start;max-width:680px;margin:20px auto 0}
+.info-banner .chip{flex-shrink:0}
 
 .wallet-required{border:1px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;color:var(--muted);margin-bottom:36px}
 .wallet-required strong{color:var(--paper);display:block;margin-bottom:6px;font-family:var(--font-display);font-size:1.05rem}
@@ -76,12 +85,22 @@
   .data-table tbody tr{display:block;padding:12px 0}
   .data-table td{display:flex;justify-content:space-between;padding:5px 18px;font-size:.8rem}
 }
+
+/* Move the mobile drawer trigger to the left side of the navbar.
+   It's placed first in the DOM (before the logo) below, and this
+   rule guarantees it renders first visually even if the shared
+   responsive.css sets a different flex order elsewhere. */
+.navbar .nav-burger{order:-1;margin-right:10px}
+.navbar .nav-logo{order:0}
+.navbar .nav-links{order:1}
+.navbar .nav-actions{order:2}
 </style>
 </head>
 <body>
 
 <header class="navbar">
   <div class="container">
+    <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
     <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
     <nav class="nav-links">
       <a href="markets.html">Markets</a>
@@ -101,8 +120,7 @@
     </nav>
     <div class="nav-actions">
       <button class="theme-toggle" aria-label="Toggle theme">☾</button>
-      <a href="dashboard.html" class="btn btn-ghost btn-sm">Connect wallet</a>
-      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      <a href="dashboard.html" class="btn-wallet">Connect wallet</a>
     </div>
   </div>
   <div class="mobile-menu">
@@ -115,13 +133,13 @@
     <a href="pricing.html">Pricing</a>
     <a href="about.html">About</a>
     <a href="careers.html">Careers</a>
-    <a href="dashboard.html">Connect wallet</a>
+    <a href="dashboard.html" class="btn-wallet-mobile">Connect wallet</a>
   </div>
 </header>
 
 <div class="wallet-strip">
   <div class="container">
-    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">Demo USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
+    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
     <div class="w-stat"><span class="lbl">NFTs owned</span><span class="val" id="ownedCountVal">0</span></div>
     <div class="w-stat"><span class="lbl">Collection value (est.)</span><span class="val" id="collectionValVal">$0.00</span></div>
   </div>
@@ -138,7 +156,7 @@
 <section class="section-sm">
   <div class="container">
 
-    <div class="section-head"><h2>Featured collectibles</h2><span>Prices update live in demo USDT</span></div>
+    <div class="section-head"><h2>Featured collectibles</h2><span>Prices update live in USDT</span></div>
     <div class="nft-grid" id="nftGrid"></div>
 
     <div class="section-head"><h2>Your collection</h2><span id="ownedCountLabel"></span></div>
@@ -201,21 +219,21 @@
   const fmtUSD = n => '$'+(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 
   /* =========================================================
-     DEMO WALLET + COLLECTION — isolated on purpose.
-     Keys are prefixed "vaultex_demo_nft_" and are entirely
+     LOCAL WALLET + COLLECTION — isolated on purpose.
+     Keys are prefixed "vaultex_nft_" and are entirely
      separate from the real custody balance served by
      /api/account/summary, from production wallet keys, and
-     from the staking/AutoTrading demo pools in the other pages
-     (each of those has its own independently-namespaced demo
+     from the staking/AutoTrading local pools on the other pages
+     (each of those has its own independently-namespaced local
      balance). This page never reads or writes anything to the
      real account balance, Firestore trade/withdrawal data, or
      any real blockchain. The only thing read from the real
-     account is totalBalance, used purely to size the demo USDT
-     balance below — see syncDemoBalanceWithDeposits().
+     account is totalBalance, used purely to size the local USDT
+     balance below — see syncBalanceWithDeposits().
   ========================================================= */
-  const LS_BAL     = 'vaultex_demo_nft_balance_usdt';
-  const LS_OWNED   = 'vaultex_demo_nft_owned';
-  const LS_HIST    = 'vaultex_demo_nft_history';
+  const LS_BAL     = 'vaultex_nft_balance_usdt';
+  const LS_OWNED   = 'vaultex_nft_owned';
+  const LS_HIST    = 'vaultex_nft_history';
 
   function getBalance(){ return parseFloat(localStorage.getItem(LS_BAL)||'0'); }
   function setBalance(v){ localStorage.setItem(LS_BAL, String(Math.max(0,v))); }
@@ -225,27 +243,27 @@
   function setHistory(h){ localStorage.setItem(LS_HIST, JSON.stringify(h.slice(0,50))); }
 
   /* ---------------------------------------------------------
-     "Connect wallet" is now a plain nav link to dashboard.html
-     (real Vaultex login), not a local demo wallet toggle. Minting
+     "Connect wallet" is a plain nav link to dashboard.html
+     (real Vaultex login), not a local wallet toggle. Minting
      is gated on being logged in to a real Vaultex account
      (auth.currentUser) instead — see renderGrid() below.
   --------------------------------------------------------- */
 
   /* ---------------------------------------------------------
-     SYNC DEMO USDT BALANCE WITH REAL DEPOSITS
+     SYNC USDT BALANCE WITH REAL DEPOSITS
      ---------------------------------------------------------
      Same pattern as trade.html / staking.html: on auth and on
      tab refocus, check /api/account/summary for the real
      balance. If it's higher than the last time we checked (a
-     deposit), add that exact delta to the local demo NFT
+     deposit), add that exact delta to the local NFT
      balance. Real balance decreases (withdrawals) are never
      synced in. This key is namespaced separately from the other
-     pages' trackers so each demo pool receives its own
+     pages' trackers so each pool receives its own
      independent top-up off the same real deposit.
   --------------------------------------------------------- */
-  const LS_REAL_SEEN = uid => `vaultex_demo_nft_real_balance_seen_${uid}`;
+  const LS_REAL_SEEN = uid => `vaultex_nft_real_balance_seen_${uid}`;
 
-  async function syncDemoBalanceWithDeposits(uid){
+  async function syncBalanceWithDeposits(uid){
     if(!uid || !window.auth || !auth.currentUser) return;
     try{
       const token = await auth.currentUser.getIdToken();
@@ -269,7 +287,7 @@
 
       localStorage.setItem(key, realBal.toString());
     }catch(e){
-      console.error('Failed to sync demo NFT balance with real deposits', e);
+      console.error('Failed to sync NFT balance with real deposits', e);
     }finally{
       renderAll();
     }
@@ -281,8 +299,8 @@
      access or a strict CSP. Each theme (aurora / glitch-city /
      driftwood / nightfall) has its own generative pattern, seeded
      per item id so every card is unique but stable across reloads.
-     This is placeholder generative art for the demo, not actual
-     licensed NFT collection artwork.
+     This is placeholder generative art, not actual licensed NFT
+     collection artwork.
   */
   function seededRandom(seed){
     let h = 0;
@@ -529,13 +547,13 @@
 
   document.addEventListener('visibilitychange', () => {
     if(!document.hidden && window.auth && auth.currentUser){
-      syncDemoBalanceWithDeposits(auth.currentUser.uid);
+      syncBalanceWithDeposits(auth.currentUser.uid);
     }
   });
 
   if(window.auth){
     auth.onAuthStateChanged((user) => {
-      if(user) syncDemoBalanceWithDeposits(user.uid);
+      if(user) syncBalanceWithDeposits(user.uid);
     });
   }
 })();
