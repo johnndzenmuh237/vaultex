@@ -3,12 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Investment plans — Vaultex</title>
-<meta name="description" content="Curated, risk-tiered investment plans with transparent terms and no lock-up surprises.">
+<title>VaultexBotTrade Plans — Vaultex</title>
+<meta name="description" content="VaultexBotTrade AutoTrading packages with transparent minimums and daily target ranges. Register or log in to activate a plan from your dashboard.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/responsive.css">
+
+<style>
+/* ===== VaultexBotTrade plans — page-local styles, mirroring the
+   AutoTrading dashboard's package cards so the two stay visually
+   and numerically consistent. ===== */
+.pkg-lede{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:18px auto 0;max-width:680px;text-align:center}
+.pkg-lede .demo-chip{background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
+
+.pkg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:36px 0 22px}
+@media (max-width:1100px){ .pkg-grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:620px){ .pkg-grid{grid-template-columns:1fr} }
+
+.pkg-card{display:flex;flex-direction:column;gap:12px;position:relative;border:1px solid var(--line);background:var(--ink-soft, var(--ink-raise));border-radius:14px;padding:20px;transition:border-color .15s,transform .15s}
+.pkg-card:hover{border-color:var(--mint)}
+.pkg-card.featured{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint) inset}
+.pkg-card .tag{position:absolute;top:-11px;left:20px;background:var(--mint);color:#03140F;font-family:var(--font-mono);font-size:.62rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.03em;text-transform:uppercase}
+.pkg-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--ink-raise, var(--ink));border:1px solid var(--line)}
+.pkg-icon svg{width:20px;height:20px}
+.pkg-name{font-family:var(--font-display);font-size:1.05rem;font-weight:700}
+.pkg-min{font-size:.7rem;color:var(--muted);font-family:var(--font-mono)}
+.pkg-rate{font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:var(--mint)}
+.pkg-rate small{font-size:.62rem;color:var(--muted);font-weight:400}
+.pkg-feats{list-style:none;display:flex;flex-direction:column;gap:6px;font-size:.76rem;color:var(--muted);margin:2px 0 4px}
+.pkg-feats li{display:flex;gap:6px;align-items:flex-start}
+.pkg-feats li::before{content:"✓";color:var(--mint);flex-shrink:0}
+.pkg-card .btn{margin-top:auto}
+
+.how-it-works{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin:44px 0 8px;text-align:center}
+.how-step{flex:1;min-width:180px;max-width:220px}
+.how-step .num{width:30px;height:30px;border-radius:50%;background:var(--mint-dim, rgba(0,217,163,.12));color:var(--mint);font-family:var(--font-mono);font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:.85rem}
+.how-step h4{font-family:var(--font-display);font-size:.92rem;margin-bottom:4px}
+.how-step p{font-size:.78rem;color:var(--muted);line-height:1.5}
+
+.plans-cta{text-align:center;margin-top:30px}
+.plans-cta .btn{margin:0 6px}
+.plans-note{font-size:.74rem;color:var(--muted);text-align:center;margin-top:14px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6}
+</style>
 </head>
 <body>
 
@@ -22,7 +59,7 @@
         <a href="#">Earn <span style="font-size:.7em;">▾</span></a>
         <div class="dropdown-panel">
           <a href="staking.html">Staking</a>
-          <a href="investments.html">Investment Plans</a>
+          <a href="investments.html">VaultexBotTrade</a>
           <a href="earn.html">Savings &amp; Yield</a>
           <a href="launchpad.html">Launchpad</a>
         </div>
@@ -42,7 +79,7 @@
     <a href="markets.html">Markets</a>
     <a href="exchange.html">Trade</a>
     <a href="staking.html">Staking</a>
-    <a href="investments.html">Investment Plans</a>
+    <a href="investments.html">VaultexBotTrade</a>
     <a href="launchpad.html">Launchpad</a>
     <a href="nft-marketplace.html">NFT Market</a>
     <a href="pricing.html">Pricing</a>
@@ -57,37 +94,98 @@
 <section class="section">
   <div class="container">
     <div class="section-head center">
-      <div class="eyebrow" style="justify-content:center;">Investment plans</div>
-      <h1>Curated plans for every risk appetite</h1>
-      <p>Each plan discloses its strategy, historical performance, and risk tier up front.</p>
+      <div class="eyebrow" style="justify-content:center;">VaultexBotTrade</div>
+      <h1>AutoTrading packages built for every balance</h1>
+      <p>VaultexBotTrade scans the market and trades on your behalf. Pick a package below, then log in to activate it from your dashboard.</p>
+      <div class="pkg-lede"><span class="demo-chip">VBT</span><span style="color:var(--muted);font-size:.8rem;">Daily target ranges shown are the same ones live in your AutoTrading dashboard.</span></div>
     </div>
-    <div class="grid cols-3">
-      <div class="price-card">
-        <span class="badge">Low risk</span>
-        <h3 style="margin-top:14px;">Stable Yield</h3>
-        <p>Stablecoin lending across vetted protocols.</p>
-        <div class="price-amount">5.2<span>% APY</span></div>
-        <ul><li>Daily payouts</li><li>Withdraw anytime</li><li>$50 minimum</li></ul>
-        <a href="auth/register.html" class="btn btn-ghost btn-block">Invest now</a>
+
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <div class="pkg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
+        <div>
+          <div class="pkg-name">Starter</div>
+          <div class="pkg-min">Min. balance $100</div>
+        </div>
+        <div class="pkg-rate">1.8–2.8%<small> / day target</small></div>
+        <ul class="pkg-feats">
+          <li>Trend + momentum filters</li>
+          <li>Conservative position sizing</li>
+          <li>BTC, ETH, SOL pairs</li>
+        </ul>
+        <a href="auth/register.html" class="btn btn-ghost btn-block">Get started</a>
       </div>
-      <div class="price-card featured">
+
+      <div class="pkg-card featured">
         <span class="tag">Most popular</span>
-        <span class="badge">Medium risk</span>
-        <h3 style="margin-top:14px;">Balanced Growth</h3>
-        <p>A diversified basket of BTC, ETH, and large-cap alts.</p>
-        <div class="price-amount">12.8<span>% target APY</span></div>
-        <ul><li>Monthly rebalancing</li><li>30-day minimum term</li><li>$250 minimum</li></ul>
-        <a href="auth/register.html" class="btn btn-primary btn-block">Invest now</a>
+        <div class="pkg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2"><path d="M3 21V9M10 21V3M17 21v-7"/></svg></div>
+        <div>
+          <div class="pkg-name">Growth</div>
+          <div class="pkg-min">Min. balance $250</div>
+        </div>
+        <div class="pkg-rate">2.8–4.0%<small> / day target</small></div>
+        <ul class="pkg-feats">
+          <li>Multi-pair scanning</li>
+          <li>Adaptive stop-loss logic</li>
+          <li>Priority over Starter signals</li>
+        </ul>
+        <a href="auth/register.html" class="btn btn-primary btn-block">Get started</a>
       </div>
-      <div class="price-card">
-        <span class="badge">Higher risk</span>
-        <h3 style="margin-top:14px;">Alpha Seeker</h3>
-        <p>Early allocation into vetted, high-growth token launches.</p>
-        <div class="price-amount">Variable<span> returns</span></div>
-        <ul><li>90-day minimum term</li><li>Quarterly reporting</li><li>$1,000 minimum</li></ul>
-        <a href="auth/register.html" class="btn btn-ghost btn-block">Invest now</a>
+
+      <div class="pkg-card">
+        <div class="pkg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2"><path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6"/></svg></div>
+        <div>
+          <div class="pkg-name">Pro</div>
+          <div class="pkg-min">Min. balance $1,000</div>
+        </div>
+        <div class="pkg-rate">4.0–5.8%<small> / day target</small></div>
+        <ul class="pkg-feats">
+          <li>Volatility-adjusted sizing</li>
+          <li>Priority signal queue</li>
+          <li>Faster trade cadence</li>
+        </ul>
+        <a href="auth/register.html" class="btn btn-ghost btn-block">Get started</a>
+      </div>
+
+      <div class="pkg-card">
+        <div class="pkg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M2 8l5 4 5-9 5 9 5-4-2 11H4z"/></svg></div>
+        <div>
+          <div class="pkg-name">Elite</div>
+          <div class="pkg-min">Min. balance $5,000</div>
+        </div>
+        <div class="pkg-rate">5.8–7.8%<small> / day target</small></div>
+        <ul class="pkg-feats">
+          <li>Full market pair coverage</li>
+          <li>Fastest signal execution</li>
+          <li>Highest daily target band</li>
+        </ul>
+        <a href="auth/register.html" class="btn btn-ghost btn-block">Get started</a>
       </div>
     </div>
+
+    <div class="how-it-works">
+      <div class="how-step">
+        <div class="num">1</div>
+        <h4>Create an account</h4>
+        <p>Register and deposit funds to your Vaultex balance.</p>
+      </div>
+      <div class="how-step">
+        <div class="num">2</div>
+        <h4>Pick a package</h4>
+        <p>Open AutoTrading in your dashboard and choose the plan that fits your balance.</p>
+      </div>
+      <div class="how-step">
+        <div class="num">3</div>
+        <h4>Let the bot trade</h4>
+        <p>VaultexBotTrade scans, signals, and trades toward your plan's daily target automatically.</p>
+      </div>
+    </div>
+
+    <div class="plans-cta">
+      <a href="auth/register.html" class="btn btn-primary">Create account</a>
+      <a href="auth/login.html" class="btn btn-ghost">Log in</a>
+    </div>
+    <p class="plans-note">Already registered? Log in and open AutoTrading from your dashboard sidebar to activate any package above — your balance and package status stay in sync automatically.</p>
   </div>
 </section>
 
@@ -105,7 +203,7 @@
         </div>
       </div>
       <div class="footer-col"><h4>Product</h4>
-        <a href="exchange.html">Exchange</a><a href="staking.html">Staking</a><a href="investments.html">Investments</a><a href="earn.html">Earn</a><a href="launchpad.html">Launchpad</a>
+        <a href="exchange.html">Exchange</a><a href="staking.html">Staking</a><a href="investments.html">VaultexBotTrade</a><a href="earn.html">Earn</a><a href="launchpad.html">Launchpad</a>
       </div>
       <div class="footer-col"><h4>Company</h4>
         <a href="about.html">About us</a><a href="careers.html">Careers</a><a href="pricing.html">Pricing</a><a href="contact.html">Contact</a>
