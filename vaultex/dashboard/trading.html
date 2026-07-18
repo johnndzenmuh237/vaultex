@@ -144,7 +144,7 @@
       </div>
       <div class="bal-strip-actions">
         <button class="btn btn-ghost btn-sm" id="stopBotBtn" style="display:none;">Deactivate bot</button>
-        <a href="trading.html" class="btn btn-ghost btn-sm">Vautex terminal</a>
+        <a href="trading.html" class="btn btn-ghost btn-sm">Vaultex Terminal</a>
       </div>
     </div>
     <div class="widget" id="zeroBalWarn" style="display:none;border-color:var(--coral);margin-bottom:22px;">
@@ -200,7 +200,7 @@
   function getBotTx() { try { return JSON.parse(localStorage.getItem(LS_BOT_TX) || '[]'); } catch(e){ return []; } }
   function setBotTx(arr) { localStorage.setItem(LS_BOT_TX, JSON.stringify(arr.slice(0, 80))); }
 
-  /* ============== PACKAGES ============== */
+  /* ============== PACKAGES (daily target rates boosted, Starter min raised to $100) ============== */
   const ICONS = {
     starter: '<svg viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>',
     growth:  '<svg viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2"><path d="M3 21V9M10 21V3M17 21v-7"/></svg>',
@@ -209,13 +209,13 @@
   };
 
   const PACKAGES = [
-    { id:'starter', name:'Starter', icon:ICONS.starter, min:50,   rateMin:1.1, rateMax:1.9,
+    { id:'starter', name:'Starter', icon:ICONS.starter, min:100,  rateMin:1.8, rateMax:2.8,
       feats:['Trend + momentum filters','Conservative position sizing','BTC, ETH, SOL pairs'] },
-    { id:'growth',  name:'Growth',  icon:ICONS.growth,  min:250,  rateMin:1.9, rateMax:2.9,
+    { id:'growth',  name:'Growth',  icon:ICONS.growth,  min:250,  rateMin:2.8, rateMax:4.0,
       feats:['Multi-pair scanning','Adaptive stop-loss logic','Priority over Starter signals'] },
-    { id:'pro',     name:'Pro',     icon:ICONS.pro,     min:1000, rateMin:2.9, rateMax:4.2,
+    { id:'pro',     name:'Pro',     icon:ICONS.pro,     min:1000, rateMin:4.0, rateMax:5.8,
       feats:['Volatility-adjusted sizing','Priority signal queue','Faster trade cadence'] },
-    { id:'elite',   name:'Elite',   icon:ICONS.elite,   min:5000, rateMin:4.2, rateMax:5.8,
+    { id:'elite',   name:'Elite',   icon:ICONS.elite,   min:5000, rateMin:5.8, rateMax:7.8,
       feats:['Full market pair coverage','Fastest signal execution','Highest daily target band'] },
   ];
 
