@@ -50,12 +50,13 @@ img{display:block}
 .btn-ghost:hover{border-color:var(--mint)}
 .btn-sm{padding:6px 13px;font-size:.78rem}
 .btn-block{width:100%;justify-content:center}
+.btn-wallet{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#00E5FF 0%,#7C5CFF 100%);color:#08111a;font-weight:700;border:none;border-radius:7px;padding:8px 16px;font-size:.83rem;letter-spacing:.01em;text-decoration:none;box-shadow:0 0 0 1px rgba(124,92,255,.25),0 4px 14px rgba(0,229,255,.18);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;}
+.btn-wallet:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 0 0 1px rgba(124,92,255,.35),0 6px 20px rgba(0,229,255,.28);}
+.btn-wallet:active{transform:translateY(0);filter:brightness(.96);}
+.btn-wallet::before{content:"⚡";font-size:.8rem;line-height:1;}
 .theme-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--ink-raise);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.95rem;flex-shrink:0}
 .nav-burger{display:none;flex-direction:column;gap:4px;padding:4px}
 .nav-burger span{width:20px;height:2px;background:var(--paper);border-radius:2px;display:block}
-
-/* DEMO RIBBON — always visible, unmissable */
-.demo-ribbon{background:var(--gold);color:#2b1c00;text-align:center;font-family:var(--font-mono);font-size:.72rem;font-weight:700;letter-spacing:.03em;padding:6px 12px;text-transform:uppercase}
 
 /* WALLET STRIP */
 .wallet-strip{background:var(--ink-soft);border-bottom:1px solid var(--line)}
@@ -64,15 +65,13 @@ img{display:block}
 .w-stat .lbl{color:var(--muted)}
 .w-stat .val{color:var(--paper);font-weight:700}
 .wallet-strip .btn{margin-left:auto}
-.demo-chip{flex-shrink:0;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle;margin-left:8px}
+.info-chip{flex-shrink:0;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle;margin-left:8px}
 
 /* HERO */
 .hero{padding:56px 0 36px}
 .eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mint);background:var(--mint-dim);padding:5px 12px;border-radius:20px;margin-bottom:16px}
 .hero h1{font-family:var(--font-display);font-size:2.3rem;font-weight:700;line-height:1.15;margin-bottom:14px}
 .hero p{color:var(--muted);font-size:1rem}
-.demo-banner{background:var(--gold-dim);border:1px solid var(--gold);border-radius:var(--radius-md);padding:12px 16px;font-size:.82rem;color:var(--paper);display:flex;gap:10px;align-items:flex-start;max-width:680px;margin:20px auto 0}
-.demo-banner .chip{flex-shrink:0;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
 
 /* SUMMARY CARDS */
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px}
@@ -187,6 +186,7 @@ img{display:block}
 
 <header class="navbar">
   <div class="container">
+    <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
     <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
     <nav class="nav-links">
       <a href="markets.html">Markets</a>
@@ -204,16 +204,15 @@ img{display:block}
     </nav>
     <div class="nav-actions">
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☾</button>
-      <a href="dashboard.html" class="btn btn-ghost btn-sm">Connect wallet</a>
-      <a href="trade.html" class="btn btn-ghost btn-sm">Trade</a>
-      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      <a href="dashboard.html" class="btn-wallet">Connect wallet</a>
+      <a href="Trading.html" class="btn-wallet">Trade</a>
     </div>
   </div>
 </header>
 
 <div class="wallet-strip">
   <div class="container">
-    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">Demo USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
+    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Total staked (est.)</span><span class="val" id="totalStakedVal">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Unclaimed rewards (est.)</span><span class="val" id="totalRewardVal" style="color:var(--mint)">$0.00</span></div>
     <div class="w-stat"><span class="lbl">Est. weekly profit</span><span class="val" id="totalWeeklyVal" style="color:var(--mint)">$0.00</span></div>
@@ -222,7 +221,7 @@ img{display:block}
 
 <section class="hero">
   <div class="container text-center" style="max-width:680px;margin:0 auto">
-    <div class="eyebrow" style="justify-content:center">Staking <span class="demo-chip">STK
+    <div class="eyebrow" style="justify-content:center">Staking <span class="info-chip">STK
     </span></div>
     <h1>Choose a plan. Stake. Watch it grow.</h1>
     <p>Pick a staking plan for each asset — flexible or fixed-term — and track your rewards accrue in real time, down to the second.</p>
@@ -240,7 +239,7 @@ img{display:block}
       <div class="summary-card">
         <div class="lbl">Total staked value</div>
         <div class="val" id="statStakedVal">$0.00</div>
-        <div class="sub">principal, demo USD est.</div>
+        <div class="sub">principal, USD est.</div>
       </div>
       <div class="summary-card">
         <div class="lbl">Rewards earned</div>
@@ -295,7 +294,7 @@ img{display:block}
 <div class="modal-backdrop" id="stakeModal">
   <div class="modal-box">
     <button class="modal-close-x" id="stakeModalClose">✕</button>
-    <h3><img id="modalIcon" alt=""><span id="modalTitle">Stake ETH</span> <span class="demo-chip">STK</span></h3>
+    <h3><img id="modalIcon" alt=""><span id="modalTitle">Stake ETH</span> <span class="info-chip">STK</span></h3>
     <p class="modal-note" id="modalNote"></p>
 
     <div class="form-field">
@@ -322,7 +321,7 @@ img{display:block}
       <div class="sum-row hl"><span class="lbl">Est. yearly reward</span><span class="val" id="modalYearly">—</span></div>
     </div>
     <div class="form-msg" id="stakeMsg"></div>
-    <button class="btn btn-primary btn-block" id="stakeConfirm">Stake now (demo)</button>
+    <button class="btn btn-primary btn-block" id="stakeConfirm">Stake now</button>
   </div>
 </div>
 
@@ -358,7 +357,7 @@ img{display:block}
   const fmtAmt = n => (n||0).toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:6});
 
   /* =========================================================
-     DEMO WALLET — isolated on purpose.
+     LOCAL WALLET — isolated on purpose.
      These keys are prefixed "vaultex_demo_staking_" and are
      entirely separate from:
        - the real custody balance served by /api/account/summary
@@ -367,10 +366,10 @@ img{display:block}
        - any production wallet keys.
      This page never reads or writes anything to the real
      account balance or Firestore trade/withdrawal data. Every
-     figure here is simulated and clearly labeled "Demo" in the
+     figure here is simulated and clearly separated in the
      UI. The only thing read from the real account is the
-     totalBalance figure, used purely to size the demo USDT
-     balance below — see syncDemoBalanceWithDeposits().
+     totalBalance figure, used purely to size the local USDT
+     balance below — see syncLocalBalanceWithDeposits().
   ========================================================= */
   const LS_BAL   = 'vaultex_demo_staking_balance_usdt';
   const LS_HOLD  = 'vaultex_demo_staking_holdings';
@@ -389,12 +388,12 @@ img{display:block}
   /* ---------------------------------------------------------
      ONE-TIME MIGRATION — clear the legacy auto-seeded balance
      ---------------------------------------------------------
-     An earlier version of this page seeded a flat $10,000 demo
+     An earlier version of this page seeded a flat $10,000 local
      balance into LS_BAL on first visit (before deposit-syncing
      existed). That value can still be sitting in a browser's
      localStorage from that earlier session. Wipe it out once so
-     every user's demo balance goes back to being driven purely by
-     syncDemoBalanceWithDeposits() below — never by a hardcoded seed.
+     every user's local balance goes back to being driven purely by
+     syncLocalBalanceWithDeposits() below — never by a hardcoded seed.
   --------------------------------------------------------- */
   const LS_MIGRATED_FLAG = 'vaultex_demo_staking_migrated_v2';
   if(!localStorage.getItem(LS_MIGRATED_FLAG)){
@@ -403,22 +402,22 @@ img{display:block}
   }
 
   /* ---------------------------------------------------------
-     SYNC DEMO USDT BALANCE WITH REAL DEPOSITS
+     SYNC LOCAL USDT BALANCE WITH REAL DEPOSITS
      ---------------------------------------------------------
      Same pattern as trade.html's AutoTrading bot: on auth and on
      tab refocus, check /api/account/summary for the real balance.
      If it's higher than the last time we checked (a deposit), add
-     that exact delta to the local demo staking balance. Real
+     that exact delta to the local staking balance. Real
      balance decreases (withdrawals) are never synced in, since the
-     demo balance may already include simulated staking rewards and
+     local balance may already include simulated staking rewards and
      subtracting a withdrawal from it would produce a meaningless
      number. This key is namespaced separately from trade.html's
-     tracker so each demo pool (staking vs. AutoTrading) receives
+     tracker so each local pool (staking vs. AutoTrading) receives
      its own independent top-up off the same real deposit.
   --------------------------------------------------------- */
   const LS_REAL_SEEN = uid => `vaultex_demo_staking_real_balance_seen_${uid}`;
 
-  async function syncDemoBalanceWithDeposits(uid){
+  async function syncLocalBalanceWithDeposits(uid){
     if(!uid || !window.auth || !auth.currentUser) return;
     try{
       const token = await auth.currentUser.getIdToken();
@@ -435,7 +434,7 @@ img{display:block}
       const realBal = data.totalBalance;
 
       if(isNaN(lastSeen)){
-        // First time seeing this user on this device: seed the demo
+        // First time seeing this user on this device: seed the local
         // balance from their real balance right now.
         setBalance(realBal);
       } else if(realBal > lastSeen){
@@ -443,11 +442,11 @@ img{display:block}
         const delta = realBal - lastSeen;
         setBalance(getBalance() + delta);
       }
-      // realBal <= lastSeen: demo balance left untouched.
+      // realBal <= lastSeen: local balance left untouched.
 
       localStorage.setItem(key, realBal.toString());
     }catch(e){
-      console.error('Failed to sync demo staking balance with real deposits', e);
+      console.error('Failed to sync local staking balance with real deposits', e);
     }finally{
       renderHeader();
       renderAssetRows();
@@ -503,7 +502,7 @@ img{display:block}
       data.forEach(c=>{ PRICES[c.symbol]=c.current_price; IMAGES[c.symbol]=c.image; });
       try{ localStorage.setItem(LS_PRICE_CACHE, JSON.stringify({p:PRICES,i:IMAGES,ts:Date.now()})); }catch(e){}
     }catch(err){
-      console.warn('Vaultex demo staking: price fetch failed', err);
+      console.warn('Vaultex staking: price fetch failed', err);
       if(!Object.keys(PRICES).length){
         try{
           const cached = JSON.parse(localStorage.getItem(LS_PRICE_CACHE)||'null');
@@ -530,7 +529,7 @@ img{display:block}
   function renderHeader(){
     const bal = getBalance();
     $('usdtBal').textContent = fmtUSD(bal);
-    // The demo USDT balance is only shown once a real deposit has
+    // The local USDT balance is only shown once a real deposit has
     // synced a nonzero amount in — before that there's nothing to
     // show, and displaying a static "$0.00" reads like an invented
     // pre-loaded balance rather than "you haven't funded this yet".
@@ -582,16 +581,16 @@ img{display:block}
     });
   }
 
-  /* ===== one-click convert demo USDT into a demo asset holding =====
+  /* ===== one-click convert local USDT into a local asset holding =====
      Unchanged behavior, just spends from the (now deposit-synced)
-     demo USDT balance instead of a manually-topped-up faucet balance.
+     local USDT balance instead of a manually-topped-up faucet balance.
   */
   function faucetConvert(symbol){
     const pool = POOLS.find(p=>p.symbol===symbol); if(!pool) return;
     const price = PRICES[symbol];
     if(!price){ alert('Prices are still loading, try again in a moment.'); return; }
     const usdToSpend = Math.min(getBalance(), 200);
-    if(usdToSpend<=0){ alert('Your demo USDT balance is $0 — deposit funds to your Vaultex account to get a demo balance here.'); return; }
+    if(usdToSpend<=0){ alert('Your USDT balance is $0 — deposit funds to your Vaultex account to get a balance here.'); return; }
     setBalance(getBalance()-usdToSpend);
     const holdings = getHoldings();
     holdings[symbol] = (holdings[symbol]||0) + usdToSpend/price;
@@ -692,7 +691,7 @@ img{display:block}
     const avail = holdings[symbol]||0;
     $('modalIcon').src = IMAGES[symbol]||'';
     $('modalTitle').textContent = `Stake ${pool.name}`;
-    $('modalNote').textContent = `Choose a plan below, then an amount. Rewards accrue every second at your plan's APY, calculated in demo ${pool.symbol.toUpperCase()}.`;
+    $('modalNote').textContent = `Choose a plan below, then an amount. Rewards accrue every second at your plan's APY, calculated in ${pool.symbol.toUpperCase()}.`;
     $('stakeUnit').textContent = pool.symbol.toUpperCase();
     $('modalAvail').textContent = fmtAmt(avail)+' '+pool.symbol.toUpperCase();
     $('stakeAmount').value='';
@@ -734,9 +733,9 @@ img{display:block}
     const avail = holdings[modalSymbol]||0;
     let msg='';
     let disable=false;
-    if(avail<=0){ msg=`You don't hold any demo ${pool.symbol.toUpperCase()} yet.`; disable=true; }
+    if(avail<=0){ msg=`You don't hold any ${pool.symbol.toUpperCase()} yet.`; disable=true; }
     else if(amt<=0){ disable=true; }
-    else if(amt>avail){ msg='Amount exceeds your available demo balance.'; disable=true; }
+    else if(amt>avail){ msg='Amount exceeds your available balance.'; disable=true; }
     else if(amt<pool.min){ msg=`Minimum stake is ${pool.min} ${pool.symbol.toUpperCase()}.`; disable=true; }
     $('stakeMsg').textContent = msg;
     $('stakeConfirm').disabled = disable;
@@ -801,13 +800,13 @@ img{display:block}
 
   document.addEventListener('visibilitychange', () => {
     if(!document.hidden && window.auth && auth.currentUser){
-      syncDemoBalanceWithDeposits(auth.currentUser.uid);
+      syncLocalBalanceWithDeposits(auth.currentUser.uid);
     }
   });
 
   if(window.auth){
     auth.onAuthStateChanged((user) => {
-      if(user) syncDemoBalanceWithDeposits(user.uid);
+      if(user) syncLocalBalanceWithDeposits(user.uid);
     });
   }
 })();
