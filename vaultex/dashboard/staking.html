@@ -18,13 +18,14 @@
 }
 html[data-theme="light"]{ --ink:#F0F2FA; --ink-soft:#FFFFFF; --ink-raise:#E4E7F3; --line:#D5DAF0; --paper:#0D1226; --muted:#5B6480; }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{max-width:100%;overflow-x:hidden}
 body{background:var(--ink);color:var(--paper);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer;border:none;background:none}
 button:disabled{cursor:not-allowed;opacity:.4}
 input{font-family:inherit}
-img{display:block}
-.container{max-width:1180px;margin:0 auto;padding:0 24px}
+img{display:block;max-width:100%}
+.container{max-width:1180px;margin:0 auto;padding:0 24px;width:100%}
 .mono{font-family:var(--font-mono)}
 .delta-up{color:var(--mint)} .delta-down{color:var(--coral)}
 .text-center{text-align:center}
@@ -34,7 +35,7 @@ img{display:block}
 .navbar .container{height:60px;display:flex;align-items:center;gap:24px}
 .nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-weight:700;font-size:1.15rem;flex-shrink:0}
 .nav-logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--mint),var(--gold));display:flex;align-items:center;justify-content:center;color:#04150F;font-weight:800;font-family:var(--font-mono);font-size:.85rem}
-.nav-links{display:flex;align-items:center;gap:22px;flex:1}
+.nav-links{display:flex;align-items:center;gap:22px;flex:1;min-width:0}
 .nav-links a{color:var(--muted);font-size:.86rem;font-weight:500;white-space:nowrap}
 .nav-links a.active,.nav-links a:hover{color:var(--paper)}
 .dropdown{position:relative}
@@ -75,9 +76,9 @@ img{display:block}
 
 /* SUMMARY CARDS */
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px}
-.summary-card{background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-md);padding:16px 18px}
+.summary-card{background:var(--ink-soft);border:1px solid var(--line);border-radius:var(--radius-md);padding:16px 18px;min-width:0}
 .summary-card .lbl{font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
-.summary-card .val{font-family:var(--font-mono);font-size:1.35rem;font-weight:700}
+.summary-card .val{font-family:var(--font-mono);font-size:1.35rem;font-weight:700;word-break:break-word}
 .summary-card .val.mint{color:var(--mint)}
 .summary-card .sub{font-size:.7rem;color:var(--muted);margin-top:4px}
 
@@ -145,8 +146,8 @@ img{display:block}
 .pct-btn{flex:1;padding:5px 0;border-radius:4px;font-size:.68rem;font-family:var(--font-mono);color:var(--muted);border:1px solid var(--line);text-align:center}
 .pct-btn:hover{border-color:var(--mint);color:var(--mint)}
 .order-summary{background:var(--ink);border-radius:var(--radius-sm);padding:10px 12px;display:flex;flex-direction:column;gap:5px}
-.sum-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem}
-.sum-row .lbl{color:var(--muted)} .sum-row .val{color:var(--paper)}
+.sum-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;flex-wrap:wrap;gap:4px}
+.sum-row .lbl{color:var(--muted)} .sum-row .val{color:var(--paper);word-break:break-word;text-align:right}
 .sum-row.hl .val{color:var(--mint);font-weight:700}
 .form-msg{font-size:.72rem;color:var(--coral);text-align:center;min-height:16px}
 
@@ -161,24 +162,32 @@ img{display:block}
 .social-icons a{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
 .footer-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);padding-top:20px}
 
+/* ===== TABLET (900px and below): stack table into card rows early
+   so nothing needs horizontal scrolling before the phone breakpoint ===== */
 @media (max-width:900px){
   .footer-grid{grid-template-columns:1fr 1fr}
   .nav-links{display:none}
   .nav-burger{display:flex}
   .hero h1{font-size:1.9rem}
   .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .data-table thead{display:none}
+  .data-table tbody tr{display:block;padding:14px 0}
+  .data-table td{display:flex;justify-content:space-between;align-items:center;padding:6px 18px;font-size:.82rem;gap:10px;text-align:right}
+  .data-table td:first-child{padding-top:10px}
+  .row-actions{justify-content:flex-start;width:100%}
+  .plan-tags{justify-content:flex-end}
 }
 @media (max-width:640px){
   .footer-grid{grid-template-columns:1fr}
-  .data-table thead{display:none}
-  .data-table tbody tr{display:block;padding:14px 0}
-  .data-table td{display:flex;justify-content:space-between;align-items:center;padding:6px 18px;font-size:.82rem}
-  .data-table td:first-child{padding-top:10px}
-  .row-actions{justify-content:flex-start;width:100%}
   .stake-card{flex-direction:column;align-items:flex-start}
   .stake-card .sc-actions{margin-left:0;flex-direction:row;width:100%;justify-content:space-between}
   .summary-grid{grid-template-columns:1fr}
   .plan-grid{grid-template-columns:1fr}
+  .container{padding:0 16px}
+}
+@media (max-width:380px){
+  .hero h1{font-size:1.6rem}
+  .eyebrow{font-size:.66rem}
 }
 </style>
 </head>
@@ -205,7 +214,6 @@ img{display:block}
     <div class="nav-actions">
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☾</button>
       <a href="dashboard.html" class="btn-wallet">Connect wallet</a>
-      <a href="Trading.html" class="btn-wallet">Trade</a>
     </div>
   </div>
 </header>
@@ -453,28 +461,28 @@ img{display:block}
     }
   }
 
-  /* ===== staking pool + plan definitions ===== */
+  /* ===== staking pool + plan definitions (amounts & APY boosted, durations unchanged) ===== */
   const POOLS = [
-    { id:'bitcoin',    symbol:'btc',  name:'Bitcoin',   min:0.0005, plans:[
-      {label:'Flexible', apy:2.1, lockDays:0},{label:'30 Days', apy:3.2, lockDays:30},{label:'90 Days', apy:4.6, lockDays:90}] },
-    { id:'ethereum',   symbol:'eth',  name:'Ethereum',  min:0.01, plans:[
-      {label:'Flexible', apy:4.8, lockDays:0},{label:'30 Days', apy:6.5, lockDays:30},{label:'90 Days', apy:8.9, lockDays:90}] },
-    { id:'solana',     symbol:'sol',  name:'Solana',    min:1, plans:[
-      {label:'Flexible', apy:6.2, lockDays:0},{label:'30 Days', apy:8.1, lockDays:30},{label:'90 Days', apy:10.4, lockDays:90}] },
-    { id:'polkadot',   symbol:'dot',  name:'Polkadot',  min:5, plans:[
-      {label:'28 Days', apy:11.4, lockDays:28},{label:'90 Days', apy:14.2, lockDays:90}] },
-    { id:'cardano',    symbol:'ada',  name:'Cardano',   min:10, plans:[
-      {label:'Flexible', apy:3.9, lockDays:0},{label:'30 Days', apy:5.3, lockDays:30}] },
-    { id:'avalanche-2',symbol:'avax', name:'Avalanche', min:1, plans:[
-      {label:'Flexible', apy:7.5, lockDays:0},{label:'30 Days', apy:9.6, lockDays:30}] },
-    { id:'matic-network',symbol:'matic',name:'Polygon', min:10, plans:[
-      {label:'Flexible', apy:5.6, lockDays:0},{label:'30 Days', apy:7.4, lockDays:30}] },
-    { id:'chainlink',  symbol:'link', name:'Chainlink', min:1, plans:[
-      {label:'Flexible', apy:4.2, lockDays:0},{label:'30 Days', apy:5.9, lockDays:30}] },
-    { id:'cosmos',     symbol:'atom', name:'Cosmos',    min:1, plans:[
-      {label:'21 Days', apy:9.8, lockDays:21},{label:'90 Days', apy:12.6, lockDays:90}] },
-    { id:'tron',       symbol:'trx',  name:'Tron',      min:50, plans:[
-      {label:'Flexible', apy:4.5, lockDays:0},{label:'30 Days', apy:6.0, lockDays:30}] },
+    { id:'bitcoin',    symbol:'btc',  name:'Bitcoin',   min:0.002, plans:[
+      {label:'Flexible', apy:3.5, lockDays:0},{label:'30 Days', apy:5.0, lockDays:30},{label:'90 Days', apy:7.0, lockDays:90}] },
+    { id:'ethereum',   symbol:'eth',  name:'Ethereum',  min:0.03, plans:[
+      {label:'Flexible', apy:7.5, lockDays:0},{label:'30 Days', apy:9.0, lockDays:30},{label:'90 Days', apy:12.5, lockDays:90}] },
+    { id:'solana',     symbol:'sol',  name:'Solana',    min:3, plans:[
+      {label:'Flexible', apy:9.5, lockDays:0},{label:'30 Days', apy:12.0, lockDays:30},{label:'90 Days', apy:15.0, lockDays:90}] },
+    { id:'polkadot',   symbol:'dot',  name:'Polkadot',  min:15, plans:[
+      {label:'28 Days', apy:16.0, lockDays:28},{label:'90 Days', apy:19.5, lockDays:90}] },
+    { id:'cardano',    symbol:'ada',  name:'Cardano',   min:30, plans:[
+      {label:'Flexible', apy:6.0, lockDays:0},{label:'30 Days', apy:8.0, lockDays:30}] },
+    { id:'avalanche-2',symbol:'avax', name:'Avalanche', min:3, plans:[
+      {label:'Flexible', apy:11.0, lockDays:0},{label:'30 Days', apy:13.5, lockDays:30}] },
+    { id:'matic-network',symbol:'matic',name:'Polygon', min:25, plans:[
+      {label:'Flexible', apy:8.5, lockDays:0},{label:'30 Days', apy:10.5, lockDays:30}] },
+    { id:'chainlink',  symbol:'link', name:'Chainlink', min:3, plans:[
+      {label:'Flexible', apy:6.5, lockDays:0},{label:'30 Days', apy:8.5, lockDays:30}] },
+    { id:'cosmos',     symbol:'atom', name:'Cosmos',    min:3, plans:[
+      {label:'21 Days', apy:13.5, lockDays:21},{label:'90 Days', apy:16.5, lockDays:90}] },
+    { id:'tron',       symbol:'trx',  name:'Tron',      min:150, plans:[
+      {label:'Flexible', apy:7.0, lockDays:0},{label:'30 Days', apy:9.0, lockDays:30}] },
   ];
   let PRICES = {};
   let IMAGES = {};
