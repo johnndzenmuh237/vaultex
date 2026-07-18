@@ -34,7 +34,7 @@
 
   /* ---- Terminal grid: pairs | chart | orderbook+ticket ----
      Same 3-column shape as the Exchange Terminal preview, just
-     wired to real live data + your demo trading balance instead
+     wired to real live data + your practice trading balance instead
      of simulated candles. */
   .trading-layout {
     display: grid; grid-template-columns: 240px minmax(0, 1fr) 300px;
@@ -698,7 +698,7 @@ text-align:left;
       <div class="trading-header">
         <div>
           <h2>Markets &amp; manual trading</h2>
-          <p>Live prices, live order book, and charts stream straight from the market — trades post to your demo trading balance, topped up automatically from your real deposits.</p>
+          <p>Live prices, live order book, and charts stream straight from the market — trades post to your practice trading balance, topped up automatically from your real deposits.</p>
         </div>
         <div class="balance-chip">
           <div class="label">Available balance</div>
@@ -995,22 +995,22 @@ text-align:left;
 /**
  * Vaultex — Trading Center
  * Live market list, live multi-timeframe candlestick chart, a live
- * order book, and a demo order ticket — all powered by Binance's
+ * order book, and an order ticket — all powered by Binance's
  * public market-data REST API (no API key required, CORS-enabled).
  * Chart rendering uses lightweight-charts (already loaded above).
  *
  * Layout mirrors the Exchange Terminal preview: pairs on the left,
  * chart + open orders/trade history/positions/funds tabs in the
  * middle, live order book + order ticket on the right — but every
- * number on this page is real live data or your real demo balance,
+ * number on this page is real live data or your real practice balance,
  * nothing here is simulated/random.
  *
- * DEMO TRADING BALANCE — isolated on purpose, same pattern used on
+ * PRACTICE TRADING BALANCE — isolated on purpose, same pattern used on
  * staking.html / nft-marketplace.html. Keys are prefixed
- * "vaultex_demo_trade_" and are entirely separate from any other
- * page's demo pool. This page never writes to the real account
+ * "vaultex_practice_trade_" and are entirely separate from any other
+ * page's practice pool. This page never writes to the real account
  * balance or Firestore trade data — the only thing read from the
- * real account is totalBalance, used purely to top up this demo
+ * real account is totalBalance, used purely to top up this practice
  * balance when a real deposit is detected (see syncBalanceWithDeposits).
  *
  * DAILY SIGNALS — a real, indicator-based scan, not a placeholder.
@@ -1057,12 +1057,12 @@ text-align:left;
   const fmtCompact = n => n == null ? '—' : Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 2 }).format(n);
   const fmtPct = n => n == null ? '—' : `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
 
-  /* ===== demo balance / holdings / history storage ===== */
-  const LS_BAL = 'vaultex_demo_trade_balance_usdt';
-  const LS_HOLD = 'vaultex_demo_trade_holdings';   // { SYMBOL: { qty, costBasis } }
-  const LS_HIST = 'vaultex_demo_trade_history';
+  /* ===== practice balance / holdings / history storage ===== */
+  const LS_BAL = 'vaultex_practice_trade_balance_usdt';
+  const LS_HOLD = 'vaultex_practice_trade_holdings';   // { SYMBOL: { qty, costBasis } }
+  const LS_HIST = 'vaultex_practice_trade_history';
   const LS_SIGNALS = 'vaultex_daily_signals';
-  const LS_REAL_SEEN = uid => `vaultex_demo_trade_real_balance_seen_${uid}`;
+  const LS_REAL_SEEN = uid => `vaultex_practice_trade_real_balance_seen_${uid}`;
 
   const getBalance = () => parseFloat(localStorage.getItem(LS_BAL) || '0');
   const setBalance = v => localStorage.setItem(LS_BAL, String(Math.max(0, v)));
@@ -1087,7 +1087,7 @@ text-align:left;
       else if (realBal > lastSeen) setBalance(getBalance() + (realBal - lastSeen));
       localStorage.setItem(key, realBal.toString());
     } catch (e) {
-      console.error('Failed to sync demo trading balance with real deposits', e);
+      console.error('Failed to sync practice trading balance with real deposits', e);
     } finally {
       renderBalance();
     }
@@ -1539,7 +1539,7 @@ text-align:left;
     const panel = $('[data-bottom-panel]');
     if (!panel) return;
     if (currentBottomTab === 'orders') {
-      panel.innerHTML = `<div class="no-orders">No open orders — place your first trade below. (This demo fills instantly, so orders never sit "open".)</div>`;
+      panel.innerHTML = `<div class="no-orders">No open orders — place your first trade below. (Orders fill instantly, so they never sit "open".)</div>`;
       return;
     }
     if (currentBottomTab === 'history') {
@@ -1605,8 +1605,8 @@ text-align:left;
 
   const OT_HINTS = {
     market: 'Fills instantly at the live market price.',
-    limit: 'Demo fills instantly at your chosen price (no resting order book).',
-    stop: 'Demo fills instantly once triggered — treated the same as your chosen price.',
+    limit: 'Fills instantly at your chosen price (no resting order book).',
+    stop: 'Fills instantly once triggered — treated the same as your chosen price.',
   };
   $$('[data-order-type-row] .ot-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1707,7 +1707,7 @@ text-align:left;
     if (!t || !price || qty <= 0) { msgEl.textContent = 'Enter a valid amount.'; msgEl.classList.add('err'); return; }
     const cost = qty * price;
     const holdings = getHoldings();
-    const typeNote = currentOrderType === 'market' ? '' : ` (${currentOrderType} demo-filled)`;
+    const typeNote = currentOrderType === 'market' ? '' : ` (${currentOrderType} filled)`;
 
     if (currentSide === 'buy') {
       if (cost > getBalance()) { msgEl.textContent = 'Amount exceeds your available balance.'; msgEl.classList.add('err'); return; }
