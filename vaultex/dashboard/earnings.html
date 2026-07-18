@@ -18,6 +18,10 @@
 @media (max-width:560px){ .earn-grid{grid-template-columns:1fr;} }
 .earn-section-label{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px;}
 .earn-notice{font-size:.76rem;color:var(--muted);background:var(--ink-soft, var(--ink-raise));border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:22px;}
+.btn-wallet{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#00E5FF 0%,#7C5CFF 100%);color:#08111a;font-weight:700;border:none;border-radius:7px;padding:6px 14px;font-size:.72rem;letter-spacing:.01em;text-decoration:none;box-shadow:0 0 0 1px rgba(124,92,255,.25),0 4px 14px rgba(0,229,255,.18);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;}
+.btn-wallet:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 0 0 1px rgba(124,92,255,.35),0 6px 20px rgba(0,229,255,.28);}
+.btn-wallet:active{transform:translateY(0);filter:brightness(.96);}
+.btn-wallet::before{content:"⚡";font-size:.75rem;line-height:1;}
 </style>
 </head>
 <body>
@@ -49,7 +53,7 @@
     <div class="widget balance-card" style="margin-bottom:24px;">
       <div class="widget-head">
         <h3>Total balance</h3>
-        <a href="dashboard.html" class="btn btn-ghost btn-sm">Wallet Connect</a>
+        <a href="dashboard.html" class="btn-wallet">Wallet Connect</a>
       </div>
       <div class="balance-amount">$0<span class="cents">.00</span></div>
       <span class="pill pill-neutral" data-balance-pill>— $0.00 this week</span>
@@ -76,7 +80,7 @@
     </div>
 
     <!-- Bot -->
-    <div class="earn-section-label">VaultexBotTrade <a href="dashboard.html" class="btn btn-ghost btn-sm" style="padding:2px 10px;font-size:.68rem;margin-left:auto;">Wallet Connect</a></div>
+    <div class="earn-section-label">VaultexBotTrade <a href="dashboard.html" class="btn-wallet" style="margin-left:auto;">Wallet Connect</a></div>
     <div class="earn-grid">
       <div class="widget earn-stat" data-earn-stat="bot-session">
         <div class="val" data-val>$0.00</div>
@@ -93,7 +97,7 @@
     </div>
 
     <!-- Staking -->
-    <div class="earn-section-label">Staking <a href="dashboard.html" class="btn btn-ghost btn-sm" style="padding:2px 10px;font-size:.68rem;margin-left:auto;">Wallet Connect</a></div>
+    <div class="earn-section-label">Staking <a href="dashboard.html" class="btn-wallet" style="margin-left:auto;">Wallet Connect</a></div>
     <div class="earn-grid">
       <div class="widget earn-stat" data-earn-stat="staking-active">
         <div class="val" data-val>$0.00</div>
@@ -110,7 +114,7 @@
     </div>
 
     <!-- NFT -->
-    <div class="earn-section-label">NFT collection <a href="dashboard.html" class="btn btn-ghost btn-sm" style="padding:2px 10px;font-size:.68rem;margin-left:auto;">Wallet Connect</a></div>
+    <div class="earn-section-label">NFT collection <a href="dashboard.html" class="btn-wallet" style="margin-left:auto;">Wallet Connect</a></div>
     <div class="earn-grid">
       <div class="widget earn-stat" data-earn-stat="nft-owned">
         <div class="val" data-val>0</div>
