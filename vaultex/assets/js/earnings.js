@@ -258,7 +258,7 @@
 
     const rows = [
       ..._tradingHistory.map(t => ({ ts: t.ts, dateLabel: t.dateLabel, source: 'real', sourceLabel: 'Trading', detail: t.pair, amountLabel: fmtSigned(t.pnl), positive: t.pnl >= 0 })),
-      ..._botHistory.map(b => ({ ts: b.ts, dateLabel: b.dateLabel, source: 'demo', sourceLabel: 'Bot', detail: b.label, amountLabel: fmtSigned(b.amount), positive: b.amount >= 0 })),
+      ..._botHistory.map(b => ({ ts: b.ts, dateLabel: b.dateLabel, source: 'bot', sourceLabel: 'BotTrade', detail: b.label, amountLabel: fmtSigned(b.amount), positive: b.amount >= 0 })),
       ..._stakingHistory.map(s => ({ ts: s.ts, dateLabel: s.dateLabel, source: 'demo', sourceLabel: 'Staking', detail: s.label, amountLabel: `+${s.amount.toFixed(4)} ${s.unit}`, positive: true })),
       ..._nftHistory.map(n => ({ ts: n.ts, dateLabel: n.dateLabel, source: 'demo', sourceLabel: 'NFT', detail: n.label, amountLabel: fmtSigned(n.amount), positive: n.amount >= 0 })),
     ].sort((a, b) => b.ts - a.ts).slice(0, 150);
@@ -271,7 +271,7 @@
     body.innerHTML = rows.map(r => `
       <tr>
         <td>${r.dateLabel}</td>
-        <td><span class="earn-source-tag ${r.source}">${r.source === 'real' ? 'Real' : 'Demo'} · ${r.sourceLabel}</span></td>
+        <td><span class="earn-source-tag ${r.source}">${r.source === 'real' ? 'Real · ' + r.sourceLabel : (r.source === 'bot' ? 'BotTrade' : 'Demo · ' + r.sourceLabel)}</span></td>
         <td>${r.detail}</td>
         <td class="mono" style="color:${r.positive ? 'var(--mint)' : 'var(--coral)'}">${r.amountLabel}</td>
       </tr>`).join('');
