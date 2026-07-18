@@ -9,7 +9,7 @@
         Written by trading.js (Trading Center). Same collection
         dashboard.js's weekly P&L pill reads.
 
-     2. DEMO BOT — localStorage, NOT Firestore, NOT uid-scoped:
+     2. BOTTRADE — localStorage, NOT Firestore, NOT uid-scoped:
         vaultex_balance_usdt / vaultex_bot_state /
         vaultex_bot_log / vaultex_bot_tx
         (written by the AutoTrading / bot-trading.html page)
@@ -147,7 +147,7 @@
     }
   }
 
-  /* ===================== DEMO: bot (localStorage) ===================== */
+  /* ===================== BOTTRADE (localStorage) ===================== */
 
   const LS_BOT_STATE = 'vaultex_bot_state';
   const LS_BOT_TX = 'vaultex_bot_tx';
