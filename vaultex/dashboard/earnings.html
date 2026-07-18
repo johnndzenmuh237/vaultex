@@ -10,13 +10,17 @@
 <link rel="stylesheet" href="../assets/css/dashboard.css">
 <link rel="stylesheet" href="../assets/css/responsive.css">
 <style>
-/* Earnings page — small additions, not yet in dashboard.css */
 .demo-chip{display:inline-block;background:var(--gold);color:#2b1c00;font-family:var(--font-mono);font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;margin-left:6px;vertical-align:middle;}
-.earn-stat .val{font-family:var(--font-mono);font-weight:700;font-size:1.6rem;}
-.earn-stat .lbl{font-size:.75rem;color:var(--muted);margin-top:4px;}
-.earn-source-tag{font-size:.65rem;padding:2px 6px;border-radius:4px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.03em;}
+.earn-stat .val{font-family:var(--font-mono);font-weight:700;font-size:1.5rem;}
+.earn-stat .lbl{font-size:.74rem;color:var(--muted);margin-top:4px;}
+.earn-source-tag{font-size:.63rem;padding:2px 6px;border-radius:4px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;}
 .earn-source-tag.real{background:rgba(60,220,150,.12);color:var(--mint);}
 .earn-source-tag.demo{background:rgba(240,180,60,.14);color:var(--gold);}
+.earn-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px;}
+@media (max-width:1024px){ .earn-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media (max-width:560px){ .earn-grid{grid-template-columns:1fr;} }
+.earn-section-label{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px;}
+.earn-notice{font-size:.76rem;color:var(--muted);background:var(--ink-soft, var(--ink-raise));border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:22px;}
 </style>
 </head>
 <body>
@@ -35,7 +39,7 @@
       <div>
         <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
         <h2 class="mb-0" style="font-size:1.5rem;">Earnings</h2>
-        <p class="mb-0" style="font-size:.88rem;">Realized trading P&amp;L and AutoTrading demo performance, in one place.</p>
+        <p class="mb-0" style="font-size:.88rem;">Trading, AutoTrading, Staking, and NFT activity — real funds and demo activity always shown separately.</p>
       </div>
       <div class="flex" style="gap:14px;">
         <button class="theme-toggle" aria-label="Toggle theme">☾</button>
@@ -44,45 +48,92 @@
       </div>
     </div>
 
-    <!-- Summary cards -->
-    <div class="dash-grid-3" style="margin-bottom:24px;">
+    <!-- Real account balance -->
+    <div class="widget balance-card" style="margin-bottom:24px;">
+      <div class="widget-head"><h3>Total balance <span class="earn-source-tag real">Real</span></h3></div>
+      <div class="balance-amount">$0<span class="cents">.00</span></div>
+      <span class="pill pill-neutral" data-balance-pill>— $0.00 this week</span>
+    </div>
+
+    <div class="earn-notice">Real trading P&amp;L is pulled from your Firestore trade history. Bot, Staking, and NFT figures below are demo activity stored locally in this browser — they're isolated from your real balance and won't appear on another device.</div>
+
+    <!-- Real trading -->
+    <div class="earn-section-label">Markets trading <span class="earn-source-tag real">Real</span></div>
+    <div class="earn-grid">
       <div class="widget earn-stat" data-earn-stat="all-time">
         <div class="val" data-val>$0.00</div>
-        <div class="lbl">All-time trading P&amp;L <span class="earn-source-tag real">Real</span></div>
+        <div class="lbl">All-time P&amp;L</div>
       </div>
       <div class="widget earn-stat" data-earn-stat="week">
         <div class="val" data-val>$0.00</div>
-        <div class="lbl">This week's P&amp;L <span class="earn-source-tag real">Real</span></div>
+        <div class="lbl">This week's P&amp;L</div>
       </div>
-      <div class="widget earn-stat" data-earn-stat="bot">
+      <div class="widget" style="grid-column: span 2;">
+        <div class="widget-head"><h3>P&amp;L over time</h3></div>
+        <canvas data-chart="trading-pnl" width="600" height="100"></canvas>
+        <p data-trading-empty style="color:var(--muted);font-size:.8rem;margin-top:10px;display:none;">No closed trades yet.</p>
+      </div>
+    </div>
+
+    <!-- Demo bot -->
+    <div class="earn-section-label">VaultexBotTrade <span class="earn-source-tag demo">Demo · this browser</span></div>
+    <div class="earn-grid">
+      <div class="widget earn-stat" data-earn-stat="bot-session">
         <div class="val" data-val>$0.00</div>
-        <div class="lbl">AutoTrading session earnings <span class="earn-source-tag demo">Demo</span></div>
+        <div class="lbl">Session earnings</div>
+      </div>
+      <div class="widget earn-stat" data-earn-stat="bot-rate">
+        <div class="val" data-val>—</div>
+        <div class="lbl">Daily target rate</div>
+      </div>
+      <div class="widget earn-stat" data-earn-stat="bot-status" style="grid-column: span 2;">
+        <div class="val" data-val>Idle</div>
+        <div class="lbl">Status</div>
       </div>
     </div>
 
-    <!-- Charts -->
-    <div class="dash-grid-2" style="margin-bottom:24px;">
-      <div class="widget">
-        <div class="widget-head"><h3>Trading P&amp;L over time <span class="earn-source-tag real">Real</span></h3></div>
-        <canvas data-chart="trading-pnl" width="600" height="140"></canvas>
-        <p data-trading-empty style="color:var(--muted);font-size:.8rem;margin-top:10px;display:none;">No closed trades yet — sell positions in Trading Center to see P&amp;L here.</p>
+    <!-- Demo staking -->
+    <div class="earn-section-label">Staking <span class="earn-source-tag demo">Demo · this browser</span></div>
+    <div class="earn-grid">
+      <div class="widget earn-stat" data-earn-stat="staking-active">
+        <div class="val" data-val>$0.00</div>
+        <div class="lbl">Unrealized rewards (active stakes)</div>
       </div>
-      <div class="widget">
-        <div class="widget-head"><h3>AutoTrading earnings <span class="earn-source-tag demo">Demo</span></h3></div>
-        <canvas data-chart="bot-earnings" width="600" height="140"></canvas>
-        <p data-bot-empty style="color:var(--muted);font-size:.8rem;margin-top:10px;display:none;">No AutoTrading package active — start one on the Trading page.</p>
+      <div class="widget earn-stat" data-earn-stat="staking-paid">
+        <div class="val" data-val>$0.00</div>
+        <div class="lbl">Reward paid out (completed)</div>
+      </div>
+      <div class="widget earn-stat" data-earn-stat="staking-count" style="grid-column: span 2;">
+        <div class="val" data-val>0</div>
+        <div class="lbl">Active stakes</div>
       </div>
     </div>
 
-    <!-- Combined history -->
+    <!-- Demo NFT -->
+    <div class="earn-section-label">NFT collection <span class="earn-source-tag demo">Demo · this browser</span></div>
+    <div class="earn-grid">
+      <div class="widget earn-stat" data-earn-stat="nft-owned">
+        <div class="val" data-val>0</div>
+        <div class="lbl">NFTs owned</div>
+      </div>
+      <div class="widget earn-stat" data-earn-stat="nft-spend">
+        <div class="val" data-val>$0.00</div>
+        <div class="lbl">Total minted value</div>
+      </div>
+      <div class="widget" style="grid-column: span 2;">
+        <div class="lbl" style="font-size:.76rem;color:var(--muted);padding:6px 2px;">NFTs currently have no resale or price-appreciation mechanic in this build, so there's no realized profit to show — this is spend/collection value only.</div>
+      </div>
+    </div>
+
+    <!-- Combined activity -->
     <div class="widget">
       <div class="widget-head">
-        <h3>Earnings history</h3>
-        <span class="pill pill-neutral" style="font-size:.7rem;">Real and demo entries are tagged and never combined into totals</span>
+        <h3>Combined activity</h3>
+        <span class="pill pill-neutral" style="font-size:.68rem;">Real and demo entries are tagged — never summed together</span>
       </div>
       <table class="data-table">
         <thead><tr><th>Date</th><th>Source</th><th>Detail</th><th>Amount</th></tr></thead>
-        <tbody data-earn-table><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No earnings yet.</td></tr></tbody>
+        <tbody data-earn-table><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">No activity yet.</td></tr></tbody>
       </table>
     </div>
   </main>
