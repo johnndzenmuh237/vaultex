@@ -293,14 +293,16 @@
     }
   }
 
-  /* ===== catalog =====
-     Artwork is generated locally as inline SVG — no external image
+  /* ===== generated placeholder art =====
+     Used as automatic fallback artwork — no external image
      requests at all, so cards always render even with no network
-     access or a strict CSP. Each theme (aurora / glitch-city /
-     driftwood / nightfall) has its own generative pattern, seeded
-     per item id so every card is unique but stable across reloads.
-     This is placeholder generative art, not actual licensed NFT
-     collection artwork.
+     access, a strict CSP, or a missing/broken image file. Each
+     theme (aurora / glitch-city / driftwood / nightfall) has its
+     own generative pattern, seeded per item id so every fallback
+     is unique but stable across reloads. This is placeholder
+     generative art, not actual licensed NFT collection artwork —
+     see "HOW TO ADD YOUR OWN NFT IMAGES" below to replace it with
+     your real images.
   */
   function seededRandom(seed){
     let h = 0;
@@ -390,20 +392,55 @@
   }
 
   const ART_BY_THEME = { aurora: artAurora, glitch: artGlitch, driftwood: artDriftwood, nightfall: artNightfall };
-  function artUrl(seed, theme){
-    const svg = ART_BY_THEME[theme](seed);
+  function fallbackArtUrl(seed, theme){
+    const svg = (ART_BY_THEME[theme] || artAurora)(seed);
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
   }
+
+  /* =========================================================
+     ══════════════ HOW TO ADD YOUR OWN NFT IMAGES ══════════════
+     Each item below has an `image` field — that's the only thing
+     you need to touch.
+
+     1. Put your image files somewhere on the server, e.g. in a
+        new folder: assets/nft/your-file.jpg
+        (jpg, png, webp, gif, or an SVG all work fine).
+
+     2. Set `image` to the path of that file, relative to this
+        HTML page — e.g. 'assets/nft/aurora-042.jpg' — or a full
+        https:// URL if the image is hosted elsewhere.
+
+     3. Leave `image` as an empty string '' (or delete the line)
+        for any item you haven't got real art for yet — it'll
+        automatically show the generated placeholder pattern
+        below instead, so nothing ever looks broken. The same
+        thing happens automatically if a path is wrong or the
+        file 404s: it silently falls back to the placeholder
+        rather than showing a broken image icon.
+
+     4. `theme` just controls which generated pattern is used as
+        that fallback (aurora / glitch / driftwood / nightfall) —
+        it has zero effect once you've supplied a real `image`.
+
+     To add a brand new item entirely, just copy one of the
+     objects below, give it a unique `id`, and fill in the rest.
+  ========================================================= */
   const NFTS = [
-    { id:'aurora-042', name:'Aurora #042', collection:'Aurora', img:artUrl('aurora-042','aurora'), priceUsd:1640 },
-    { id:'glitch-city-11', name:'Glitch City #11', collection:'Glitch City', img:artUrl('glitch-city-11','glitch'), priceUsd:2800 },
-    { id:'driftwood-7', name:'Driftwood #7', collection:'Driftwood', img:artUrl('driftwood-7','driftwood'), priceUsd:620 },
-    { id:'nightfall-88', name:'Nightfall #88', collection:'Nightfall', img:artUrl('nightfall-88','nightfall'), priceUsd:4200 },
-    { id:'aurora-017', name:'Aurora #017', collection:'Aurora', img:artUrl('aurora-017','aurora'), priceUsd:1180 },
-    { id:'glitch-city-29', name:'Glitch City #29', collection:'Glitch City', img:artUrl('glitch-city-29','glitch'), priceUsd:3050 },
-    { id:'driftwood-14', name:'Driftwood #14', collection:'Driftwood', img:artUrl('driftwood-14','driftwood'), priceUsd:540 },
-    { id:'nightfall-03', name:'Nightfall #03', collection:'Nightfall', img:artUrl('nightfall-03','nightfall'), priceUsd:5100 },
+    { id:'aurora-042',     name:'Aurora #042',      collection:'Aurora',       image:'assets/images/nft1.jpg',     theme:'aurora',     priceUsd:1640 },
+    { id:'glitch-city-11', name:'Glitch City #11',  collection:'Glitch City',  image:'assets/images/nft2.jpg.jpg', theme:'glitch',     priceUsd:2800 },
+    { id:'driftwood-7',    name:'Driftwood #7',     collection:'Driftwood',    image:'assets/images/nft3.jpg',    theme:'driftwood',  priceUsd:620  },
+    { id:'nightfall-88',   name:'Nightfall #88',    collection:'Nightfall',    image:'assets/images/nft4.jpg',   theme:'nightfall',  priceUsd:4200 },
+    { id:'aurora-017',     name:'Aurora #017',      collection:'Aurora',       image:'assets/images/nft5.jpg',     theme:'aurora',     priceUsd:1180 },
+    { id:'glitch-city-29', name:'Glitch City #29',  collection:'Glitch City',  image:'assets/images/nft6.jpg', theme:'glitch',     priceUsd:3050 },
+    { id:'driftwood-14',   name:'Driftwood #14',    collection:'Driftwood',    image:'assets/images/nft7.jpg',   theme:'driftwood',  priceUsd:540  },
+    { id:'nightfall-03',   name:'Nightfall #03',    collection:'Nightfall',    image:'assets/images/nft8.jpg',   theme:'nightfall',  priceUsd:5100 },
   ];
+
+  // Resolve each item's real display image (falls back to the
+  // generated placeholder if `image` is blank) and its dedicated
+  // fallback URL (used by onerror if the real file fails to load).
+  function primaryImg(item){ return item.image ? item.image : fallbackArtUrl(item.id, item.theme); }
+  function fallbackImg(item){ return fallbackArtUrl(item.id, item.theme); }
 
   /* ===== render: wallet strip ===== */
   function renderHeader(){
@@ -441,7 +478,8 @@
       }
       return `<div class="nft-card">
         <div class="nft-media">
-          <img src="${item.img}" alt="${item.name}" onerror="this.closest('.nft-media').style.background='var(--ink-raise)'">
+          <img src="${primaryImg(item)}" data-fallback="${fallbackImg(item)}" alt="${item.name}" loading="lazy"
+               onerror="this.onerror=null;this.src=this.dataset.fallback;">
           ${isOwned ? '<span class="nft-owned-badge">Owned</span>' : ''}
         </div>
         <div class="nft-body">
@@ -498,7 +536,8 @@
       const item = NFTS.find(n=>n.id===id);
       if(!item) return '';
       return `<div class="owned-card">
-        <img src="${item.img}" alt="${item.name}" onerror="this.style.background='var(--ink-raise)'">
+        <img src="${primaryImg(item)}" data-fallback="${fallbackImg(item)}" alt="${item.name}" loading="lazy"
+             onerror="this.onerror=null;this.src=this.dataset.fallback;">
         <div class="oc-body">
           <div class="oc-name">${item.name}</div>
           <div class="oc-collection">${item.collection}</div>
@@ -554,9 +593,3 @@
   if(window.auth){
     auth.onAuthStateChanged((user) => {
       if(user) syncBalanceWithDeposits(user.uid);
-    });
-  }
-})();
-</script>
-</body>
-</html>
