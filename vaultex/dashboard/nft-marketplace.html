@@ -139,9 +139,9 @@
 
 <div class="wallet-strip">
   <div class="container">
-    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">USDT balance</span><span class="val" id="usdtBal">$0.00</span></div>
+    <div class="w-stat" id="usdtBalStat" style="display:none;"><span class="lbl">ETH balance</span><span class="val" id="usdtBal">0.00 ETH</span></div>
     <div class="w-stat"><span class="lbl">NFTs owned</span><span class="val" id="ownedCountVal">0</span></div>
-    <div class="w-stat"><span class="lbl">Collection value (est.)</span><span class="val" id="collectionValVal">$0.00</span></div>
+    <div class="w-stat"><span class="lbl">Collection value (est.)</span><span class="val" id="collectionValVal">0.00 ETH</span></div>
   </div>
 </div>
 
@@ -156,7 +156,7 @@
 <section class="section-sm">
   <div class="container">
 
-    <div class="section-head"><h2>Featured collectibles</h2><span>Prices update live in USDT</span></div>
+    <div class="section-head"><h2>Featured collectibles</h2><span>Prices update live in ETH</span></div>
     <div class="nft-grid" id="nftGrid"></div>
 
     <div class="section-head"><h2>Your collection</h2><span id="ownedCountLabel"></span></div>
@@ -206,17 +206,17 @@
   </div>
 </footer>
 
-<script src="assets/js/main.js"></script>
+<script src="../assets/js/main.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="assets/js/firebase-init.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
 
 <script>
 (function(){
   'use strict';
   const $ = id => document.getElementById(id);
-  const fmtUSD = n => '$'+(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtETH = n => (n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' ETH';
 
   /* =========================================================
      LOCAL WALLET + COLLECTION — isolated on purpose.
@@ -228,10 +228,10 @@
      balance). This page never reads or writes anything to the
      real account balance, Firestore trade/withdrawal data, or
      any real blockchain. The only thing read from the real
-     account is totalBalance, used purely to size the local USDT
+     account is totalBalance, used purely to size the local ETH
      balance below — see syncBalanceWithDeposits().
   ========================================================= */
-  const LS_BAL     = 'vaultex_nft_balance_usdt';
+  const LS_BAL     = 'vaultex_nft_balance_eth';
   const LS_OWNED   = 'vaultex_nft_owned';
   const LS_HIST    = 'vaultex_nft_history';
 
@@ -250,7 +250,7 @@
   --------------------------------------------------------- */
 
   /* ---------------------------------------------------------
-     SYNC USDT BALANCE WITH REAL DEPOSITS
+     SYNC ETH BALANCE WITH REAL DEPOSITS
      ---------------------------------------------------------
      Same pattern as trade.html / staking.html: on auth and on
      tab refocus, check /api/account/summary for the real
@@ -403,12 +403,14 @@
      you need to touch.
 
      1. Put your image files somewhere on the server, e.g. in a
-        new folder: assets/nft/your-file.jpg
+        new folder: assets/images/your-file.jpg
         (jpg, png, webp, gif, or an SVG all work fine).
 
      2. Set `image` to the path of that file, relative to this
-        HTML page — e.g. 'assets/nft/aurora-042.jpg' — or a full
-        https:// URL if the image is hosted elsewhere.
+        HTML page — since this page lives in a subfolder, that
+        means prefixing with '../', e.g.
+        '../assets/images/aurora-042.jpg' — or a full https:// URL
+        if the image is hosted elsewhere.
 
      3. Leave `image` as an empty string '' (or delete the line)
         for any item you haven't got real art for yet — it'll
@@ -426,14 +428,14 @@
      objects below, give it a unique `id`, and fill in the rest.
   ========================================================= */
   const NFTS = [
-    { id:'aurora-042',     name:'Aurora #042',      collection:'Aurora',       image:'assets/images/nft1.jpg',     theme:'aurora',     priceUsd:1640 },
-    { id:'glitch-city-11', name:'Glitch City #11',  collection:'Glitch City',  image:'assets/images/nft2.jpg.jpg', theme:'glitch',     priceUsd:2800 },
-    { id:'driftwood-7',    name:'Driftwood #7',     collection:'Driftwood',    image:'assets/images/nft3.jpg',    theme:'driftwood',  priceUsd:620  },
-    { id:'nightfall-88',   name:'Nightfall #88',    collection:'Nightfall',    image:'assets/images/nft4.jpg',   theme:'nightfall',  priceUsd:4200 },
-    { id:'aurora-017',     name:'Aurora #017',      collection:'Aurora',       image:'assets/images/nft5.jpg',     theme:'aurora',     priceUsd:1180 },
-    { id:'glitch-city-29', name:'Glitch City #29',  collection:'Glitch City',  image:'assets/images/nft6.jpg', theme:'glitch',     priceUsd:3050 },
-    { id:'driftwood-14',   name:'Driftwood #14',    collection:'Driftwood',    image:'assets/images/nft7.jpg',   theme:'driftwood',  priceUsd:540  },
-    { id:'nightfall-03',   name:'Nightfall #03',    collection:'Nightfall',    image:'assets/images/nft8.jpg',   theme:'nightfall',  priceUsd:5100 },
+    { id:'aurora-042',     name:'Aurora #042',      collection:'Aurora',       image:'../assets/images/nft1.jpg', theme:'aurora',     priceEth:0.68  },
+    { id:'glitch-city-11', name:'Glitch City #11',  collection:'Glitch City',  image:'../assets/images/nft2.jpg', theme:'glitch',     priceEth:1.16  },
+    { id:'driftwood-7',    name:'Driftwood #7',     collection:'Driftwood',    image:'../assets/images/nft3.jpg', theme:'driftwood',  priceEth:0.26  },
+    { id:'nightfall-88',   name:'Nightfall #88',    collection:'Nightfall',    image:'../assets/images/nft4.jpg', theme:'nightfall',  priceEth:1.75  },
+    { id:'aurora-017',     name:'Aurora #017',      collection:'Aurora',       image:'../assets/images/nft5.jpg', theme:'aurora',     priceEth:0.49  },
+    { id:'glitch-city-29', name:'Glitch City #29',  collection:'Glitch City',  image:'../assets/images/nft6.jpg', theme:'glitch',     priceEth:1.27  },
+    { id:'driftwood-14',   name:'Driftwood #14',    collection:'Driftwood',    image:'../assets/images/nft7.jpg', theme:'driftwood',  priceEth:0.22  },
+    { id:'nightfall-03',   name:'Nightfall #03',    collection:'Nightfall',    image:'../assets/images/nft8.jpg', theme:'nightfall',  priceEth:2.12  },
   ];
 
   // Resolve each item's real display image (falls back to the
@@ -445,7 +447,7 @@
   /* ===== render: wallet strip ===== */
   function renderHeader(){
     const bal = getBalance();
-    $('usdtBal').textContent = fmtUSD(bal);
+    $('usdtBal').textContent = fmtETH(bal);
     // Same convention as staking.html: hide the balance stat until a
     // real deposit has synced something nonzero in.
     $('usdtBalStat').style.display = bal > 0 ? '' : 'none';
@@ -455,9 +457,9 @@
     $('ownedCountLabel').textContent = owned.length ? `${owned.length} item${owned.length===1?'':'s'}` : '';
     const collectionVal = owned.reduce((sum,id)=>{
       const item = NFTS.find(n=>n.id===id);
-      return sum + (item ? item.priceUsd : 0);
+      return sum + (item ? item.priceEth : 0);
     }, 0);
-    $('collectionValVal').textContent = fmtUSD(collectionVal);
+    $('collectionValVal').textContent = fmtETH(collectionVal);
   }
 
   /* ===== render: grid ===== */
@@ -467,7 +469,7 @@
     $('nftGrid').innerHTML = NFTS.map(item=>{
       const isOwned = owned.includes(item.id);
       const bal = getBalance();
-      const affordable = bal >= item.priceUsd;
+      const affordable = bal >= item.priceEth;
       let btnHtml;
       if(isOwned){
         btnHtml = `<button class="btn btn-ghost btn-block nft-mint-btn" disabled>Owned</button>`;
@@ -489,8 +491,8 @@
           </div>
           <div class="nft-price-row">
             <div>
-              <div class="nft-price">${fmtUSD(item.priceUsd)}</div>
-              <div class="nft-price-usd">USDT</div>
+              <div class="nft-price">${item.priceEth.toFixed(2)}</div>
+              <div class="nft-price-usd">ETH</div>
             </div>
           </div>
           ${btnHtml}
@@ -509,14 +511,14 @@
     const owned = getOwned();
     if(owned.includes(id)) return;
     const bal = getBalance();
-    if(bal < item.priceUsd) return;
+    if(bal < item.priceEth) return;
 
-    setBalance(bal - item.priceUsd);
+    setBalance(bal - item.priceEth);
     owned.push(id);
     setOwned(owned);
 
     const hist = getHistory();
-    hist.unshift({ id: item.id, name: item.name, collection: item.collection, priceUsd: item.priceUsd, ts: Date.now() });
+    hist.unshift({ id: item.id, name: item.name, collection: item.collection, priceEth: item.priceEth, ts: Date.now() });
     setHistory(hist);
 
     renderAll();
@@ -558,7 +560,7 @@
       <tr>
         <td>${h.name}</td>
         <td>${h.collection}</td>
-        <td class="mono">${fmtUSD(h.priceUsd)}</td>
+        <td class="mono">${h.priceEth.toFixed(2)} ETH</td>
         <td>${new Date(h.ts).toLocaleString()}</td>
       </tr>`).join('');
   }
@@ -593,3 +595,9 @@
   if(window.auth){
     auth.onAuthStateChanged((user) => {
       if(user) syncBalanceWithDeposits(user.uid);
+    });
+  }
+})();
+</script>
+</body>
+</html>
