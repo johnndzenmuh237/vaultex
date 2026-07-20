@@ -238,6 +238,48 @@
     background: rgba(234,57,67,.08); border: 1px solid rgba(234,57,67,.22);
   }
 
+  /* ---- "Today" label above the live signal grid ---- */
+  .signals-today-label {
+    display: flex; align-items: center; gap: 7px; margin: 14px 0 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: .72rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--mint, #16c784); font-weight: 600;
+  }
+  .signals-today-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--mint, #16c784);
+    box-shadow: 0 0 0 4px rgba(22,199,132,.14);
+  }
+
+  /* ---- Previous signals & results (history log) ---- */
+  .signals-history-section { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .signals-history-head {
+    font-family: 'JetBrains Mono', monospace; font-size: .72rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+  }
+  .signals-history-day { margin-bottom: 14px; }
+  .signals-history-day:last-child { margin-bottom: 0; }
+  .signals-history-date {
+    font-size: .76rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 6px;
+  }
+  .signals-history-rows { display: flex; flex-direction: column; gap: 6px; }
+  .signals-history-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--ink-soft); border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 12px; font-size: .8rem;
+  }
+  .signals-history-row .m-icon { width: 22px; height: 22px; border-radius: 50%; object-fit: contain; background: #fff; padding: 2px; box-sizing: border-box; flex-shrink: 0; }
+  .signals-history-row .hr-name { font-weight: 600; min-width: 46px; }
+  .signals-history-row .hr-detail { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: .74rem; flex: 1; min-width: 160px; }
+  .outcome-badge {
+    font-size: .68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .outcome-badge.win { background: rgba(22,199,132,.14); color: #16c784; }
+  .outcome-badge.loss { background: rgba(234,57,67,.14); color: #ea3943; }
+  .outcome-badge.flat { background: rgba(137,147,171,.14); color: var(--muted); }
+  .signals-history-empty { color: var(--muted); font-size: .82rem; padding: 8px 0; }
+
   /* ---- VaultexBot promo ---- */
   .bot-promo {
     display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
@@ -889,6 +931,8 @@ text-align:left;
           </div>
           <div data-signals-updated style="font-size:.76rem;color:var(--muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;"></div>
         </div>
+
+        <div class="signals-today-label"><span class="signals-today-dot"></span>Today</div>
         <div class="signals-grid" data-signals-grid>
           <div class="market-empty">Scanning the market for today's signals…</div>
         </div>
@@ -896,6 +940,11 @@ text-align:left;
           <span>🔒</span><span>Fund your available balance to view details and trade today's signals.</span>
         </div>
         <p style="margin:12px 0 0;font-size:.72rem;color:var(--muted);">Signals are generated from technical indicators (RSI, EMA trend, MACD, ATR, volume) on live market data. They reflect a rules-based read of current conditions, not a guarantee of future performance — trade at your own discretion.</p>
+
+        <div class="signals-history-section" data-signals-history-section style="display:none;">
+          <div class="signals-history-head">Previous signals &amp; results</div>
+          <div class="signals-history-list" data-signals-history-list></div>
+        </div>
       </div>
 
      <!-- ================= VaultexBot Promotion ================= -->
@@ -1062,6 +1111,7 @@ text-align:left;
   const LS_HOLD = 'vaultex_practice_trade_holdings';   // { SYMBOL: { qty, costBasis } }
   const LS_HIST = 'vaultex_practice_trade_history';
   const LS_SIGNALS = 'vaultex_daily_signals';
+  const LS_SIGNALS_HISTORY = 'vaultex_daily_signals_history';
   const LS_REAL_SEEN = uid => `vaultex_practice_trade_real_balance_seen_${uid}`;
 
   const getBalance = () => parseFloat(localStorage.getItem(LS_BAL) || '0');
@@ -1888,12 +1938,63 @@ text-align:left;
     });
   }
 
+  /* ===== signals history — results of previous days' calls =====
+     Every time the calendar day rolls over, the previous day's
+     record is "closed out": each of its 3 signals is checked
+     against the current live price to see whether price reached
+     the target (win), the stop (loss), or neither (flat/expired),
+     then archived here so traders can see a track record instead
+     of just today's picks disappearing into thin air. */
+  const getSignalsHistory = () => { try { return JSON.parse(localStorage.getItem(LS_SIGNALS_HISTORY) || '[]'); } catch (e) { return []; } };
+  const setSignalsHistory = h => { try { localStorage.setItem(LS_SIGNALS_HISTORY, JSON.stringify(h.slice(0, 14))); } catch (e) { /* ignore quota errors */ } };
+
+  async function fetchCurrentPrice(symbol) {
+    const cached = TICKER_MAP.get(symbol);
+    if (cached) return cached.price;
+    try {
+      const res = await fetch(`${REST}/ticker/price?symbol=${symbol}`);
+      if (!res.ok) return null;
+      const t = await res.json();
+      return parseFloat(t.price);
+    } catch (e) { return null; }
+  }
+
+  function evaluateOutcome(signal, currentPrice) {
+    if (currentPrice == null || isNaN(currentPrice)) return 'unknown';
+    if (signal.side === 'BUY') {
+      if (currentPrice >= signal.target) return 'win';
+      if (currentPrice <= signal.stop) return 'loss';
+      return 'flat';
+    }
+    if (currentPrice <= signal.target) return 'win';
+    if (currentPrice >= signal.stop) return 'loss';
+    return 'flat';
+  }
+
+  async function archivePreviousSignals(stored) {
+    if (!stored || !Array.isArray(stored.signals) || !stored.signals.length) return;
+    const history = getSignalsHistory();
+    if (history.some(h => h.date === stored.date)) return; // already archived
+    const evaluated = await Promise.all(stored.signals.map(async s => ({
+      ...s, outcome: evaluateOutcome(s, await fetchCurrentPrice(s.symbol)),
+    })));
+    history.unshift({ date: stored.date, generatedAt: stored.generatedAt, signals: evaluated });
+    setSignalsHistory(history);
+  }
+
   async function generateOrLoadSignals(pool) {
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD, rolls over once per day
     let stored = null;
     try { stored = JSON.parse(localStorage.getItem(LS_SIGNALS) || 'null'); } catch (e) { stored = null; }
     if (stored && stored.date === today && Array.isArray(stored.signals) && stored.signals.length) {
       return stored;
+    }
+
+    // The day rolled over (or this is the first run ever) — close out
+    // yesterday's picks into the history log before computing new ones.
+    if (stored && stored.date !== today) {
+      try { await archivePreviousSignals(stored); } catch (e) { console.error('Vaultex trading: failed to archive previous signals', e); }
+      renderSignalsHistory();
     }
 
     const signals = await analyzeAndGenerateSignals(pool);
@@ -1905,7 +2006,7 @@ text-align:left;
   }
 
   async function initSignalsIfNeeded() {
-    if (signalsData || signalsLoading) { renderSignals(); return; }
+    if (signalsData || signalsLoading) { renderSignals(); renderSignalsHistory(); return; }
     if (!LIST_ROWS.length) return;
     signalsLoading = true;
     const pool = LIST_ROWS.slice(0, 40); // scan the most liquid, actively-traded coins
@@ -1916,6 +2017,39 @@ text-align:left;
     }
     signalsLoading = false;
     renderSignals();
+    renderSignalsHistory();
+  }
+
+  const OUTCOME_LABEL = { win: 'Target hit', loss: 'Stop hit', flat: 'No hit', unknown: 'Unresolved' };
+  const OUTCOME_CLASS = { win: 'win', loss: 'loss', flat: 'flat', unknown: 'flat' };
+
+  function renderSignalsHistory() {
+    const section = $('[data-signals-history-section]');
+    const list = $('[data-signals-history-list]');
+    if (!section || !list) return;
+    const history = getSignalsHistory();
+    if (!history.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+
+    list.innerHTML = history.map(day => {
+      const dateLabel = new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      const rows = day.signals.map(s => {
+        const cls = OUTCOME_CLASS[s.outcome] || 'flat';
+        const label = OUTCOME_LABEL[s.outcome] || 'No hit';
+        const sideClass = s.side === 'BUY' ? 'buy' : 'sell';
+        return `<div class="signals-history-row">
+          <img class="m-icon" src="${coinLogoUrl(s.base)}" data-coin-base="${s.base}" alt="">
+          <span class="hr-name">${s.base}</span>
+          <span class="side-badge ${sideClass}">${s.side}</span>
+          <span class="hr-detail">Entry ${fmtPrice(s.entry)} · Target ${fmtPrice(s.target)} · Stop ${fmtPrice(s.stop)}</span>
+          <span class="outcome-badge ${cls}">${label}</span>
+        </div>`;
+      }).join('');
+      return `<div class="signals-history-day">
+        <div class="signals-history-date">${dateLabel}</div>
+        <div class="signals-history-rows">${rows || '<div class="signals-history-empty">No signals recorded.</div>'}</div>
+      </div>`;
+    }).join('');
   }
 
   function renderSignals() {
@@ -1986,6 +2120,7 @@ text-align:left;
   renderBalance();
   renderHoldings();
   renderHistory();
+  renderSignalsHistory();
   loadTickers().then(() => { loadCandles(); loadOrderBook(); startPolling(); });
 
   document.addEventListener('visibilitychange', () => {
