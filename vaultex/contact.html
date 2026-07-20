@@ -2,64 +2,332 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Contact us — Vaultex</title>
+<meta name="description" content="Get in touch with the Vaultex team — support, partnerships, and press.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/responsive.css">
+
+<style>
+/* ============================================================
+   CONTACT PAGE — scoped, self-contained fallback styling.
+   Uses the same design tokens as the rest of the site (with
+   fallbacks) so it renders correctly even if style.css /
+   responsive.css haven't been updated with these rules yet.
+   ============================================================ */
+:root {
+  --ink:        #0A0E1A;
+  --ink-soft:   #121829;
+  --ink-raise:  #1B2236;
+  --line:       #262E45;
+  --paper:      #E9ECF6;
+  --muted:      #8993AB;
+  --mint:       #00D9A3;
+  --mint-dim:   rgba(0,217,163,.10);
+  --coral:      #FF5C72;
+  --gold:       #F2B84B;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --shadow:    0 10px 30px -10px rgba(0,0,0,.6);
+  --ease:      cubic-bezier(.2,.8,.2,1);
+}
+html[data-theme="light"] {
+  --ink:       #F0F2FA;
+  --ink-soft:  #FFFFFF;
+  --ink-raise: #E4E7F3;
+  --line:      #D5DAF0;
+  --paper:     #0D1226;
+  --muted:     #5B6480;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body {
+  background: var(--ink); color: var(--paper);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; letter-spacing: -.01em; }
+p { color: var(--muted); }
+
+.container { max-width: 1280px; margin: 0 auto; padding: 0 24px; width: 100%; }
+
+/* ---- Navbar ---- */
+.navbar {
+  position: sticky; top: 0; z-index: 1000;
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+.navbar .container { display: flex; align-items: center; justify-content: space-between; height: 72px; gap: 16px; }
+.nav-logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; flex-shrink: 0; }
+.nav-logo .mark {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--mint), var(--gold));
+  display: flex; align-items: center; justify-content: center;
+  color: #04150F; font-weight: 800; font-family: var(--font-mono); font-size: .9rem;
+}
+.nav-links { display: flex; align-items: center; gap: 28px; flex: 1; justify-content: center; }
+.nav-links a { color: var(--muted); font-size: .88rem; font-weight: 500; transition: color .15s; white-space: nowrap; }
+.nav-links a:hover, .nav-links a.active { color: var(--paper); }
+.nav-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.theme-toggle {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--ink-soft); display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 1rem; cursor: pointer;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 20px; border-radius: var(--radius-sm); font-weight: 600;
+  font-size: .875rem; border: 1px solid transparent; cursor: pointer;
+  transition: all .15s var(--ease); white-space: nowrap; font-family: inherit;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--mint); color: #03140F; }
+.btn-sm { padding: 9px 16px; font-size: .82rem; }
+.btn-lg { padding: 13px 22px; font-size: .92rem; }
+.btn-block { width: 100%; }
+.nav-burger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
+.nav-burger span { width: 22px; height: 2px; background: var(--paper); border-radius: 2px; display: block; }
+
+/* Mobile menu */
+.mobile-menu {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh;
+  background: var(--ink); z-index: 9999; padding: 80px 24px 32px;
+  overflow-y: auto; transform: translateX(-100%); visibility: hidden;
+  transition: transform .3s var(--ease), visibility .3s;
+  display: flex; flex-direction: column; gap: 0;
+}
+.mobile-menu.is-open { transform: translateX(0); visibility: visible; }
+.mobile-menu a { display: block; padding: 14px 0; font-size: 1rem; font-weight: 500; border-bottom: 1px solid var(--line); color: var(--muted); }
+.mobile-menu a:hover, .mobile-menu a.active { color: var(--mint); }
+.mobile-menu-close { position: absolute; top: 20px; right: 20px; background: none; border: none; cursor: pointer; color: var(--paper); padding: 4px; }
+.mobile-menu-close svg { width: 24px; height: 24px; stroke: currentColor; fill: none; }
+.mobile-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 9998; backdrop-filter: blur(2px); }
+.mobile-backdrop.is-open { display: block; }
+body.menu-open { overflow: hidden; }
+
+/* ---- Page section ---- */
+.section { padding: 56px 0 80px; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: .72rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--mint); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-dim); }
+.section h1 { font-size: clamp(1.9rem, 4vw, 2.7rem); margin-bottom: 16px; line-height: 1.15; }
+.section > .container > .lede { max-width: 460px; margin-bottom: 32px; font-size: 1rem; }
+
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+
+.contact-info { display: flex; flex-direction: column; min-width: 0; }
+.contact-cards { display: flex; flex-direction: column; gap: 14px; }
+.feature-card {
+  background: var(--ink-soft); border: 1px solid var(--line);
+  border-radius: var(--radius-md); padding: 20px 22px;
+  display: flex; align-items: center; gap: 14px;
+  transition: transform .18s var(--ease), border-color .18s;
+}
+.feature-card:hover { transform: translateY(-2px); border-color: var(--mint); }
+.feature-card .fc-icon {
+  width: 42px; height: 42px; border-radius: 10px; background: var(--mint-dim);
+  color: var(--mint); display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.feature-card .fc-body { min-width: 0; }
+.feature-card strong { display: block; font-family: var(--font-display); font-size: .95rem; margin-bottom: 3px; }
+.feature-card p { font-size: .88rem; word-break: break-word; }
+.feature-card p.mb-0 { margin-bottom: 0; }
+
+/* ---- Contact form ---- */
+.contact-form {
+  background: var(--ink-soft); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 32px; box-shadow: var(--shadow);
+  min-width: 0; width: 100%;
+}
+.contact-form h2 { font-size: 1.1rem; margin-bottom: 20px; }
+.field { margin-bottom: 18px; width: 100%; }
+.field label {
+  display: block; font-size: .74rem; color: var(--muted); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: .05em; font-family: var(--font-mono);
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%; padding: 13px 16px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--ink-raise);
+  color: var(--paper); font-family: inherit; font-size: .92rem;
+  outline: none; transition: border-color .15s; appearance: none;
+}
+.field textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--mint); }
+.field select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238993AB' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px;
+}
+.field-row { display: flex; gap: 14px; }
+.field-row .field { flex: 1; min-width: 0; }
+.form-note { font-size: .78rem; color: var(--muted); margin-top: 14px; text-align: center; }
+.form-success {
+  display: none; align-items: center; gap: 10px; background: var(--mint-dim);
+  border: 1px solid var(--mint); color: var(--mint); border-radius: 8px;
+  padding: 12px 16px; font-size: .86rem; margin-bottom: 18px;
+}
+.form-success.is-visible { display: flex; }
+
+/* ---- Footer ---- */
+.footer { background: var(--ink-soft); border-top: 1px solid var(--line); padding: 28px 0; margin-top: 40px; }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* Tablet: tighten grid gap, keep two columns down to ~980px */
+@media (max-width: 1080px) {
+  .contact-grid { gap: 32px; }
+  .contact-form { padding: 26px; }
+}
+
+/* Tablet portrait: stack info above form, single column */
+@media (max-width: 900px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 36px; }
+  .section > .container > .lede { max-width: 100%; }
+  .contact-cards { flex-direction: row; flex-wrap: wrap; }
+  .contact-cards .feature-card { flex: 1 1 220px; }
+}
+
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-burger { display: flex; }
+  .contact-cards { flex-direction: column; flex-wrap: nowrap; }
+  .contact-cards .feature-card { flex: none; }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 0 16px; }
+  .section { padding: 36px 0 56px; }
+  .section h1 { font-size: 1.6rem; }
+  .contact-form { padding: 20px; border-radius: var(--radius-md); }
+  .field-row { flex-direction: column; gap: 0; }
+  .feature-card { padding: 16px; gap: 12px; }
+  .feature-card .fc-icon { width: 36px; height: 36px; font-size: 1rem; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; text-align: left; }
+  .btn-lg { padding: 12px 18px; font-size: .88rem; }
+}
+
+@media (max-width: 380px) {
+  .section h1 { font-size: 1.4rem; }
+  .contact-form { padding: 16px; }
+}
+</style>
 </head>
 <body>
 
 <header class="navbar">
   <div class="container">
-    <a href="index.html" class="nav-logo"><span class="mark">V</span><span class="brand-name">Vaultex</span></a>
-    <nav class="nav-links"><a href="auth/login.html">Markets</a><a href="faq.html">FAQ</a><a href="contact.html" class="active">Contact</a></nav>
+    <a href="index.html" class="nav-logo">
+      <div class="mark">V</div>
+      <span class="brand-name">Vaultex</span>
+    </a>
+    <nav class="nav-links">
+      <a href="auth/login.html">Markets</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html" class="active">Contact</a>
+    </nav>
     <div class="nav-actions">
-      <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☾</button>
       <a href="auth/register.html" class="btn btn-primary btn-sm">Get started</a>
-      <button class="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      <button class="nav-burger" id="burgerBtn" aria-label="Open menu"><span></span><span></span><span></span></button>
     </div>
   </div>
-  <div class="mobile-menu"><a href="auth/login.html">Markets</a><a href="faq.html">FAQ</a></div>
 </header>
 
-<section class="section">
-  <div class="container" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;">
-    <div>
-      <div class="eyebrow">Get in touch</div>
-      <h1>We're here to help.</h1>
-      <p style="max-width:420px;margin-bottom:32px;">Whether it's a question about your account or a partnership inquiry, our team typically replies within a few hours.</p>
-      <div class="feature-card" style="margin-bottom:16px;">
-        <strong>Support</strong><p class="mb-0">support@vaultex.com</p>
-      </div>
-      <div class="feature-card" style="margin-bottom:16px;">
-        <strong>Business &amp; partnerships</strong><p class="mb-0">partners@vaultex.com</p>
-      </div>
-      <div class="feature-card">
-        <strong>Press</strong><p class="mb-0">press@vaultex.com</p>
-      </div>
-    </div>
+<div class="mobile-backdrop" id="mobileBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu">
+  <button class="mobile-menu-close" id="menuClose" aria-label="Close menu">
+    <svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="auth/login.html">Markets</a>
+  <a href="faq.html">FAQ</a>
+  <a href="contact.html" class="active">Contact</a>
+  <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+    <a href="auth/register.html" class="btn btn-primary btn-block">Get started</a>
+  </div>
+</nav>
 
-    <form class="widget">
-      <div class="field"><label for="c-name">Full name</label><input type="text" id="c-name" placeholder="Jane Doe"></div>
-      <div class="field"><label for="c-email">Email</label><input type="email" id="c-email" placeholder="you@example.com"></div>
-      <div class="field">
-        <label for="c-topic">Topic</label>
-        <select id="c-topic">
-          <option>Account support</option>
-          <option>Billing</option>
-          <option>Partnerships</option>
-          <option>Press</option>
-          <option>Other</option>
-        </select>
+<section class="section">
+  <div class="container">
+    <div class="eyebrow">Get in touch</div>
+    <h1>We're here to help.</h1>
+    <p class="lede">Whether it's a question about your account or a partnership inquiry, our team typically replies within a few hours.</p>
+
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-cards">
+          <div class="feature-card">
+            <div class="fc-icon">✉</div>
+            <div class="fc-body">
+              <strong>Support</strong>
+              <p class="mb-0">support@vaultex.com</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">⌗</div>
+            <div class="fc-body">
+              <strong>Business &amp; partnerships</strong>
+              <p class="mb-0">partners@vaultex.com</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">📰</div>
+            <div class="fc-body">
+              <strong>Press</strong>
+              <p class="mb-0">press@vaultex.com</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label for="c-msg">Message</label>
-        <textarea id="c-msg" rows="5" style="width:100%;padding:13px 16px;border-radius:8px;border:1px solid var(--line);background:var(--ink-raise);color:var(--paper);font-family:inherit;"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg">Send message</button>
-    </form>
+
+      <form class="contact-form" id="contactForm">
+        <h2>Send us a message</h2>
+        <div class="form-success" id="formSuccess">✓ Thanks — your message has been sent. We'll reply within a few hours.</div>
+
+        <div class="field">
+          <label for="c-name">Full name</label>
+          <input type="text" id="c-name" name="name" placeholder="Jane Doe" required>
+        </div>
+        <div class="field">
+          <label for="c-email">Email</label>
+          <input type="email" id="c-email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label for="c-topic">Topic</label>
+          <select id="c-topic" name="topic">
+            <option>Account support</option>
+            <option>Billing</option>
+            <option>Partnerships</option>
+            <option>Press</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="c-msg">Message</label>
+          <textarea id="c-msg" name="message" rows="5" placeholder="How can we help?" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Send message</button>
+        <p class="form-note">By submitting, you agree to our terms of service and privacy policy.</p>
+      </form>
+    </div>
   </div>
 </section>
 
@@ -71,5 +339,41 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+
+  /* Mobile menu */
+  const burger = $('burgerBtn'), menu = $('mobileMenu'), backdrop = $('mobileBackdrop'), closeBtn = $('menuClose');
+  const openMenu = () => { menu.classList.add('is-open'); backdrop.classList.add('is-open'); document.body.classList.add('menu-open'); };
+  const closeMenu = () => { menu.classList.remove('is-open'); backdrop.classList.remove('is-open'); document.body.classList.remove('menu-open'); };
+  burger?.addEventListener('click', openMenu);
+  closeBtn?.addEventListener('click', closeMenu);
+  backdrop?.addEventListener('click', closeMenu);
+  menu?.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+
+  /* Theme toggle */
+  $('themeToggle')?.addEventListener('click', () => {
+    const html = document.documentElement;
+    const wasLight = html.getAttribute('data-theme') === 'light';
+    html.setAttribute('data-theme', wasLight ? 'dark' : 'light');
+    $('themeToggle').textContent = wasLight ? '☾' : '☀';
+  });
+
+  /* Contact form — no backend wired up here, so just confirm
+     client-side and reset. Swap this for a real fetch() to your
+     endpoint whenever the backend is ready. */
+  const form = $('contactForm');
+  const success = $('formSuccess');
+  form?.addEventListener('submit', e => {
+    e.preventDefault();
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    success.classList.add('is-visible');
+    form.reset();
+    success.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+})();
+</script>
 </body>
 </html>
