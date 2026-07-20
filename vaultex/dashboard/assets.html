@@ -9,6 +9,85 @@
 <link rel="stylesheet" href="../assets/css/style.css">
 <link rel="stylesheet" href="../assets/css/dashboard.css">
 <link rel="stylesheet" href="../assets/css/responsive.css">
+
+<style>
+  /* ============ All supported assets — scoped styles ============
+     Self-contained (same pattern as trading.html) so it renders
+     correctly even before dashboard.css/responsive.css are updated
+     with these rules. Doesn't touch the existing Holdings widget
+     or portfolio.js — this is purely additive. */
+
+  .assets-widget { min-width: 0; }
+  .assets-widget .widget-head { flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  .assets-widget .widget-head h3 { margin: 0 0 2px; }
+  .assets-widget .widget-head p { margin: 0; font-size: .82rem; color: var(--muted); }
+
+  .assets-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .assets-search {
+    padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--ink-soft); color: var(--paper); font-size: .85rem;
+    min-width: 200px; outline: none; transition: border-color .15s;
+  }
+  .assets-search:focus { border-color: var(--accent, #6C7CFF); }
+  .assets-tabs { display: flex; gap: 6px; }
+  .assets-tabs button {
+    padding: 8px 12px; font-size: .78rem; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .assets-tabs button.active { background: var(--ink-soft); color: var(--paper); border-color: var(--accent, #6C7CFF); }
+
+  .assets-list-head {
+    display: grid; grid-template-columns: 2.2fr 1fr 1fr 1.1fr auto;
+    gap: 10px; padding: 10px 14px; margin-top: 14px;
+    font-size: .68rem; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    border-bottom: 1px solid var(--line);
+  }
+  .assets-list-head span:nth-child(2),
+  .assets-list-head span:nth-child(3),
+  .assets-list-head span:nth-child(4) { text-align: right; }
+
+  .assets-rows { max-height: 680px; overflow-y: auto; }
+  .asset-row {
+    display: grid; grid-template-columns: 2.2fr 1fr 1fr 1.1fr auto;
+    gap: 10px; align-items: center; padding: 11px 14px;
+    border-bottom: 1px solid var(--line); transition: background .1s;
+  }
+  .asset-row:hover { background: var(--ink-soft); }
+  .asset-row:last-child { border-bottom: none; }
+
+  .asset-name-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .asset-icon { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; object-fit: contain; background: #fff; padding: 2px; box-sizing: border-box; }
+  .asset-name-text { min-width: 0; }
+  .asset-name { font-weight: 600; font-size: .88rem; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .asset-sym { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
+
+  .asset-price { font-family: 'JetBrains Mono', monospace; font-size: .86rem; text-align: right; white-space: nowrap; }
+  .asset-pct { font-family: 'JetBrains Mono', monospace; font-size: .8rem; text-align: right; white-space: nowrap; }
+  .asset-pct.up { color: #16c784; }
+  .asset-pct.down { color: #ea3943; }
+  .asset-vol { font-family: 'JetBrains Mono', monospace; font-size: .78rem; color: var(--muted); text-align: right; white-space: nowrap; }
+
+  .asset-actions { text-align: right; }
+  .asset-actions .btn { white-space: nowrap; }
+
+  .assets-empty { text-align: center; color: var(--muted); font-size: .85rem; padding: 32px 8px; }
+
+  @media (max-width: 900px) {
+    .assets-list-head, .asset-row { grid-template-columns: 2fr 1fr 1fr auto; }
+    .assets-list-head span:nth-child(4), .asset-vol { display: none; }
+  }
+  @media (max-width: 640px) {
+    .assets-toolbar { width: 100%; margin-left: 0; }
+    .assets-search { flex: 1; min-width: 0; }
+    .assets-list-head { display: none; }
+    .asset-row {
+      grid-template-columns: 1fr auto; row-gap: 6px; padding: 12px 10px;
+    }
+    .asset-price, .asset-pct { text-align: right; }
+    .asset-actions { grid-column: 1 / -1; text-align: left; margin-top: 4px; }
+  }
+</style>
 </head>
 <body>
 
@@ -44,6 +123,31 @@
       </table>
       <p style="font-size:.8rem;color:var(--muted);margin-top:12px;">Balances show as 0 until a deposit is confirmed on your account. Prices are live market data; your holdings are not.</p>
     </div>
+
+    <!-- All supported assets — full market list, Binance-style -->
+    <div class="widget assets-widget" id="all-assets" style="margin-bottom:24px;">
+      <div class="widget-head">
+        <div>
+          <h3>All supported assets</h3>
+          <p data-assets-count>Loading supported assets…</p>
+        </div>
+        <div class="assets-toolbar">
+          <input type="text" class="assets-search" placeholder="Search by name or symbol" data-assets-search>
+          <div class="assets-tabs" data-assets-tabs>
+            <button class="active" data-tab="All">All</button>
+            <button data-tab="Gainers">Gainers</button>
+            <button data-tab="Losers">Losers</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="assets-list-head">
+        <span>Asset</span><span>Price</span><span>24h change</span><span>24h volume</span><span></span>
+      </div>
+      <div class="assets-rows" data-assets-rows>
+        <div class="assets-empty">Loading live markets…</div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -56,5 +160,151 @@
 <script src="../assets/js/auth-guard.js"></script>
 <script src="../assets/js/dash-shell.js"></script>
 <script src="../assets/js/portfolio.js"></script>
+
+<script>
+/**
+ * Vaultex — All supported assets
+ * A full, Binance-style market list (350+ live USDT pairs) pulled
+ * from Binance's public /ticker/24hr endpoint (no API key required,
+ * CORS-enabled). This is purely a reference/market list — it is
+ * independent of portfolio.js and the real Holdings table above,
+ * and never reads or writes any account balance.
+ */
+(function () {
+  'use strict';
+  const REST = 'https://api.binance.com/api/v3';
+  const EXCLUDE_RE = /(UP|DOWN|BULL|BEAR)USDT$/; // skip leveraged tokens, same rule used on the trading page
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  const fmtPrice = n => {
+    if (n == null) return '—';
+    if (n >= 1) return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (n >= 0.01) return '$' + n.toFixed(4);
+    return '$' + n.toPrecision(3);
+  };
+  const fmtCompact = n => n == null ? '—' : '$' + Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 2 }).format(n);
+  const fmtPct = n => n == null ? '—' : `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+
+  function coinLogoUrl(base) {
+    return `https://assets.coincap.io/assets/icons/${base.toLowerCase()}@2x.png`;
+  }
+  function avatarSVG(symbol) {
+    let h = 0;
+    for (let i = 0; i < symbol.length; i++) h = (Math.imul(31, h) + symbol.charCodeAt(i)) | 0;
+    const hue = Math.abs(h) % 360;
+    const initials = symbol.slice(0, 3);
+    const svg = `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="hsl(${hue},55%,32%)"/>
+      <text x="20" y="25" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700" fill="hsl(${hue},70%,85%)" text-anchor="middle">${initials}</text>
+    </svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+  document.addEventListener('error', e => {
+    const img = e.target;
+    if (img && img.tagName === 'IMG' && img.dataset && img.dataset.coinBase) {
+      const base = img.dataset.coinBase;
+      delete img.dataset.coinBase;
+      img.src = avatarSVG(base);
+    }
+  }, true);
+
+  let ALL_ROWS = [];
+  let currentTab = 'All';
+  let currentQuery = '';
+
+  async function loadAssets() {
+    try {
+      const res = await fetch(`${REST}/ticker/24hr`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const rows = [];
+      data.forEach(t => {
+        if (!t.symbol.endsWith('USDT') || EXCLUDE_RE.test(t.symbol)) return;
+        const price = parseFloat(t.lastPrice);
+        const quoteVolume = parseFloat(t.quoteVolume);
+        if (!price || !isFinite(price)) return;
+        rows.push({
+          symbol: t.symbol,
+          base: t.symbol.slice(0, -4),
+          price,
+          pct: parseFloat(t.priceChangePercent),
+          quoteVolume,
+        });
+      });
+      rows.sort((a, b) => b.quoteVolume - a.quoteVolume);
+      ALL_ROWS = rows;
+      renderAssets();
+    } catch (err) {
+      console.error('Vaultex assets: failed to load market list', err);
+      if (!ALL_ROWS.length) {
+        $('[data-assets-rows]').innerHTML = `<div class="assets-empty">Live market feed temporarily unavailable. Retrying…</div>`;
+        $('[data-assets-count]').textContent = 'Live market feed unavailable';
+      }
+    }
+  }
+
+  function getFilteredRows() {
+    let rows = ALL_ROWS;
+    if (currentTab === 'Gainers') rows = rows.filter(r => r.pct > 0).sort((a, b) => b.pct - a.pct);
+    else if (currentTab === 'Losers') rows = rows.filter(r => r.pct < 0).sort((a, b) => a.pct - b.pct);
+    if (currentQuery) {
+      const q = currentQuery.toLowerCase();
+      rows = rows.filter(r => r.base.toLowerCase().includes(q) || r.symbol.toLowerCase().includes(q));
+    }
+    return rows;
+  }
+
+  function renderAssets() {
+    const container = $('[data-assets-rows]');
+    const countEl = $('[data-assets-count]');
+    if (!container) return;
+
+    countEl.textContent = `${ALL_ROWS.length} supported assets — live prices from the market`;
+
+    const rows = getFilteredRows();
+    if (!rows.length) {
+      container.innerHTML = `<div class="assets-empty">No assets match your search.</div>`;
+      return;
+    }
+
+    container.innerHTML = rows.map(r => {
+      const pctClass = r.pct >= 0 ? 'up' : 'down';
+      return `<div class="asset-row">
+        <div class="asset-name-cell">
+          <img class="asset-icon" src="${coinLogoUrl(r.base)}" data-coin-base="${r.base}" alt="" loading="lazy">
+          <div class="asset-name-text">
+            <div class="asset-name">${r.base}</div>
+            <div class="asset-sym">${r.base}/USDT</div>
+          </div>
+        </div>
+        <div class="asset-price">${fmtPrice(r.price)}</div>
+        <div class="asset-pct ${pctClass}">${fmtPct(r.pct)}</div>
+        <div class="asset-vol">${fmtCompact(r.quoteVolume)}</div>
+        <div class="asset-actions">
+          <a class="btn btn-ghost btn-sm" href="trading.html">Trade</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  $('[data-assets-search]')?.addEventListener('input', e => {
+    currentQuery = e.target.value.trim();
+    renderAssets();
+  });
+  $$('[data-assets-tabs] button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('[data-assets-tabs] button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTab = btn.dataset.tab;
+      renderAssets();
+    });
+  });
+
+  loadAssets();
+  setInterval(loadAssets, 30000);
+})();
+</script>
 </body>
 </html>
