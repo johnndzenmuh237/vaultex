@@ -298,36 +298,64 @@
   .bot-promo .bot-copy ul { margin: 10px 0 0; padding-left: 18px; font-size: .85rem; color: var(--muted); max-width: 600px; }
   .bot-promo .bot-copy ul li { margin-bottom: 4px; }
 
-  /* ============ FULLSCREEN MODE ============
-     Applied to .chart-panel via .is-fullscreen. Works whether or
-     not the native Fullscreen API is available/granted (iOS Safari
-     in particular often blocks it on arbitrary elements), because
-     the CSS itself does the heavy lifting — requestFullscreen is
-     just an enhancement layered on top when supported.
+  /* ============ Full screen — whole terminal: pairs + chart + order book/ticket ============
+     Applied to .terminal-fullscreen-root (the wrapper around the
+     mobile quick-switch and the pairs/chart/orderbook grid) via
+     .is-fullscreen, so entering full screen shows the whole trading
+     terminal — not just the chart. Works whether or not the native
+     Fullscreen API is available/granted (iOS Safari in particular
+     often blocks it on arbitrary elements), because the CSS itself
+     does the heavy lifting — requestFullscreen is just an
+     enhancement layered on top when supported.
   */
   body.trading-fullscreen-active { overflow: hidden; }
-  .chart-panel.is-fullscreen {
+  .fullscreen-bar { display: none; }
+  .terminal-fullscreen-root.is-fullscreen {
     position: fixed; inset: 0; z-index: 2000;
-    background: var(--ink); border-radius: 0; margin: 0;
-    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
-    display: flex; flex-direction: column; gap: 12px;
+    background: var(--ink);
+    display: flex; flex-direction: column;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    padding-top: calc(12px + env(safe-area-inset-top));
     overflow-y: auto;
   }
-  .chart-panel.is-fullscreen .chart-container { flex: 1 1 auto; height: auto; min-height: 260px; }
-  .chart-panel.is-fullscreen .selected-asset { padding-top: env(safe-area-inset-top); }
-  .fullscreen-exit-btn { display: none; }
-  .chart-panel.is-fullscreen .fullscreen-exit-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    position: absolute; top: 14px; right: 14px;
-    padding: 6px 12px; border-radius: 6px; font-size: .76rem;
-    border: 1px solid var(--line); background: var(--ink-soft); color: var(--paper); cursor: pointer; z-index: 2;
+  .terminal-fullscreen-root.is-fullscreen .fullscreen-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-bottom: 10px; flex-shrink: 0;
   }
-  .chart-panel.is-fullscreen .fullscreen-toggle { display: none; }
+  .fullscreen-bar-title { font-weight: 700; font-size: .95rem; color: var(--paper); }
+  .fullscreen-exit-btn {
+    display: none; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 6px; font-size: .78rem;
+    border: 1px solid var(--line); background: var(--ink-soft); color: var(--paper); cursor: pointer; flex-shrink: 0;
+  }
+  .fullscreen-exit-btn svg { width: 14px; height: 14px; display: block; }
+  .terminal-fullscreen-root.is-fullscreen .fullscreen-exit-btn { display: inline-flex; }
+  .terminal-fullscreen-root.is-fullscreen .fullscreen-toggle { display: none; }
+
+  .terminal-fullscreen-root.is-fullscreen .trading-layout {
+    flex: 1 1 auto; min-height: 0;
+    display: grid;
+    grid-template-columns: 220px minmax(0,1fr) 300px;
+    grid-template-rows: minmax(0,1fr);
+    gap: 14px;
+    align-items: stretch;
+    margin-bottom: 0;
+  }
+  .terminal-fullscreen-root.is-fullscreen .market-list-panel,
+  .terminal-fullscreen-root.is-fullscreen .chart-panel,
+  .terminal-fullscreen-root.is-fullscreen .term-right {
+    display: flex !important; min-height: 0;
+  }
+  .terminal-fullscreen-root.is-fullscreen .market-list-panel { max-height: none; }
+  .terminal-fullscreen-root.is-fullscreen .market-rows { flex: 1 1 auto; max-height: none; }
+  .terminal-fullscreen-root.is-fullscreen .chart-container { flex: 1 1 auto; height: auto; min-height: 300px; }
+  .terminal-fullscreen-root.is-fullscreen .chart-panel { overflow-y: auto; }
+  .terminal-fullscreen-root.is-fullscreen .term-right { overflow-y: auto; }
 
   /* ---- Mobile quick-switch tabs (pairs / chart / book & trade) ----
      Shown only ≤900px. On wider layouts all three columns are
      visible side by side, same as the desktop terminal. */
-  .term-mobile-tabs { display: none; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+  .term-mobile-tabs { display: none; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 12px; flex-shrink: 0; }
   .term-mobile-tabs button {
     flex: 1; padding: 10px 6px; font-size: .74rem; font-family: 'JetBrains Mono', monospace;
     color: var(--muted); background: var(--ink-soft); border: none; cursor: pointer; border-right: 1px solid var(--line);
@@ -341,6 +369,20 @@
   @media (max-width: 1024px) {
     .trading-layout { grid-template-columns: minmax(0,1fr) 280px; }
     .market-list-panel { display: none; }
+
+    /* Full screen on tablet: use the pairs / chart / trade tab-switcher instead of a
+       cramped 3-column grid, so every panel still gets full, usable space. */
+    .terminal-fullscreen-root.is-fullscreen .term-mobile-tabs { display: flex; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout { grid-template-columns: 1fr; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-pairs .chart-panel,
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-pairs .term-right { display: none !important; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-pairs .market-list-panel { display: flex !important; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-chart .market-list-panel,
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-chart .term-right { display: none !important; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-chart .chart-panel { display: flex !important; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-trade .market-list-panel,
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-trade .chart-panel { display: none !important; }
+    .terminal-fullscreen-root.is-fullscreen .trading-layout.tab-trade .term-right { display: flex !important; }
   }
   @media (max-width: 900px) {
     .term-mobile-tabs { display: flex; }
@@ -363,15 +405,18 @@
     .selected-asset .sa-price { font-size: 1.1rem; }
     .bot-promo { padding: 18px; }
     .stat-strip { grid-template-columns: repeat(2, 1fr); row-gap: 12px; }
-    .chart-panel.is-fullscreen .order-ticket .field-row { flex-direction: column; align-items: stretch; }
-    .chart-panel.is-fullscreen .order-ticket .submit-btn { width: 100%; }
+    .terminal-fullscreen-root.is-fullscreen .order-ticket .field-row { flex-direction: column; align-items: stretch; }
+    .terminal-fullscreen-root.is-fullscreen .order-ticket .submit-btn { width: 100%; }
+    .terminal-fullscreen-root.is-fullscreen .chart-container { min-height: 240px; }
+    .terminal-fullscreen-root.is-fullscreen .market-rows { max-height: 46vh; }
+    .terminal-fullscreen-root.is-fullscreen .fullscreen-bar-title { font-size: .82rem; }
   }
   @media (min-width: 641px) and (max-width: 1024px) {
-    .chart-panel.is-fullscreen .chart-container { min-height: 360px; }
+    .terminal-fullscreen-root.is-fullscreen .chart-container { min-height: 340px; }
   }
   @media (min-width: 1025px) {
-    .chart-panel.is-fullscreen { padding: 24px 32px; }
-    .chart-panel.is-fullscreen .chart-container { min-height: 460px; }
+    .terminal-fullscreen-root.is-fullscreen { padding: 18px 26px; }
+    .terminal-fullscreen-root.is-fullscreen .chart-container { min-height: 420px; }
   }
   /* ==========================
    VaultexBot Promotion
@@ -748,146 +793,157 @@ text-align:left;
         </div>
       </div>
 
-      <!-- Mobile quick-switch: pairs / chart / order book & trade -->
-      <div class="term-mobile-tabs" data-term-mobile-tabs>
-        <button class="active" data-term-tab="chart">Chart</button>
-        <button data-term-tab="trade">Order Book &amp; Trade</button>
-        <button data-term-tab="pairs">Pairs</button>
-      </div>
+      <!-- Full-screen terminal wrapper: pairs + chart + order book/ticket all live in here,
+           so entering full screen shows the whole trading terminal, not just the chart. -->
+      <div class="terminal-fullscreen-root" data-terminal-root>
 
-      <div class="trading-layout tab-chart" data-trading-layout>
-
-        <!-- Market list -->
-        <div class="widget market-list-panel">
-          <input type="text" class="market-search" placeholder="Search by name or symbol" data-market-search>
-          <div class="market-tabs" data-market-tabs>
-            <button class="active" data-tab="All">All</button>
-            <button data-tab="Gainers">Gainers</button>
-            <button data-tab="Losers">Losers</button>
-          </div>
-          <div class="market-rows" data-market-rows>
-            <div class="market-empty">Loading live markets…</div>
-          </div>
-        </div>
-
-        <!-- Chart -->
-        <div class="widget chart-panel" data-chart-panel>
+        <!-- Full screen top bar (only visible while in full screen mode) -->
+        <div class="fullscreen-bar" data-fullscreen-bar>
+          <div class="fullscreen-bar-title" data-fullscreen-bar-title>Trading Terminal — <span data-fs-name>BTC/USDT</span></div>
           <button class="fullscreen-exit-btn" data-fullscreen-exit>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v4a2 2 0 0 1-2 2H3M21 9h-4a2 2 0 0 1-2-2V3M3 15h4a2 2 0 0 1 2 2v4M15 21v-4a2 2 0 0 1 2-2h4"/></svg>
             Exit full screen
           </button>
-
-          <div class="selected-asset" data-selected-asset>
-            <div class="sa-icon" data-sa-image></div>
-            <div>
-              <div class="sa-name" data-sa-name>Loading…</div>
-              <div class="sa-sym" data-sa-sym></div>
-            </div>
-            <div class="sa-price" data-sa-price>—</div>
-            <div class="sa-pct" data-sa-pct></div>
-          </div>
-
-          <div class="stat-strip" data-stat-strip>
-            <div class="stat-item"><div class="stat-label">24h High</div><div class="stat-value" data-stat-high>—</div></div>
-            <div class="stat-item"><div class="stat-label">24h Low</div><div class="stat-value" data-stat-low>—</div></div>
-            <div class="stat-item"><div class="stat-label">24h Volume</div><div class="stat-value" data-stat-volume>—</div></div>
-            <div class="stat-item"><div class="stat-label">24h Trades</div><div class="stat-value" data-stat-trades>—</div></div>
-          </div>
-
-          <div class="chart-toolbar">
-            <div class="tf-tabs" data-tf-tabs>
-              <button data-tf="5m">5M</button>
-              <button data-tf="15m">15M</button>
-              <button data-tf="1h" class="active">1H</button>
-              <button data-tf="4h">4H</button>
-              <button data-tf="1d">1D</button>
-              <button data-tf="1w">1W</button>
-              <button data-tf="1M">1M</button>
-            </div>
-            <button class="fullscreen-toggle" data-fullscreen-toggle>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
-              Full screen
-            </button>
-          </div>
-
-          <div class="chart-container" data-chart-container>
-            <div class="chart-loading">Loading live chart…</div>
-          </div>
-
-          <!-- Open Orders / Trade History / Positions / Funds -->
-          <div class="bottom-tabs-bar" data-bottom-tabs>
-            <button class="tab-btn active" data-btab="orders">Open Orders (0)</button>
-            <button class="tab-btn" data-btab="history">Trade History</button>
-            <button class="tab-btn" data-btab="positions">Positions</button>
-            <button class="tab-btn" data-btab="funds">Funds</button>
-          </div>
-          <div class="bottom-panel" data-bottom-panel>
-            <div class="no-orders">No open orders — place your first trade below.</div>
-          </div>
         </div>
 
-        <!-- Live order book + order ticket -->
-        <div class="term-right">
-          <div class="widget orderbook-panel">
-            <div class="ob-head">
-              <h4>Order Book</h4>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);" data-ob-label>BTC/USDT</div>
+        <!-- Mobile quick-switch: pairs / chart / order book & trade -->
+        <div class="term-mobile-tabs" data-term-mobile-tabs>
+          <button class="active" data-term-tab="chart">Chart</button>
+          <button data-term-tab="trade">Order Book &amp; Trade</button>
+          <button data-term-tab="pairs">Pairs</button>
+        </div>
+
+        <div class="trading-layout tab-chart" data-trading-layout>
+
+          <!-- Market list -->
+          <div class="widget market-list-panel">
+            <input type="text" class="market-search" placeholder="Search by name or symbol" data-market-search>
+            <div class="market-tabs" data-market-tabs>
+              <button class="active" data-tab="All">All</button>
+              <button data-tab="Gainers">Gainers</button>
+              <button data-tab="Losers">Losers</button>
             </div>
-            <div class="ob-cols">
-              <div class="ob-col-label">Price</div>
-              <div class="ob-col-label">Amount</div>
-              <div class="ob-col-label">Total</div>
+            <div class="market-rows" data-market-rows>
+              <div class="market-empty">Loading live markets…</div>
             </div>
-            <div class="ob-rows" data-ask-rows><div class="ob-loading">Loading book…</div></div>
-            <div class="ob-mid">
-              <div class="price" data-ob-mid>—</div>
-              <div class="spread" data-ob-spread>Spread: —</div>
-            </div>
-            <div class="ob-rows" data-bid-rows></div>
           </div>
 
-          <div class="widget order-ticket">
-            <div class="side-tabs" data-side-tabs>
-              <button data-side="buy" class="active">Buy</button>
-              <button data-side="sell">Sell</button>
+          <!-- Chart -->
+          <div class="widget chart-panel" data-chart-panel>
+
+            <div class="selected-asset" data-selected-asset>
+              <div class="sa-icon" data-sa-image></div>
+              <div>
+                <div class="sa-name" data-sa-name>Loading…</div>
+                <div class="sa-sym" data-sa-sym></div>
+              </div>
+              <div class="sa-price" data-sa-price>—</div>
+              <div class="sa-pct" data-sa-pct></div>
             </div>
 
-            <div class="order-type-row" data-order-type-row>
-              <button class="ot-btn active" data-ot="market">Market</button>
-              <button class="ot-btn" data-ot="limit">Limit</button>
-              <button class="ot-btn" data-ot="stop">Stop</button>
-            </div>
-            <div class="ot-hint" data-ot-hint>Fills instantly at the live market price.</div>
-
-            <div class="field" data-price-field style="display:none;">
-              <label for="trade-price" data-price-label>Price (USDT)</label>
-              <input type="number" id="trade-price" data-trade-price placeholder="0.00" min="0" step="any">
-            </div>
-            <div class="field">
-              <label for="trade-qty" data-qty-label>Lot size (units)</label>
-              <input type="number" id="trade-qty" data-trade-qty placeholder="0.00" min="0" step="any">
-            </div>
-            <div class="field">
-              <label for="trade-amount" data-usd-label>Amount (USD)</label>
-              <input type="number" id="trade-amount" data-trade-amount placeholder="0.00" min="0" step="0.01">
+            <div class="stat-strip" data-stat-strip>
+              <div class="stat-item"><div class="stat-label">24h High</div><div class="stat-value" data-stat-high>—</div></div>
+              <div class="stat-item"><div class="stat-label">24h Low</div><div class="stat-value" data-stat-low>—</div></div>
+              <div class="stat-item"><div class="stat-label">24h Volume</div><div class="stat-value" data-stat-volume>—</div></div>
+              <div class="stat-item"><div class="stat-label">24h Trades</div><div class="stat-value" data-stat-trades>—</div></div>
             </div>
 
-            <div class="percent-row" data-percent-row>
-              <button class="pct-btn" data-pct="25">25%</button>
-              <button class="pct-btn" data-pct="50">50%</button>
-              <button class="pct-btn" data-pct="75">75%</button>
-              <button class="pct-btn" data-pct="100">Max</button>
+            <div class="chart-toolbar">
+              <div class="tf-tabs" data-tf-tabs>
+                <button data-tf="5m">5M</button>
+                <button data-tf="15m">15M</button>
+                <button data-tf="1h" class="active">1H</button>
+                <button data-tf="4h">4H</button>
+                <button data-tf="1d">1D</button>
+                <button data-tf="1w">1W</button>
+                <button data-tf="1M">1M</button>
+              </div>
+              <button class="fullscreen-toggle" data-fullscreen-toggle>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+                Full screen
+              </button>
             </div>
 
-            <div class="order-summary">
-              <div class="summary-row"><span class="lbl">Total</span><span class="val" data-summary-total>—</span></div>
-              <div class="summary-row"><span class="lbl">Est. fee (0.1%)</span><span class="val" data-summary-fee>—</span></div>
+            <div class="chart-container" data-chart-container>
+              <div class="chart-loading">Loading live chart…</div>
             </div>
 
-            <div class="avail-line" data-avail-line>Available balance: $0.00</div>
-            <button class="btn submit-btn buy" data-submit-btn>Buy at market</button>
-            <div class="ticket-msg" data-ticket-msg></div>
+            <!-- Open Orders / Trade History / Positions / Funds -->
+            <div class="bottom-tabs-bar" data-bottom-tabs>
+              <button class="tab-btn active" data-btab="orders">Open Orders (0)</button>
+              <button class="tab-btn" data-btab="history">Trade History</button>
+              <button class="tab-btn" data-btab="positions">Positions</button>
+              <button class="tab-btn" data-btab="funds">Funds</button>
+            </div>
+            <div class="bottom-panel" data-bottom-panel>
+              <div class="no-orders">No open orders — place your first trade below.</div>
+            </div>
           </div>
+
+          <!-- Live order book + order ticket -->
+          <div class="term-right">
+            <div class="widget orderbook-panel">
+              <div class="ob-head">
+                <h4>Order Book</h4>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);" data-ob-label>BTC/USDT</div>
+              </div>
+              <div class="ob-cols">
+                <div class="ob-col-label">Price</div>
+                <div class="ob-col-label">Amount</div>
+                <div class="ob-col-label">Total</div>
+              </div>
+              <div class="ob-rows" data-ask-rows><div class="ob-loading">Loading book…</div></div>
+              <div class="ob-mid">
+                <div class="price" data-ob-mid>—</div>
+                <div class="spread" data-ob-spread>Spread: —</div>
+              </div>
+              <div class="ob-rows" data-bid-rows></div>
+            </div>
+
+            <div class="widget order-ticket">
+              <div class="side-tabs" data-side-tabs>
+                <button data-side="buy" class="active">Buy</button>
+                <button data-side="sell">Sell</button>
+              </div>
+
+              <div class="order-type-row" data-order-type-row>
+                <button class="ot-btn active" data-ot="market">Market</button>
+                <button class="ot-btn" data-ot="limit">Limit</button>
+                <button class="ot-btn" data-ot="stop">Stop</button>
+              </div>
+              <div class="ot-hint" data-ot-hint>Fills instantly at the live market price.</div>
+
+              <div class="field" data-price-field style="display:none;">
+                <label for="trade-price" data-price-label>Price (USDT)</label>
+                <input type="number" id="trade-price" data-trade-price placeholder="0.00" min="0" step="any">
+              </div>
+              <div class="field">
+                <label for="trade-qty" data-qty-label>Lot size (units)</label>
+                <input type="number" id="trade-qty" data-trade-qty placeholder="0.00" min="0" step="any">
+              </div>
+              <div class="field">
+                <label for="trade-amount" data-usd-label>Amount (USD)</label>
+                <input type="number" id="trade-amount" data-trade-amount placeholder="0.00" min="0" step="0.01">
+              </div>
+
+              <div class="percent-row" data-percent-row>
+                <button class="pct-btn" data-pct="25">25%</button>
+                <button class="pct-btn" data-pct="50">50%</button>
+                <button class="pct-btn" data-pct="75">75%</button>
+                <button class="pct-btn" data-pct="100">Max</button>
+              </div>
+
+              <div class="order-summary">
+                <div class="summary-row"><span class="lbl">Total</span><span class="val" data-summary-total>—</span></div>
+                <div class="summary-row"><span class="lbl">Est. fee (0.1%)</span><span class="val" data-summary-fee>—</span></div>
+              </div>
+
+              <div class="avail-line" data-avail-line>Available balance: $0.00</div>
+              <button class="btn submit-btn buy" data-submit-btn>Buy at market</button>
+              <div class="ticket-msg" data-ticket-msg></div>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -1355,6 +1411,8 @@ text-align:left;
     $('[data-stat-trades]').textContent = t.count != null ? t.count.toLocaleString('en-US') : '—';
 
     $('[data-ob-label]').textContent = `${t.base}/USDT`;
+    const fsName = $('[data-fs-name]');
+    if (fsName) fsName.textContent = `${t.base}/USDT`;
 
     $('[data-qty-label]').textContent = `Lot size (${t.base})`;
     $('[data-avail-line]').textContent = currentSide === 'buy'
@@ -1560,19 +1618,20 @@ text-align:left;
     });
   });
 
-  /* ===== fullscreen ===== */
+  /* ===== fullscreen — whole terminal (pairs + chart + order book/ticket) ===== */
   const chartPanel = $('[data-chart-panel]');
-  function isFullscreenActive() { return chartPanel.classList.contains('is-fullscreen'); }
+  const terminalRoot = $('[data-terminal-root]');
+  function isFullscreenActive() { return terminalRoot.classList.contains('is-fullscreen'); }
   async function enterFullscreen() {
-    chartPanel.classList.add('is-fullscreen');
+    terminalRoot.classList.add('is-fullscreen');
     document.body.classList.add('trading-fullscreen-active');
-    if (chartPanel.requestFullscreen) {
-      try { await chartPanel.requestFullscreen(); } catch (e) { /* fall back to CSS-only fullscreen */ }
+    if (terminalRoot.requestFullscreen) {
+      try { await terminalRoot.requestFullscreen(); } catch (e) { /* fall back to CSS-only fullscreen */ }
     }
     requestAnimationFrame(resizeChart);
   }
   async function exitFullscreen() {
-    chartPanel.classList.remove('is-fullscreen');
+    terminalRoot.classList.remove('is-fullscreen');
     document.body.classList.remove('trading-fullscreen-active');
     if (document.fullscreenElement) {
       try { await document.exitFullscreen(); } catch (e) {}
