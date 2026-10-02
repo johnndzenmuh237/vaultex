@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KYC Verification — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+.dash-main{min-width:0;overflow-x:clip;}
+.lx{
+  --l-bg:var(--ink-soft,#121A2E);--l-raise:var(--ink-raise,#1A2340);--l-line:var(--line,#262E45);
+  --l-mut:var(--muted,#8993AB);--l-mint:var(--mint,#2EE6A6);--l-gold:var(--gold,#F5B942);--l-coral:var(--coral,#FF6B6B);
+  --l-mint-dim:var(--mint-dim,rgba(46,230,166,.14));--l-gold-dim:var(--gold-dim,rgba(245,185,66,.14));--l-coral-dim:var(--coral-dim,rgba(255,107,107,.14));
+  --l-mono:var(--font-mono,'JetBrains Mono',ui-monospace,monospace);--l-head:'Space Grotesk','Inter',system-ui,sans-serif;--l-r:var(--radius-md,16px);
+  color:var(--text,inherit);display:flex;flex-direction:column;gap:24px;width:100%;max-width:1000px;margin:0 auto;min-width:0;padding-bottom:60px;
+}
+.lx *,.lx *::before,.lx *::after{box-sizing:border-box;}
+.lx h2,.lx h3{font-family:var(--l-head);margin:0;line-height:1.2;}
+.lx p{margin:0;line-height:1.6;}
+.muted{color:var(--l-mut);}
+.mono{font-family:var(--l-mono);}
+[hidden]{display:none!important;}
+.lx-card{background:var(--l-bg);border:1px solid var(--l-line);border-radius:var(--l-r);padding:24px;min-width:0;}
+.lx-h{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.lx-h h2{font-size:clamp(1.2rem,2.4vw,1.55rem);}
+.lx-h p{color:var(--l-mut);font-size:.92rem;max-width:64ch;}
+.g2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));min-width:0;align-items:start;}
+
+.lx-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;background:var(--l-mint);color:#03140F;font:600 .92rem 'Inter',system-ui,sans-serif;padding:12px 20px;border-radius:10px;cursor:pointer;min-height:46px;transition:transform .18s,box-shadow .18s,border-color .18s,opacity .18s;text-decoration:none;}
+.lx-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(46,230,166,.28);}
+.lx-btn.ghost{background:transparent;color:inherit;border-color:var(--l-line);}
+.lx-btn.ghost:hover{border-color:var(--l-mint);box-shadow:none;}
+.lx-btn.block{width:100%;}
+.lx-btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.lx :focus-visible{outline:2px solid var(--l-mint);outline-offset:2px;}
+
+/* status hero */
+.stat{display:flex;gap:18px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden;animation:rise .5s ease both;}
+.stat .badge{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;font-family:var(--l-mono);}
+.stat.none .badge{background:var(--l-raise);color:var(--l-mut);}
+.stat.pending{border-color:var(--l-gold);}
+.stat.pending .badge{background:var(--l-gold-dim);color:var(--l-gold);animation:pulse 1.8s infinite;}
+.stat.approved{border-color:var(--l-mint);background:linear-gradient(180deg,var(--l-mint-dim),transparent 80%),var(--l-bg);}
+.stat.approved .badge{background:var(--l-mint);color:#03140F;animation:pop .6s cubic-bezier(.2,1.4,.4,1) both;}
+.stat.rejected{border-color:var(--l-coral);}
+.stat.rejected .badge{background:var(--l-coral-dim);color:var(--l-coral);}
+.stat h2{font-size:1.35rem;}
+.stat .txt{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:6px;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(245,185,66,.5);}100%{box-shadow:0 0 0 16px rgba(245,185,66,0);}}
+@keyframes pop{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+.msg{border-radius:12px;padding:14px 16px;border-left:3px solid var(--l-line);background:var(--l-raise);animation:rise .4s ease both;}
+.msg.approved{border-color:var(--l-mint);}.msg.rejected{border-color:var(--l-coral);}
+.msg b{display:block;font-size:.78rem;margin-bottom:4px;}
+.msg p{font-size:.92rem;overflow-wrap:anywhere;}
+.msg small{display:block;margin-top:8px;color:var(--l-mut);font-size:.72rem;}
+
+.tl{display:flex;align-items:center;font-size:.74rem;color:var(--l-mut);width:100%;}
+.tl .p{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;text-align:center;}
+.tl .p i{width:14px;height:14px;border-radius:50%;background:var(--l-raise);border:2px solid var(--l-line);}
+.tl .p.done i{background:var(--l-mint);border-color:var(--l-mint);}
+.tl .p.act i{border-color:var(--l-gold);background:var(--l-gold-dim);}
+.tl .p.no i{background:var(--l-coral);border-color:var(--l-coral);}
+.tl .bar{flex:1;height:2px;background:var(--l-line);margin:0 6px 18px;min-width:16px;}
+.tl .bar.done{background:var(--l-mint);}
+
+/* form */
+.lx-f{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.lx-f label{font-size:.8rem;font-weight:600;color:var(--l-mut);}
+.lx-f input,.lx-f select,.lx-f textarea{width:100%;min-width:0;background:var(--l-raise);border:1px solid var(--l-line);color:inherit;border-radius:10px;padding:12px 14px;font:inherit;font-size:.95rem;transition:border-color .2s,box-shadow .2s;}
+.lx-f input:focus,.lx-f select:focus,.lx-f textarea:focus{outline:none;border-color:var(--l-mint);box-shadow:0 0 0 3px var(--l-mint-dim);}
+.lx-f .bad{border-color:var(--l-coral)!important;box-shadow:0 0 0 3px var(--l-coral-dim)!important;}
+.lx-f textarea{resize:vertical;min-height:80px;}
+.lx-f select option{background:#121A2E;color:#E8ECF6;}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;}
+.form{display:flex;flex-direction:column;gap:14px;}
+.hint{font-size:.82rem;min-height:1.2em;}
+.hint.no{color:var(--l-coral);}.hint.ok{color:var(--l-mint);}
+.lx-chk{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--l-mut);line-height:1.5;}
+.lx-chk input{width:18px;height:18px;margin-top:2px;accent-color:var(--l-mint);flex-shrink:0;}
+
+.drop{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;border:1.5px dashed var(--l-line);border-radius:14px;padding:18px 12px;min-height:150px;background:var(--l-raise);cursor:pointer;transition:border-color .2s,background .2s;overflow:hidden;}
+.drop:hover,.drop:focus-within{border-color:var(--l-mint);}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.drop .ic{font-size:1.5rem;color:var(--l-mint);}
+.drop b{font-size:.88rem;}
+.drop small{color:var(--l-mut);font-size:.74rem;}
+.drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.drop.has .ic,.drop.has b,.drop.has small{opacity:0;}
+.drop.bad{border-color:var(--l-coral);}
+.drop .chg{position:absolute;right:8px;bottom:8px;background:rgba(3,6,14,.75);color:#fff;font-size:.72rem;padding:4px 9px;border-radius:999px;pointer-events:none;}
+
+.sum{display:flex;flex-direction:column;}
+.sum div{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--l-line);font-size:.88rem;}
+.sum div:last-child{border-bottom:none;}
+.sum span{color:var(--l-mut);flex-shrink:0;}
+.sum b{text-align:right;overflow-wrap:anywhere;}
+.thumbs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+.thumbs img{width:100%;height:120px;object-fit:cover;border-radius:10px;border:1px solid var(--l-line);}
+
+.lx-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--l-line);}
+.lx-step:last-child{border-bottom:none;padding-bottom:0;}
+.lx-step:first-of-type{padding-top:0;}
+.lx-step .num{width:30px;height:30px;border-radius:50%;background:var(--l-raise);display:flex;align-items:center;justify-content:center;font-family:var(--l-mono);font-size:.8rem;flex-shrink:0;}
+.lx-step h3{font-size:.95rem;margin-bottom:2px;}
+.lx-step p{color:var(--l-mut);font-size:.86rem;}
+.lx-list{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:8px;}
+.lx-list li{position:relative;padding-left:22px;font-size:.88rem;color:var(--l-mut);line-height:1.5;}
+.lx-list li::before{content:'';position:absolute;left:2px;top:.55em;width:8px;height:8px;border-radius:2px;background:var(--l-mint);transform:rotate(45deg);}
+
+.toasts{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:999;display:flex;flex-direction:column;gap:10px;width:min(92vw,360px);pointer-events:none;}
+.toast{pointer-events:auto;background:var(--ink-soft,#121A2E);color:var(--text,#E8ECF6);border:1px solid var(--line,#262E45);border-left:4px solid var(--mint,#2EE6A6);border-radius:12px;padding:12px 14px;font-size:.88rem;box-shadow:0 12px 32px rgba(0,0,0,.4);animation:rise .35s ease both;}
+.toast.bad{border-left-color:var(--coral,#FF6B6B);}
+.toast b{display:block;margin-bottom:2px;}
+.spin{width:16px;height:16px;border:2px solid rgba(3,20,15,.3);border-top-color:#03140F;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+@media (max-width:640px){.lx-card{padding:18px;}.stat .badge{width:54px;height:54px;font-size:1.4rem;}.toasts{left:14px;right:14px;width:auto;}}
+@media (prefers-reduced-motion:reduce){.lx *,.toast{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav"></nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">KYC Verification</h2>
+        <p class="mb-0" style="font-size:.88rem;">Verify your identity to unlock your full account.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="lx">
+      <section class="lx-card stat none" id="statCard">
+        <div class="badge" id="stBadge">…</div>
+        <div class="txt"><h2 id="stTitle">Checking your status…</h2><p class="muted" id="stText"></p></div>
+        <div class="tl" id="tl" hidden></div>
+      </section>
+
+      <div id="decision"></div>
+
+      <section class="g2" id="formArea" hidden>
+        <form class="lx-card form" id="kycForm" novalidate autocomplete="off">
+          <div class="lx-h" style="margin-bottom:0;"><h2 id="formTitle">Request verification</h2><p>Fill in your details exactly as they appear on your ID document.</p></div>
+          <div class="row">
+            <div class="lx-f"><label for="kName">Full legal name *</label><input id="kName" maxlength="80" placeholder="As shown on your ID"></div>
+            <div class="lx-f"><label for="kDob">Date of birth *</label><input id="kDob" type="date"></div>
+          </div>
+          <div class="row">
+            <div class="lx-f"><label for="kCountry">Country *</label><input id="kCountry" maxlength="60" placeholder="e.g. Cameroon"></div>
+            <div class="lx-f"><label for="kPhone">Phone number</label><input id="kPhone" type="tel" inputmode="tel" maxlength="24" placeholder="Optional"></div>
+          </div>
+          <div class="lx-f"><label for="kAddr">Home address *</label><input id="kAddr" maxlength="160" placeholder="Street, city"></div>
+          <div class="row">
+            <div class="lx-f"><label for="kIdType">ID type *</label>
+              <select id="kIdType"><option>National ID card</option><option>Passport</option><option>Driver's license</option></select></div>
+            <div class="lx-f"><label for="kIdNo">ID number *</label><input id="kIdNo" maxlength="30" placeholder="Document number"></div>
+          </div>
+          <div class="row">
+            <div class="lx-f"><label>ID photo (front) *</label>
+              <label class="drop" id="dropId"><input type="file" accept="image/*" id="fId"><span class="ic">⬆</span><b>Upload ID photo</b><small>JPG or PNG · all four corners visible</small></label></div>
+            <div class="lx-f"><label>Selfie holding your ID *</label>
+              <label class="drop" id="dropSelf"><input type="file" accept="image/*" id="fSelf"><span class="ic">◉</span><b>Upload selfie</b><small>Clear face, ID next to it</small></label></div>
+          </div>
+          <label class="lx-chk"><input type="checkbox" id="kAgree"><span>I confirm that the information and documents I provide are mine and are accurate.</span></label>
+          <button class="lx-btn block" id="kGo" type="submit">Submit for verification</button>
+          <div class="hint" id="kErr" role="alert"></div>
+        </form>
+
+        <div class="lx-card">
+          <h3 style="margin-bottom:14px;">How verification works</h3>
+          <div class="lx-step"><div class="num">1</div><div><h3>Send your request</h3><p>Enter your details and upload two clear photos.</p></div></div>
+          <div class="lx-step"><div class="num">2</div><div><h3>We review it</h3><p>Our team checks that your details and photos match.</p></div></div>
+          <div class="lx-step"><div class="num">3</div><div><h3>You get a decision</h3><p>If you are verified, your account shows a Verified badge. If not, you will read exactly why here and what to fix, then you can submit again.</p></div></div>
+          <h3 style="margin:18px 0 0;font-size:.95rem;">Tips for a quick approval</h3>
+          <ul class="lx-list"><li>Use good light and a steady hand</li><li>Do not crop or cover any part of the ID</li><li>Your ID must be valid and not expired</li><li>Your name must match the ID exactly</li></ul>
+        </div>
+      </section>
+
+      <section class="lx-card" id="submitted" hidden>
+        <h3 style="margin-bottom:6px;">Your submission</h3>
+        <div class="sum" id="subSum"></div>
+        <div class="thumbs" id="subImgs"></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="../assets/js/main.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const millis = t => (t && t.toMillis) ? t.toMillis() : Date.now();
+  const fmt = t => new Date(millis(t)).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const FA = (typeof auth !== 'undefined' && auth) || firebase.auth();
+  const FD = (typeof db !== 'undefined' && db && db.collection) ? db : firebase.firestore();
+  const TS = () => firebase.firestore.FieldValue.serverTimestamp();
+  const safeImg = u => (typeof u === 'string' && u.indexOf('data:image/') === 0) ? u : '';
+
+  function toast(title, body, bad) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (bad ? ' bad' : '');
+    el.innerHTML = '<b>' + esc(title) + '</b>' + esc(body || '');
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 7000);
+  }
+
+  /* ---------- photos: shrink in the browser so they fit in one record ---------- */
+  function shrink(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onerror = reject;
+      fr.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('bad-image'));
+        img.onload = () => {
+          const tries = [[900, .72], [800, .62], [700, .52], [600, .45]];
+          for (const [max, q] of tries) {
+            const r = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            const out = c.toDataURL('image/jpeg', q);
+            if (out.length <= 380000) return resolve(out);
+          }
+          reject(new Error('too-big'));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  const photos = { id: '', self: '' };
+  function wireDrop(inputId, dropId, key) {
+    const inp = $(inputId), drop = $(dropId);
+    inp.addEventListener('change', async () => {
+      const f = inp.files && inp.files[0]; if (!f) return;
+      $('#kErr').textContent = '';
+      if (!/^image\//.test(f.type)) { photos[key] = ''; drop.classList.remove('has'); drop.classList.add('bad'); $('#kErr').className = 'hint no'; $('#kErr').textContent = 'Please choose an image file (JPG or PNG).'; return; }
+      if (f.size > 15 * 1024 * 1024) { drop.classList.add('bad'); $('#kErr').className = 'hint no'; $('#kErr').textContent = 'That photo is too large. Choose one under 15 MB.'; return; }
+      try {
+        photos[key] = await shrink(f);
+        drop.classList.remove('bad'); drop.classList.add('has');
+        drop.querySelectorAll('img,.chg').forEach(n => n.remove());
+        const im = document.createElement('img'); im.src = photos[key]; im.alt = 'Selected photo'; drop.appendChild(im);
+        const ch = document.createElement('span'); ch.className = 'chg'; ch.textContent = 'Tap to change'; drop.appendChild(ch);
+      } catch (e) {
+        photos[key] = ''; drop.classList.add('bad');
+        $('#kErr').className = 'hint no'; $('#kErr').textContent = 'We could not read that photo. Try a different one.';
+      }
+    });
+  }
+  wireDrop('#fId', '#dropId', 'id'); wireDrop('#fSelf', '#dropSelf', 'self');
+
+  /* ---------- form ---------- */
+  const F = { name: $('#kName'), dob: $('#kDob'), country: $('#kCountry'), addr: $('#kAddr'), idNo: $('#kIdNo') };
+  Object.values(F).forEach(el => el.addEventListener('input', () => el.classList.remove('bad')));
+  const errEl = $('#kErr');
+  const fail = (el, m) => { if (el && el.classList) { el.classList.add('bad'); if (el.focus) el.focus(); } errEl.className = 'hint no'; errEl.textContent = m; return false; };
+  let current = null;
+
+  $('#kycForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    errEl.textContent = '';
+    const u = FA.currentUser;
+    if (!u) return fail(null, 'Please sign in again.');
+    const v = k => F[k].value.trim();
+    if (v('name').length < 3) return fail(F.name, 'Enter your full legal name.');
+    if (!F.dob.value) return fail(F.dob, 'Enter your date of birth.');
+    const dob = new Date(F.dob.value), now = new Date();
+    let age = now.getFullYear() - dob.getFullYear();
+    if (now < new Date(now.getFullYear(), dob.getMonth(), dob.getDate())) age--;
+    if (isNaN(age) || age < 18 || age > 110) return fail(F.dob, 'You must be at least 18 years old to verify.');
+    if (v('country').length < 2) return fail(F.country, 'Enter your country.');
+    if (v('addr').length < 6) return fail(F.addr, 'Enter your home address.');
+    if (!/^[A-Za-z0-9 -]{4,30}$/.test(v('idNo'))) return fail(F.idNo, 'Enter a valid ID number (letters and numbers only).');
+    if (!photos.id) { $('#dropId').classList.add('bad'); return fail(null, 'Upload a photo of your ID.'); }
+    if (!photos.self) { $('#dropSelf').classList.add('bad'); return fail(null, 'Upload a selfie holding your ID.'); }
+    if (!$('#kAgree').checked) return fail(null, 'Tick the box to confirm your details are accurate.');
+
+    const btn = $('#kGo'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Submitting';
+    const payload = {
+      uid: u.uid, email: u.email || '', userName: v('name'), dob: F.dob.value, country: v('country'), phone: $('#kPhone').value.trim(),
+      address: v('addr'), idType: $('#kIdType').value, idNumber: v('idNo').toUpperCase(),
+      idPhoto: photos.id, selfie: photos.self, status: 'pending', adminMessage: '',
+      attempt: ((current && current.attempt) || 0) + 1,
+      reference: 'KY' + Math.floor(Math.random() * 900000 + 100000), createdAt: TS(), decidedAt: null
+    };
+    try {
+      await FD.collection('kycRequests').doc(u.uid).set(payload);
+      toast('Verification requested', 'We will update your status on this page.');
+      photos.id = ''; photos.self = '';
+    } catch (ex) {
+      console.error(ex);
+      errEl.className = 'hint no'; errEl.textContent = 'We could not send your request. Check your connection and try again.';
+    } finally { btn.disabled = false; btn.textContent = 'Submit for verification'; }
+  });
+
+  /* ---------- render by status ---------- */
+  function render(k) {
+    current = k;
+    const card = $('#statCard'), tl = $('#tl'), dec = $('#decision');
+    const form = $('#formArea'), sub = $('#submitted');
+    dec.innerHTML = '';
+    if (!k) {
+      card.className = 'lx-card stat none';
+      $('#stBadge').textContent = '○'; $('#stTitle').textContent = 'Not verified yet';
+      $('#stText').textContent = 'Send a verification request below. It only takes a few minutes.';
+      tl.hidden = true; form.hidden = false; sub.hidden = true; $('#formTitle').textContent = 'Request verification';
+      return;
+    }
+    const s = k.status, p = s === 'pending', ok = s === 'approved';
+    card.className = 'lx-card stat ' + s;
+    $('#stBadge').textContent = ok ? '✓' : p ? '◔' : '!';
+    $('#stTitle').textContent = ok ? 'Verified' : p ? 'Under review' : 'Not approved';
+    $('#stText').textContent = ok ? 'Your identity is verified. Thank you.' : p ? 'We received your request on ' + fmt(k.createdAt) + '. You will see the result here.' : 'We could not verify you this time. Read the message below, fix the issue and submit again.';
+    tl.hidden = false;
+    tl.innerHTML = '<div class="p done"><i></i>Submitted</div><div class="bar ' + (!p ? 'done' : '') + '"></div><div class="p ' + (p ? 'act' : 'done') + '"><i></i>Review</div><div class="bar ' + (!p ? 'done' : '') + '"></div><div class="p ' + (p ? '' : ok ? 'done' : 'no') + '"><i></i>Decision</div>';
+    if (!p) {
+      dec.innerHTML = '<div class="msg ' + esc(s) + '"><b>' + (ok ? 'Message from Vaultex' : 'Why it was rejected and what to do') + '</b><p>' +
+        esc(k.adminMessage || (ok ? 'Your identity has been verified.' : 'Your verification was not approved. Please check your details and photos, then submit again.')) + '</p>' +
+        '<small>' + (k.decidedAt ? 'Decided ' + esc(fmt(k.decidedAt)) : '') + (k.reference ? ' · Reference ' + esc(k.reference) : '') + '</small></div>';
+    }
+    form.hidden = s !== 'rejected';
+    if (s === 'rejected') {
+      $('#formTitle').textContent = 'Submit again';
+      if (!F.name.value) { F.name.value = k.userName || ''; F.dob.value = k.dob || ''; F.country.value = k.country || ''; $('#kPhone').value = k.phone || ''; F.addr.value = k.address || ''; F.idNo.value = k.idNumber || ''; if (k.idType) $('#kIdType').value = k.idType; }
+    }
+    sub.hidden = s === 'rejected';
+    if (!sub.hidden) {
+      $('#subSum').innerHTML = [['Name', k.userName], ['Date of birth', k.dob], ['Country', k.country], ['ID', (k.idType || '') + ' · ' + (k.idNumber ? '••••' + String(k.idNumber).slice(-4) : '')], ['Reference', k.reference]]
+        .map(r => '<div><span>' + esc(r[0]) + '</span><b>' + esc(r[1] || '—') + '</b></div>').join('');
+      $('#subImgs').innerHTML = (safeImg(k.idPhoto) ? '<img src="' + safeImg(k.idPhoto) + '" alt="ID photo">' : '') + (safeImg(k.selfie) ? '<img src="' + safeImg(k.selfie) + '" alt="Selfie">' : '');
+    }
+  }
+
+  let first = true, prev = null;
+  function listen(uid) {
+    FD.collection('kycRequests').doc(uid).onSnapshot(d => {
+      const k = d.exists ? d.data() : null;
+      if (!first && k && prev === 'pending' && k.status !== 'pending') {
+        if (k.status === 'approved') toast('You are verified', k.adminMessage || 'Your identity has been verified.');
+        else toast('Verification rejected', k.adminMessage || 'Open this page to see why.', true);
+      }
+      prev = k ? k.status : null; first = false;
+      render(k);
+    }, err => { console.error('KYC listener failed', err); $('#stTitle').textContent = 'Could not load your status'; $('#stText').textContent = 'Refresh the page to try again.'; });
+  }
+  FA.onAuthStateChanged(u => { if (u) { if (!F.name.value && u.displayName) F.name.value = u.displayName; listen(u.uid); } });
+})();
+</script>
+</body>
+</html>

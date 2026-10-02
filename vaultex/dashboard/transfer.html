@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Transfer — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+.dash-main{min-width:0;overflow-x:clip;}
+.lx{
+  --l-bg:var(--ink-soft,#121A2E);--l-raise:var(--ink-raise,#1A2340);--l-line:var(--line,#262E45);
+  --l-mut:var(--muted,#8993AB);--l-mint:var(--mint,#2EE6A6);--l-gold:var(--gold,#F5B942);--l-coral:var(--coral,#FF6B6B);
+  --l-mint-dim:var(--mint-dim,rgba(46,230,166,.14));--l-gold-dim:var(--gold-dim,rgba(245,185,66,.14));--l-coral-dim:var(--coral-dim,rgba(255,107,107,.14));
+  --l-mono:var(--font-mono,'JetBrains Mono',ui-monospace,monospace);--l-head:'Space Grotesk','Inter',system-ui,sans-serif;--l-r:var(--radius-md,16px);
+  color:var(--text,inherit);display:flex;flex-direction:column;gap:26px;width:100%;max-width:1200px;margin:0 auto;min-width:0;padding-bottom:60px;
+}
+.lx *,.lx *::before,.lx *::after{box-sizing:border-box;}
+.lx h2,.lx h3{font-family:var(--l-head);margin:0;line-height:1.2;}
+.lx p{margin:0;line-height:1.6;}
+.lx .muted{color:var(--l-mut);}
+.lx .mono{font-family:var(--l-mono);}
+[hidden]{display:none!important;}
+.lx-card{background:var(--l-bg);border:1px solid var(--l-line);border-radius:var(--l-r);padding:24px;min-width:0;}
+.g2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));min-width:0;align-items:start;}
+.lx-h{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.lx-h h2{font-size:clamp(1.2rem,2.4vw,1.55rem);}
+.lx-h p{color:var(--l-mut);font-size:.92rem;max-width:68ch;}
+
+.lx-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;background:var(--l-mint);color:#03140F;font:600 .9rem 'Inter',system-ui,sans-serif;padding:11px 20px;border-radius:10px;cursor:pointer;min-height:44px;transition:transform .18s,box-shadow .18s,opacity .18s,border-color .18s;text-decoration:none;}
+.lx-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(46,230,166,.28);}
+.lx-btn.ghost{background:transparent;color:inherit;border-color:var(--l-line);}
+.lx-btn.ghost:hover{border-color:var(--l-mint);box-shadow:none;}
+.lx-btn.sm{padding:6px 12px;font-size:.78rem;min-height:34px;}
+.lx-btn.block{width:100%;}
+.lx-btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.lx :focus-visible{outline:2px solid var(--l-mint);outline-offset:2px;}
+
+.lx-f{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.lx-f label{font-size:.8rem;font-weight:600;color:var(--l-mut);}
+.lx-f input,.lx-f select,.lx-f textarea{width:100%;min-width:0;background:var(--l-raise);border:1px solid var(--l-line);color:inherit;border-radius:10px;padding:12px 14px;font:inherit;font-size:.95rem;transition:border-color .2s,box-shadow .2s;}
+.lx-f input:focus,.lx-f textarea:focus{outline:none;border-color:var(--l-mint);box-shadow:0 0 0 3px var(--l-mint-dim);}
+.lx-f input.bad,.lx-f textarea.bad{border-color:var(--l-coral);box-shadow:0 0 0 3px var(--l-coral-dim);}
+.lx-f textarea{resize:vertical;min-height:80px;}
+.lx-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px;}
+.lx-chk{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--l-mut);line-height:1.5;}
+.lx-chk input{width:18px;height:18px;margin-top:2px;accent-color:var(--l-mint);flex-shrink:0;}
+.lx-amt{position:relative;}
+.lx-amt input{padding-left:30px;padding-right:74px;font-family:var(--l-mono);font-size:1.1rem;}
+.lx-amt i{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--l-mut);font-family:var(--l-mono);}
+.lx-amt button{position:absolute;right:6px;top:50%;transform:translateY(-50%);}
+.hint{font-size:.8rem;min-height:1.2em;}
+.hint.ok{color:var(--l-mint);}.hint.no{color:var(--l-coral);}
+
+.lx-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;}
+.lx-stat{background:var(--l-bg);border:1px solid var(--l-line);border-radius:var(--l-r);padding:18px;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.lx-stat .k{font-size:.78rem;color:var(--l-mut);}
+.lx-stat b{font-size:1.4rem;font-family:var(--l-mono);overflow-wrap:anywhere;}
+.lx-stat small{font-size:.72rem;color:var(--l-mut);}
+.lx-stat.main{border-color:var(--l-mint);background:linear-gradient(180deg,var(--l-mint-dim),transparent 70%),var(--l-bg);}
+.lx-stat.main b{color:var(--l-mint);font-size:1.7rem;}
+.bump{animation:bump .8s ease;}
+@keyframes bump{0%{transform:scale(1);}30%{transform:scale(1.1);color:var(--l-mint);}100%{transform:scale(1);}}
+
+.lx-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--l-line);}
+.lx-step:last-child{border-bottom:none;padding-bottom:0;}
+.lx-step:first-of-type{padding-top:0;}
+.lx-step .num{width:30px;height:30px;border-radius:50%;background:var(--l-raise);display:flex;align-items:center;justify-content:center;font-family:var(--l-mono);font-size:.8rem;flex-shrink:0;}
+.lx-step h3{font-size:.95rem;margin-bottom:2px;}
+.lx-step p{color:var(--l-mut);font-size:.86rem;}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;background:var(--l-raise);border-radius:12px;padding:4px;scrollbar-width:none;width:fit-content;max-width:100%;margin-bottom:16px;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{flex:0 0 auto;background:transparent;border:none;color:var(--l-mut);padding:8px 14px;border-radius:8px;font:600 .82rem 'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s;}
+.tabs button.on{background:var(--l-bg);color:var(--l-mint);}
+.tabs em{font-style:normal;font-family:var(--l-mono);font-size:.72rem;margin-left:6px;opacity:.8;}
+
+.st{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.st::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.st.pending{background:var(--l-gold-dim);color:var(--l-gold);}
+.st.pending::before{animation:pulse 1.6s infinite;}
+.st.approved{background:var(--l-mint-dim);color:var(--l-mint);}
+.st.rejected{background:var(--l-coral-dim);color:var(--l-coral);}
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor;}100%{box-shadow:0 0 0 8px transparent;}}
+
+.hist{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));}
+.tr{display:flex;flex-direction:column;gap:12px;animation:rise .4s ease both;min-width:0;}
+@keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.tr-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;}
+.tr .amt{font-family:var(--l-mono);font-size:1.45rem;font-weight:700;overflow-wrap:anywhere;}
+.tr .amt.out{color:var(--l-mint);}
+.tr .amt.no{color:var(--l-mut);text-decoration:line-through;}
+.tr-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
+.tr-meta div{background:var(--l-raise);border-radius:10px;padding:9px 11px;min-width:0;}
+.tr-meta span{display:block;font-size:.7rem;color:var(--l-mut);}
+.tr-meta b{font-size:.84rem;overflow-wrap:anywhere;}
+.msg{border-radius:12px;padding:13px 15px;border-left:3px solid var(--l-line);background:var(--l-raise);}
+.msg.approved{border-color:var(--l-mint);}.msg.rejected{border-color:var(--l-coral);}
+.msg b{display:block;font-size:.76rem;margin-bottom:4px;}
+.msg p{font-size:.9rem;overflow-wrap:anywhere;}
+.empty{text-align:center;padding:42px 18px;color:var(--l-mut);border:1px dashed var(--l-line);border-radius:var(--l-r);grid-column:1/-1;}
+.empty .ico{font-size:2rem;color:var(--l-mint);margin-bottom:8px;}
+
+.ov{position:fixed;inset:0;z-index:200;background:rgba(3,6,14,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px;animation:fade .25s ease both;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.sheet{width:100%;max-width:480px;max-height:92vh;overflow-y:auto;background:var(--l-bg);border:1px solid var(--l-line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:14px;color:var(--text,inherit);animation:up .35s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes up{from{opacity:0;transform:translateY(24px) scale(.98);}to{opacity:1;transform:none;}}
+.sum{display:flex;flex-direction:column;}
+.sum div{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--l-line);font-size:.88rem;}
+.sum div:last-child{border-bottom:none;}
+.sum span{color:var(--l-mut);flex-shrink:0;}
+.sum b{text-align:right;overflow-wrap:anywhere;}
+.acts{display:flex;gap:10px;flex-wrap:wrap;}
+.acts .lx-btn{flex:1 1 140px;}
+
+.toasts{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:999;display:flex;flex-direction:column;gap:10px;width:min(92vw,360px);pointer-events:none;}
+.toast{pointer-events:auto;background:var(--ink-soft,#121A2E);color:var(--text,#E8ECF6);border:1px solid var(--line,#262E45);border-left:4px solid var(--mint,#2EE6A6);border-radius:12px;padding:12px 14px;font-size:.88rem;box-shadow:0 12px 32px rgba(0,0,0,.4);animation:tIn .4s ease both;}
+.toast.bad{border-left-color:var(--coral,#FF6B6B);}
+.toast b{display:block;margin-bottom:2px;}
+@keyframes tIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:none;}}
+.spin{width:16px;height:16px;border:2px solid rgba(3,20,15,.3);border-top-color:#03140F;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+@media (max-width:640px){
+  .lx-card{padding:18px;}
+  .ov{align-items:flex-end;padding:0;}
+  .sheet{max-width:none;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));}
+  .toasts{left:14px;right:14px;width:auto;}
+}
+@media (prefers-reduced-motion:reduce){.lx *,.lx *::before,.lx *::after,.ov,.sheet,.toast{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav"></nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Transfer</h2>
+        <p class="mb-0" style="font-size:.88rem;">Send funds from your loan balance to your bank account.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="lx">
+      <section class="lx-strip" aria-label="Balance">
+        <div class="lx-stat main"><span class="k">Available to transfer</span><b id="sAvail">$0.00</b><small>USD</small></div>
+        <div class="lx-stat"><span class="k">Loan balance</span><b id="sBal">$0.00</b><small>USD</small></div>
+        <div class="lx-stat"><span class="k">On hold</span><b id="sHold">$0.00</b><small>Waiting for approval</small></div>
+        <div class="lx-stat"><span class="k">Transferred</span><b id="sSent">$0.00</b><small>Successful, all time</small></div>
+      </section>
+
+      <section class="g2">
+        <form class="lx-card" id="trForm" style="display:flex;flex-direction:column;gap:14px;" novalidate autocomplete="off">
+          <div class="lx-h" style="margin-bottom:0;"><h2>Bank transfer</h2><p>Enter the bank details exactly as they appear on the account. Transfers are reviewed before they are sent.</p></div>
+          <div class="lx-row">
+            <div class="lx-f"><label for="trName">Account holder name *</label><input id="trName" placeholder="Name on the account" maxlength="80"></div>
+            <div class="lx-f"><label for="trBank">Bank name *</label><input id="trBank" placeholder="e.g. Chase Bank" maxlength="80"></div>
+          </div>
+          <div class="lx-row">
+            <div class="lx-f"><label for="trAcct">Account number / IBAN *</label><input id="trAcct" inputmode="text" placeholder="Account number" maxlength="40"></div>
+            <div class="lx-f"><label for="trSwift">SWIFT / routing code *</label><input id="trSwift" placeholder="e.g. CHASUS33" maxlength="14"></div>
+          </div>
+          <div class="lx-f"><label for="trCountry">Bank country *</label><input id="trCountry" placeholder="e.g. United States" maxlength="60"></div>
+          <div class="lx-f">
+            <label for="trAmt">Amount (USD) *</label>
+            <div class="lx-amt"><i>$</i><input id="trAmt" type="number" inputmode="decimal" min="1" step="0.01" placeholder="0.00"><button type="button" class="lx-btn ghost sm" id="trMax">Max</button></div>
+            <div class="hint" id="amtHint"></div>
+          </div>
+          <div class="lx-f"><label for="trNote">Note (optional)</label><textarea id="trNote" maxlength="200" placeholder="Reason for this transfer"></textarea></div>
+          <label class="lx-chk"><input type="checkbox" id="trAgree"><span>I confirm these bank details are correct and belong to me.</span></label>
+          <button class="lx-btn block" id="trGo" type="submit">Review transfer</button>
+          <div class="hint" id="trErr" role="alert"></div>
+        </form>
+
+        <div class="lx-card">
+          <h3 style="margin-bottom:14px;">How transfers work</h3>
+          <div class="lx-step"><div class="num">1</div><div><h3>Check your balance</h3><p>You can transfer up to your available loan balance. Requests waiting for approval are held, so they are not counted twice.</p></div></div>
+          <div class="lx-step"><div class="num">2</div><div><h3>Admin review</h3><p>Your request is checked by our team. You will see it as Pending in your history.</p></div></div>
+          <div class="lx-step"><div class="num">3</div><div><h3>Approved or rejected</h3><p>If approved, the amount leaves your loan balance and the transfer is marked successful. If rejected, you will get a message explaining why and what to do next. Nothing is deducted.</p></div></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="lx-h"><h2>Transaction history</h2><p>Every transfer you request is listed here with its status.</p></div>
+        <div class="tabs" id="tabs" role="tablist"></div>
+        <div class="hist" id="hist"><div class="empty"><p>Loading your transfers…</p></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="../assets/js/main.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const millis = t => (t && t.toMillis) ? t.toMillis() : Date.now();
+  const fmt = t => new Date(millis(t)).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const FA = (typeof auth !== 'undefined' && auth) || firebase.auth();
+  const FD = (typeof db !== 'undefined' && db && db.collection) ? db : firebase.firestore();
+  const TS = () => firebase.firestore.FieldValue.serverTimestamp();
+  const mask = a => '••••' + String(a || '').slice(-4);
+  const LABEL = { pending: 'Pending', approved: 'Successful', rejected: 'Rejected' };
+
+  function toast(title, body, bad) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (bad ? ' bad' : '');
+    el.innerHTML = '<b>' + esc(title) + '</b>' + esc(body || '');
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 7000);
+  }
+
+  let wallet = 0, list = [], filter = 'all', first = true, ready = false;
+  const prev = {};
+  const held = () => list.filter(t => t.status === 'pending').reduce((s, t) => s + Number(t.amountUSD || 0), 0);
+  const avail = () => Math.max(0, Math.round((wallet - held()) * 100) / 100);
+
+  function setNum(id, v) {
+    const el = $(id), txt = money(v);
+    if (el.textContent !== txt) { el.textContent = txt; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  }
+  function renderStrip() {
+    setNum('#sAvail', avail()); setNum('#sBal', wallet); setNum('#sHold', held());
+    setNum('#sSent', list.filter(t => t.status === 'approved').reduce((s, t) => s + Number(t.amountUSD || 0), 0));
+    amountHint();
+  }
+
+  /* ---------- amount check ---------- */
+  const amt = $('#trAmt'), hint = $('#amtHint');
+  function amountHint() {
+    const v = Number(amt.value) || 0;
+    if (!amt.value) { hint.className = 'hint muted'; hint.textContent = 'Available: ' + money(avail()); return; }
+    if (v > avail()) { hint.className = 'hint no'; hint.textContent = 'This is more than your available balance of ' + money(avail()) + '.'; }
+    else if (v < 1) { hint.className = 'hint no'; hint.textContent = 'The smallest transfer is $1.00.'; }
+    else { hint.className = 'hint ok'; hint.textContent = 'Available balance covers this. You will have ' + money(avail() - v) + ' left.'; }
+  }
+  amt.addEventListener('input', amountHint);
+  $('#trMax').addEventListener('click', () => { amt.value = avail().toFixed(2); amountHint(); });
+
+  /* ---------- validation + confirm ---------- */
+  const F = { name: $('#trName'), bank: $('#trBank'), acct: $('#trAcct'), swift: $('#trSwift'), country: $('#trCountry'), amt: amt };
+  Object.values(F).forEach(el => el.addEventListener('input', () => el.classList.remove('bad')));
+  const err = $('#trErr');
+  const fail = (el, m) => { if (el) { el.classList.add('bad'); el.focus(); } err.className = 'hint no'; err.textContent = m; return false; };
+
+  function validate() {
+    err.textContent = '';
+    const v = k => F[k].value.trim();
+    if (v('name').length < 2) return fail(F.name, 'Enter the account holder name.');
+    if (v('bank').length < 2) return fail(F.bank, 'Enter the bank name.');
+    if (!/^[A-Za-z0-9]{6,34}$/.test(v('acct').replace(/[\s-]/g, ''))) return fail(F.acct, 'Enter a valid account number or IBAN (6 to 34 letters and numbers).');
+    if (!/^[A-Za-z0-9]{4,11}$/.test(v('swift').replace(/[\s-]/g, ''))) return fail(F.swift, 'Enter a valid SWIFT or routing code (4 to 11 letters and numbers).');
+    if (v('country').length < 2) return fail(F.country, 'Enter the bank country.');
+    const a = Math.round((Number(amt.value) || 0) * 100) / 100;
+    if (!(a >= 1)) return fail(amt, 'Enter an amount of at least $1.00.');
+    if (a > avail()) return fail(amt, 'Your available balance is ' + money(avail()) + '. Lower the amount to continue.');
+    if (!$('#trAgree').checked) return fail(null, 'Tick the box to confirm your bank details are correct.');
+    return {
+      amountUSD: a, accountName: v('name'), bankName: v('bank'), accountNumber: v('acct').replace(/[\s-]/g, ''),
+      swift: v('swift').replace(/[\s-]/g, '').toUpperCase(), country: v('country'), note: $('#trNote').value.trim().slice(0, 200)
+    };
+  }
+
+  $('#trForm').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!ready) return fail(null, 'Still loading your balance. Try again in a moment.');
+    const d = validate(); if (!d) return;
+    const w = document.createElement('div');
+    w.className = 'ov';
+    w.innerHTML = '<div class="sheet" role="dialog" aria-modal="true"><h3>Confirm transfer</h3><div class="sum">' +
+      '<div><span>Amount</span><b class="mono">' + esc(money(d.amountUSD)) + '</b></div>' +
+      '<div><span>Account holder</span><b>' + esc(d.accountName) + '</b></div>' +
+      '<div><span>Bank</span><b>' + esc(d.bankName) + ', ' + esc(d.country) + '</b></div>' +
+      '<div><span>Account</span><b class="mono">' + esc(d.accountNumber) + '</b></div>' +
+      '<div><span>SWIFT / routing</span><b class="mono">' + esc(d.swift) + '</b></div></div>' +
+      '<p class="muted" style="font-size:.84rem;">Your request goes to our team for approval. The amount is deducted from your loan balance only after it is approved.</p>' +
+      '<div class="acts"><button class="lx-btn ghost" data-x="0">Edit details</button><button class="lx-btn" data-x="1">Send for approval</button></div></div>';
+    document.body.appendChild(w);
+    $('[data-x="1"]', w).focus();
+    w.addEventListener('click', async ev => {
+      const b = ev.target.closest('[data-x]');
+      if (ev.target === w || (b && b.dataset.x === '0')) return w.remove();
+      if (!b) return;
+      if (d.amountUSD > avail()) { w.remove(); return fail(amt, 'Your available balance changed to ' + money(avail()) + '. Lower the amount to continue.'); }
+      b.disabled = true; b.innerHTML = '<span class="spin"></span> Sending';
+      const u = FA.currentUser;
+      const payload = Object.assign({
+        uid: u.uid, userName: u.displayName || d.accountName, email: u.email || '', status: 'pending', adminMessage: '',
+        reference: 'TR' + Math.floor(Math.random() * 900000 + 100000), createdAt: TS()
+      }, d);
+      try {
+        await FD.collection('transfers').add(payload);
+        w.remove();
+        toast('Transfer requested', 'Reference ' + payload.reference + '. We will update the status here.');
+        ['name', 'bank', 'acct', 'swift', 'country'].forEach(k => F[k].value = '');
+        amt.value = ''; $('#trNote').value = ''; $('#trAgree').checked = false; amountHint();
+        filter = 'all'; renderHist();
+      } catch (ex) {
+        console.error(ex); w.remove();
+        err.className = 'hint no'; err.textContent = 'We could not send your request. Check your connection and try again.';
+      }
+    });
+  });
+
+  /* ---------- history ---------- */
+  function renderHist() {
+    const cnt = s => s === 'all' ? list.length : list.filter(t => t.status === s).length;
+    $('#tabs').innerHTML = [['all', 'All'], ['approved', 'Successful'], ['pending', 'Pending'], ['rejected', 'Rejected']].map(x =>
+      '<button role="tab" data-f="' + x[0] + '" class="' + (filter === x[0] ? 'on' : '') + '">' + x[1] + '<em>' + cnt(x[0]) + '</em></button>').join('');
+    const rows = list.filter(t => filter === 'all' || t.status === filter);
+    if (!rows.length) {
+      $('#hist').innerHTML = '<div class="empty"><div class="ico">⇄</div><p>' + (list.length ? 'No transfers in this view.' : 'No transfers yet. Fill in the form above to make your first one.') + '</p></div>';
+      return;
+    }
+    $('#hist').innerHTML = rows.map(t => {
+      const st = t.status;
+      let msg = '';
+      if (st === 'rejected') msg = '<div class="msg rejected"><b>Why it was rejected and what to do</b><p>' + esc(t.adminMessage || 'Your transfer was not approved. Please contact support.') + '</p></div>';
+      else if (st === 'approved') msg = '<div class="msg approved"><b>Message from Vaultex</b><p>' + esc(t.adminMessage || 'Your transfer was approved and sent.') + '</p></div>';
+      return '<article class="lx-card tr">' +
+        '<div class="tr-top"><div><div class="muted" style="font-size:.78rem;">Bank transfer · ' + esc(t.reference) + '</div><div class="amt ' + (st === 'approved' ? 'out' : st === 'rejected' ? 'no' : '') + '">' + (st === 'approved' ? '−' : '') + esc(money(t.amountUSD)) + '</div></div><span class="st ' + esc(st) + '">' + esc(LABEL[st] || st) + '</span></div>' +
+        '<div class="tr-meta"><div><span>Bank</span><b>' + esc(t.bankName) + '</b></div><div><span>Account</span><b class="mono">' + esc(mask(t.accountNumber)) + '</b></div><div><span>Holder</span><b>' + esc(t.accountName) + '</b></div>' +
+        (st === 'approved' && t.balanceAfterUSD != null ? '<div><span>Balance after</span><b class="mono">' + esc(money(t.balanceAfterUSD)) + '</b></div>' : '') + '</div>' +
+        msg +
+        '<small class="muted">Requested ' + esc(fmt(t.createdAt)) + (t.decidedAt ? ' · Updated ' + esc(fmt(t.decidedAt)) : '') + '</small></article>';
+    }).join('');
+  }
+  $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderHist(); } });
+
+  /* ---------- live data ---------- */
+  function listen(uid) {
+    FD.collection('users').doc(uid).collection('wallet').doc('main').onSnapshot(d => {
+      wallet = d.exists ? Number(d.data().balanceUSD || 0) : 0; ready = true; renderStrip();
+    }, e => console.error('Wallet listener failed', e));
+
+    FD.collection('transfers').where('uid', '==', uid).onSnapshot(snap => {
+      list = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => millis(b.createdAt) - millis(a.createdAt));
+      if (!first) list.forEach(t => {
+        if (prev[t.id] === 'pending' && t.status !== 'pending') {
+          if (t.status === 'approved') toast('Transfer successful', money(t.amountUSD) + ' was sent and deducted from your loan balance.');
+          else toast('Transfer rejected', t.adminMessage || 'Open your history to see why.', true);
+        }
+      });
+      list.forEach(t => { prev[t.id] = t.status; });
+      first = false; renderStrip(); renderHist();
+    }, e => { console.error('Transfers listener failed', e); $('#hist').innerHTML = '<div class="empty"><p>We could not load your transfers. Refresh the page to try again.</p></div>'; });
+  }
+
+  amountHint();
+  FA.onAuthStateChanged(u => { if (u) listen(u.uid); });
+})();
+</script>
+</body>
+</html>

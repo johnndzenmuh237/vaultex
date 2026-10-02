@@ -45,31 +45,111 @@
       </div>
     </div>
 
-    
     <div class="dash-grid-2">
       <div class="widget">
         <div class="widget-head"><h3>Withdraw</h3></div>
-        <div class="field"><label>Asset</label><select><option>Bitcoin (BTC)</option><option>Ethereum (ETH)</option><option>USDT</option></select></div>
-        <div class="field"><label>Recipient address</label><input type="text" placeholder="Paste withdrawal address"></div>
-        <div class="field"><label>Amount</label><input type="text" placeholder="0.00"></div>
-        <p class="field-hint">Available: 0.842 BTC · Network fee: ~0.0001 BTC</p>
-        <button class="btn btn-primary btn-block" style="margin-top:10px;">Review withdrawal</button>
+
+        <div class="field">
+          <label for="wd-currency">Asset</label>
+          <select id="wd-currency">
+            <option value="btc">Bitcoin (BTC)</option>
+            <option value="eth">Ethereum (ETH)</option>
+            <option value="ltc">Litecoin (LTC)</option>
+            <option value="sol">Solana (SOL)</option>
+            <option value="bnb">BNB</option>
+            <option value="trx">TRON (TRX)</option>
+            <option value="doge">Dogecoin (DOGE)</option>
+            <option value="xrp">XRP</option>
+            <option value="usdterc20">USDT · Ethereum (ERC20)</option>
+            <option value="usdttrc20">USDT · Tron (TRC20)</option>
+            <option value="usdtbep20">USDT · BNB Smart Chain (BEP20)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="wd-address">Recipient address</label>
+          <input id="wd-address" type="text" placeholder="Paste withdrawal address">
+        </div>
+
+        <div class="field">
+          <label for="wd-amount">Amount</label>
+          <input id="wd-amount" type="text" placeholder="0.00">
+        </div>
+
+        <p class="field-hint">Available: <span data-user-balance>$0.00</span> · Network fee: ~0.0001 (varies by asset)</p>
+
+        <button id="wd-submit-btn" class="btn btn-primary btn-block" style="margin-top:10px;">Review withdrawal</button>
+        <p id="wd-form-error" class="field-hint" style="color:var(--coral);" hidden></p>
+
+        <div id="wd-rejected-note" class="security-row" style="border-color:var(--coral); align-items:flex-start;" hidden>
+          <div>
+            <strong>Your last withdrawal was rejected</strong>
+            <p class="mb-0" style="font-size:.85rem;" id="wd-rejected-reason">--</p>
+          </div>
+        </div>
       </div>
+
       <div class="widget">
-        <div class="widget-head"><h3>Withdrawal limits</h3></div>
-        <div class="security-row"><div><strong>Daily limit</strong><p class="mb-0" style="font-size:.85rem;">Level 2 verified</p></div><span class="mono">$100,000</span></div>
-        <div class="security-row"><div><strong>Used today</strong></div><span class="mono">$3,120</span></div>
-        <div class="progress-bar"><span style="width:3%;"></span></div>
+        <div class="widget-head">
+          <h3>Withdrawal status</h3>
+          <span id="wd-status-badge" class="pill pill-neutral" hidden>Waiting</span>
+        </div>
+        <div id="wd-status-empty">
+          <p class="field-hint">Submit a withdrawal to see its review status here.</p>
+        </div>
+        <div id="wd-status-detail" hidden>
+          <div class="security-row">
+            <div><strong>Asset</strong></div>
+            <span class="mono" id="wd-detail-currency">--</span>
+          </div>
+          <div class="security-row">
+            <div><strong>Amount</strong></div>
+            <span class="mono" id="wd-detail-amount">--</span>
+          </div>
+          <div class="security-row">
+            <div><strong>Address</strong></div>
+            <span class="mono" id="wd-detail-address">--</span>
+          </div>
+          <p class="field-hint" id="wd-status-message" style="margin-top:12px;">Your request is pending admin review. This usually takes a few hours.</p>
+        </div>
       </div>
+    </div>
+
+    <div class="widget" style="margin-top:24px;">
+      <div class="widget-head"><h3>Withdrawal limits</h3></div>
+      <div class="security-row"><div><strong>Daily limit</strong><p class="mb-0" style="font-size:.85rem;">Level 2 verified</p></div><span class="mono">$100,000</span></div>
+      <div class="security-row"><div><strong>Used today</strong></div><span class="mono" id="wd-used-today">$0</span></div>
+      <div class="progress-bar"><span id="wd-used-bar" style="width:0%;"></span></div>
+    </div>
+
+    <div class="widget" style="margin-top:24px;">
+      <div class="widget-head"><h3>Recent withdrawals</h3></div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Date</th><th>Asset</th><th>Amount</th><th>Address</th><th>Status</th><th>Note</th></tr>
+        </thead>
+        <tbody id="wd-history-body">
+          <tr><td colspan="6">You haven't requested a withdrawal yet — your history will show up here once you make one.</td></tr>
+        </tbody>
+      </table>
     </div>
   </main>
 </div>
 
-
+<div id="notif-panel" class="widget" style="position:fixed;top:70px;right:24px;width:340px;z-index:300;display:none;box-shadow:var(--shadow-card);">
+  <div class="widget-head"><h3>Notifications</h3></div>
+  <div data-notif-list></div>
+</div>
+<style>#notif-panel.open{display:block;}</style>
 
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/charts.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
 <script src="../assets/js/auth-guard.js"></script>
 <script src="../assets/js/dashboard.js"></script>
+<script src="../assets/js/notifications.js"></script>
+<script src="../assets/js/withdrawal.js"></script>
 </body>
 </html>

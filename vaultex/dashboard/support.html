@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Support — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+.dash-main{min-width:0;overflow-x:clip;}
+.lx{
+  --l-bg:var(--ink-soft,#121A2E);--l-raise:var(--ink-raise,#1A2340);--l-line:var(--line,#262E45);
+  --l-mut:var(--muted,#8993AB);--l-mint:var(--mint,#2EE6A6);--l-gold:var(--gold,#F5B942);--l-coral:var(--coral,#FF6B6B);
+  --l-mint-dim:var(--mint-dim,rgba(46,230,166,.14));
+  --l-mono:var(--font-mono,'JetBrains Mono',ui-monospace,monospace);--l-head:'Space Grotesk','Inter',system-ui,sans-serif;--l-r:var(--radius-md,16px);
+  color:var(--text,inherit);display:flex;flex-direction:column;gap:26px;width:100%;max-width:1000px;margin:0 auto;min-width:0;padding-bottom:60px;
+}
+.lx *,.lx *::before,.lx *::after{box-sizing:border-box;}
+.lx h2,.lx h3{font-family:var(--l-head);margin:0;line-height:1.2;}
+.lx p{margin:0;line-height:1.6;}
+.muted{color:var(--l-mut);}
+[hidden]{display:none!important;}
+.lx-card{background:var(--l-bg);border:1px solid var(--l-line);border-radius:var(--l-r);padding:24px;min-width:0;}
+.lx-h{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.lx-h h2{font-size:clamp(1.25rem,2.6vw,1.7rem);}
+.lx-h p{color:var(--l-mut);font-size:.94rem;max-width:62ch;}
+.lx-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;background:var(--l-mint);color:#03140F;font:600 .92rem 'Inter',system-ui,sans-serif;padding:12px 20px;border-radius:10px;cursor:pointer;min-height:46px;transition:transform .18s,box-shadow .18s,border-color .18s;text-decoration:none;}
+.lx-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(46,230,166,.28);}
+.lx-btn.ghost{background:transparent;color:inherit;border-color:var(--l-line);}
+.lx-btn.ghost:hover{border-color:var(--l-mint);box-shadow:none;}
+.lx-btn.wa{background:#25D366;color:#06210f;}
+.lx-btn.wa:hover{box-shadow:0 8px 22px rgba(37,211,102,.3);}
+.lx-btn.block{width:100%;}
+.lx :focus-visible{outline:2px solid var(--l-mint);outline-offset:2px;}
+
+.choose{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));}
+.opt{display:flex;flex-direction:column;gap:14px;transition:transform .25s,border-color .25s;animation:rise .5s ease both;}
+.opt:nth-child(2){animation-delay:.08s;}
+.opt:hover,.opt.on{transform:translateY(-4px);border-color:var(--l-mint);}
+@keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.ico{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ico svg{width:28px;height:28px;}
+.ico.wa{background:rgba(37,211,102,.16);}.ico.wa svg{fill:#25D366;}
+.ico.em{background:var(--l-mint-dim);}.ico.em svg{stroke:var(--l-mint);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.opt h3{font-size:1.15rem;}
+.opt p{color:var(--l-mut);font-size:.9rem;}
+.opt .val{font-family:var(--l-mono);font-size:.88rem;overflow-wrap:anywhere;}
+.opt .acts{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap;}
+.opt .acts .lx-btn{flex:1 1 150px;}
+
+.panel{border-color:var(--l-mint);animation:rise .4s ease both;display:flex;flex-direction:column;gap:14px;}
+.lx-f{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.lx-f label{font-size:.8rem;font-weight:600;color:var(--l-mut);}
+.lx-f input,.lx-f select,.lx-f textarea{width:100%;min-width:0;background:var(--l-raise);border:1px solid var(--l-line);color:inherit;border-radius:10px;padding:12px 14px;font:inherit;font-size:.95rem;transition:border-color .2s,box-shadow .2s;}
+.lx-f input:focus,.lx-f select:focus,.lx-f textarea:focus{outline:none;border-color:var(--l-mint);box-shadow:0 0 0 3px var(--l-mint-dim);}
+.lx-f textarea{resize:vertical;min-height:130px;}
+.lx-f select option{background:#121A2E;color:#E8ECF6;}
+.lx-f .bad{border-color:var(--l-coral);}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;}
+.hint{font-size:.82rem;min-height:1.2em;}
+.hint.no{color:var(--l-coral);}.hint.ok{color:var(--l-mint);}
+
+.lx-det{border:1px solid var(--l-line);border-radius:12px;background:var(--l-bg);overflow:hidden;transition:border-color .2s;}
+.lx-det[open]{border-color:var(--l-mint);}
+.lx-det summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;font-size:.92rem;display:flex;justify-content:space-between;gap:12px;align-items:center;}
+.lx-det summary::-webkit-details-marker{display:none;}
+.lx-det summary::after{content:'+';font-family:var(--l-mono);color:var(--l-mint);font-size:1.2rem;transition:transform .25s;flex-shrink:0;}
+.lx-det[open] summary::after{transform:rotate(45deg);}
+.lx-det .body{padding:0 16px 16px;color:var(--l-mut);font-size:.9rem;animation:rise .3s ease both;}
+.stack{display:flex;flex-direction:column;gap:10px;}
+.toasts{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:999;width:min(92vw,340px);pointer-events:none;}
+.toast{pointer-events:auto;background:var(--ink-soft,#121A2E);color:var(--text,#E8ECF6);border:1px solid var(--line,#262E45);border-left:4px solid var(--mint,#2EE6A6);border-radius:12px;padding:12px 14px;font-size:.88rem;box-shadow:0 12px 32px rgba(0,0,0,.4);animation:rise .3s ease both;}
+@media (max-width:640px){.lx-card{padding:18px;}.toasts{left:14px;right:14px;width:auto;}}
+@media (prefers-reduced-motion:reduce){.lx *,.toast{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div class="dash-shell">
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav"></nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Support</h2>
+        <p class="mb-0" style="font-size:.88rem;">We are here 24/7. Pick the way that suits you.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="lx">
+      <section>
+        <div class="lx-h"><h2>How would you like to reach us?</h2><p>Chat with us on WhatsApp for a quick answer, or send an email if you want to include more detail.</p></div>
+        <div class="choose">
+          <article class="lx-card opt">
+            <div class="ico wa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.47-.149-.668.15-.198.297-.768.966-.941 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.074-.149-.668-1.611-.916-2.21-.242-.579-.487-.501-.668-.51-.173-.008-.372-.01-.57-.01s-.521.074-.794.372c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.118.554 4.087 1.513 5.778L0 24l6.57-1.529C8.943 23.443 10.94 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z" fill-opacity=".0"/></svg></div>
+            <div><h3>WhatsApp</h3><p>Fastest way to get help with loans, transfers or your account.</p></div>
+            <div class="acts"><a class="lx-btn wa" href="https://wa.link/qk4ju3" target="_blank" rel="noopener">Chat on WhatsApp</a></div>
+          </article>
+
+          <article class="lx-card opt" id="emailCard">
+            <div class="ico em"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg></div>
+            <div><h3>Email</h3><p>Best for detailed questions or documents.</p><p class="val" style="margin-top:6px;">vaultex71@gmail.com</p></div>
+            <div class="acts"><button class="lx-btn" id="emailOpen" type="button">Write an email</button><button class="lx-btn ghost" id="copyMail" type="button">Copy address</button></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="lx-card panel" id="mailPanel" hidden>
+        <h3>Send us an email</h3>
+        <p class="muted" style="font-size:.9rem;">This opens your email app with everything filled in. Just press send.</p>
+        <div class="row">
+          <div class="lx-f"><label for="topic">Topic</label>
+            <select id="topic"><option>Loan application</option><option>Bank transfer</option><option>Account verification (KYC)</option><option>Deposits and withdrawals</option><option>Something else</option></select></div>
+          <div class="lx-f"><label for="ref">Reference number (optional)</label><input id="ref" placeholder="e.g. VL123456 or TR123456" maxlength="20"></div>
+        </div>
+        <div class="lx-f"><label for="msg">Your message</label><textarea id="msg" maxlength="1500" placeholder="Tell us what happened and what you need help with"></textarea></div>
+        <div class="hint" id="mErr" role="alert"></div>
+        <button class="lx-btn block" id="mailGo" type="button">Open in my email app</button>
+      </section>
+
+      <section>
+        <div class="lx-h"><h2>Quick answers</h2></div>
+        <div class="stack">
+          <details class="lx-det"><summary>How long does a loan decision take?</summary><div class="body">Most pre-approvals take 24 to 72 hours. You will see the decision and a message from our team on your Loan page.</div></details>
+          <details class="lx-det"><summary>Why is my transfer pending?</summary><div class="body">Every transfer is reviewed before it is sent. The amount is deducted from your loan balance only after approval. If it is rejected, nothing is deducted and the message in your history explains what to do next.</div></details>
+          <details class="lx-det"><summary>Why was my transfer rejected?</summary><div class="body">The most common reasons are incorrect bank details or missing verification. Open Transfer, then Transaction history, and read the message on that transfer. Fix what it asks for and submit again.</div></details>
+          <details class="lx-det"><summary>Where can I see my balance changes?</summary><div class="body">Your Loan page shows account activity with every credit and transfer, and your Transfer page shows your balance and full transaction history.</div></details>
+        </div>
+      </section>
+
+      <p class="muted" style="font-size:.84rem;text-align:center;">Union Trust Building, 123 South Main St, Seattle, WA 98104, USA · +1 346 291 0829</p>
+    </div>
+  </main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="../assets/js/main.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const MAIL = 'support@swiftchain.site';
+  let who = { name: '', email: '' };
+
+  function toast(t) {
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = t;
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 3500);
+  }
+
+  $('#emailOpen').addEventListener('click', () => {
+    const p = $('#mailPanel'); p.hidden = !p.hidden;
+    $('#emailCard').classList.toggle('on', !p.hidden);
+    $('#emailOpen').textContent = p.hidden ? 'Write an email' : 'Hide email form';
+    if (!p.hidden) { p.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('#msg').focus({ preventScroll: true }), 400); }
+  });
+
+  $('#copyMail').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(MAIL); toast('Email address copied'); }
+    catch (e) { toast('Copy failed. The address is ' + MAIL); }
+  });
+
+  $('#msg').addEventListener('input', e => e.target.classList.remove('bad'));
+  $('#mailGo').addEventListener('click', () => {
+    const msg = $('#msg').value.trim(), err = $('#mErr');
+    if (msg.length < 10) { err.className = 'hint no'; err.textContent = 'Please write a few words about what you need help with.'; $('#msg').classList.add('bad'); $('#msg').focus(); return; }
+    const topic = $('#topic').value, ref = $('#ref').value.trim();
+    const subject = 'Vaultex support: ' + topic + (ref ? ' (' + ref + ')' : '');
+    const body = msg + '\n\n---\nName: ' + (who.name || '-') + '\nAccount email: ' + (who.email || '-') + (ref ? '\nReference: ' + ref : '');
+    err.className = 'hint ok'; err.textContent = 'Opening your email app…';
+    window.location.href = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  });
+
+  try {
+    const A = (typeof auth !== 'undefined' && auth) || firebase.auth();
+    A.onAuthStateChanged(u => { if (u) who = { name: u.displayName || '', email: u.email || '' }; });
+  } catch (e) { /* the form still works without account details */ }
+})();
+</script>
+</body>
+</html>

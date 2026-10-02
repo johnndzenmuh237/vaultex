@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Loans — Vaultex</title>
+<meta name="description" content="Vaultex Loan: crypto-backed loans, savings plans, live loan calculator and fast decisions.">
+<script>document.documentElement.classList.add('lx-js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/dashboard.css">
+<link rel="stylesheet" href="../assets/css/responsive.css">
+<style>
+/* =========================================================
+   LOAN CENTER — scoped to .lx so it never touches other pages.
+   Colour tokens fall back to the Vaultex palette if a variable
+   is missing, and follow the dark/light theme when present.
+   ========================================================= */
+.dash-main{min-width:0;overflow-x:clip;}
+.lx{
+  --l-bg:var(--ink-soft,#121A2E);--l-raise:var(--ink-raise,#1A2340);--l-line:var(--line,#262E45);
+  --l-mut:var(--muted,#8993AB);--l-mint:var(--mint,#2EE6A6);--l-gold:var(--gold,#F5B942);--l-coral:var(--coral,#FF6B6B);
+  --l-mint-dim:var(--mint-dim,rgba(46,230,166,.14));--l-gold-dim:var(--gold-dim,rgba(245,185,66,.14));--l-coral-dim:var(--coral-dim,rgba(255,107,107,.14));
+  --l-mono:var(--font-mono,'JetBrains Mono',ui-monospace,monospace);--l-head:'Space Grotesk','Inter',system-ui,sans-serif;
+  --l-r:var(--radius-md,16px);
+  color:var(--text,inherit);
+  display:flex;flex-direction:column;gap:30px;width:100%;max-width:1200px;margin:0 auto;min-width:0;padding-bottom:90px;
+}
+.lx *,.lx *::before,.lx *::after{box-sizing:border-box;}
+.lx h1,.lx h2,.lx h3,.lx h4{font-family:var(--l-head);margin:0;line-height:1.2;}
+.lx p{margin:0;line-height:1.65;}
+.lx a{color:inherit;}
+.lx .mono{font-family:var(--l-mono);}
+.lx .muted{color:var(--l-mut);}
+.lx img{max-width:100%;}
+[hidden]{display:none!important;}
+
+/* sections & cards */
+.lx-sec{scroll-margin-top:72px;min-width:0;}
+.lx-h{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;max-width:70ch;}
+.lx-h h2{font-size:clamp(1.3rem,2.6vw,1.75rem);}
+.lx-h p{color:var(--l-mut);font-size:.95rem;}
+.lx-card{background:var(--l-bg);border:1px solid var(--l-line);border-radius:var(--l-r);padding:24px;min-width:0;}
+.g2,.g3,.g4{display:grid;gap:18px;min-width:0;}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));}
+
+/* buttons */
+.lx-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;background:var(--l-mint);color:#03140F;font:600 .9rem 'Inter',system-ui,sans-serif;padding:11px 20px;border-radius:10px;cursor:pointer;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,opacity .18s;min-height:44px;}
+.lx-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(46,230,166,.28);}
+.lx-btn:active{transform:translateY(0);}
+.lx-btn.ghost{background:transparent;color:inherit;border-color:var(--l-line);}
+.lx-btn.ghost:hover{border-color:var(--l-mint);box-shadow:none;}
+.lx-btn.sm{padding:7px 14px;font-size:.8rem;min-height:36px;}
+.lx-btn.block{width:100%;}
+.lx-btn[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.lx-btn.glow{animation:lxGlow 2.4s ease-in-out infinite;}
+@keyframes lxGlow{0%,100%{box-shadow:0 0 0 rgba(46,230,166,0);}50%{box-shadow:0 0 22px rgba(46,230,166,.45);}}
+.lx :focus-visible{outline:2px solid var(--l-mint);outline-offset:2px;}
+
+/* forms */
+.lx-f{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.lx-f label{font-size:.8rem;font-weight:600;color:var(--l-mut);}
+.lx-f input,.lx-f select,.lx-f textarea{width:100%;min-width:0;background:var(--l-raise);border:1px solid var(--l-line);color:inherit;border-radius:10px;padding:12px 14px;font:inherit;font-size:.95rem;transition:border-color .2s,box-shadow .2s;}
+.lx-f input:focus,.lx-f select:focus,.lx-f textarea:focus{outline:none;border-color:var(--l-mint);box-shadow:0 0 0 3px var(--l-mint-dim);}
+.lx-f input[readonly]{opacity:.75;}
+.lx-f textarea{resize:vertical;min-height:100px;}
+.lx-f select option{background:#121A2E;color:#E8ECF6;}
+.lx-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;}
+.lx-chk{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--l-mut);line-height:1.5;}
+.lx-chk input{width:18px;height:18px;margin-top:2px;accent-color:var(--l-mint);flex-shrink:0;}
+.lx-chk a{color:var(--l-mint);}
+
+/* section nav */
+.lx-nav{position:sticky;top:8px;z-index:30;display:flex;gap:6px;overflow-x:auto;padding:8px;border:1px solid var(--l-line);border-radius:14px;background:var(--l-bg);scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.lx-nav::-webkit-scrollbar{display:none;}
+.lx-nav a{flex:0 0 auto;text-decoration:none;font-size:.82rem;font-weight:600;color:var(--l-mut);padding:8px 14px;border-radius:9px;transition:background .2s,color .2s;white-space:nowrap;}
+.lx-nav a:hover{color:inherit;}
+.lx-nav a.on{background:var(--l-mint-dim);color:var(--l-mint);}
+
+/* hero */
+.lx-hero{position:relative;overflow:hidden;border:1px solid var(--l-line);border-radius:calc(var(--l-r) + 4px);padding:clamp(22px,4vw,44px);display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:center;background:
+  radial-gradient(600px 300px at 0% 0%,rgba(46,230,166,.13),transparent 60%),
+  radial-gradient(500px 300px at 100% 100%,rgba(245,185,66,.10),transparent 60%),var(--l-bg);}
+.lx-hero h1{font-size:clamp(1.65rem,4.2vw,2.7rem);letter-spacing:-.02em;}
+.lx-hero p.lead{color:var(--l-mut);margin-top:14px;max-width:58ch;}
+.lx-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px;}
+.lx-help{margin-top:16px;font-size:.85rem;color:var(--l-mut);}
+.lx-help a{color:var(--l-mint);}
+.lx-float{position:absolute;pointer-events:none;font-family:var(--l-mono);font-weight:700;color:var(--l-mint);opacity:.16;animation:lxFloat 5s ease-in-out infinite;}
+.lx-float.a{top:14px;right:42%;font-size:2.2rem;}
+.lx-float.b{bottom:18px;left:46%;font-size:1.8rem;color:var(--l-gold);animation-delay:-1.6s;}
+.lx-float.c{top:46%;right:10px;font-size:2.6rem;animation-delay:-3s;}
+@keyframes lxFloat{0%,100%{transform:translateY(0) rotate(0);}50%{transform:translateY(-14px) rotate(6deg);}}
+.lx-hero-side{position:relative;z-index:1;background:var(--l-raise);border:1px solid var(--l-line);border-radius:var(--l-r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0;}
+.lx-hero-side .big{font-family:var(--l-mono);font-size:1.7rem;color:var(--l-mint);font-weight:700;}
+.lx-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lx-mini div{background:var(--l-bg);border:1px solid var(--l-line);border-radius:10px;padding:10px 12px;}
+.lx-mini span{display:block;font-size:.72rem;color:var(--l-mut);}
+.lx-mini b{font-family:var(--l-mono);color:var(--l-mint);}
+.lx-pill{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;padding:5px 12px;border-radius:999px;background:var(--l-mint-dim);color:var(--l-mint);width:fit-content;}
+.lx-pill i{width:7px;height:7px;border-radius:50%;background:var(--l-mint);animation:lxPulse 1.8s infinite;}
+@keyframes lxPulse{0%{box-shadow:0 0 0 0 rgba(46,230,166,.6);}100%{box-shadow:0 0 0 9px rgba(46,230,166,0);}}
+
+/* account strip */
+.lx-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;}
+.lx-stat{background:var(--l-bg);border:1px solid var(--l-line);border-radius:var(--l-r);padding:18px;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.lx-stat .k{font-size:.78rem;color:var(--l-mut);}
+.lx-stat b{font-size:1.45rem;font-family:var(--l-mono);overflow-wrap:anywhere;}
+.lx-stat small{font-size:.72rem;color:var(--l-mut);}
+.lx-stat.main b{color:var(--l-mint);}
+
+/* notice */
+.lx-note{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between;border:1px solid var(--l-gold);background:var(--l-gold-dim);border-radius:var(--l-r);padding:16px 20px;}
+.lx-note p{flex:1 1 280px;font-size:.9rem;}
+
+/* steps */
+.lx-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--l-line);}
+.lx-step:last-child{border-bottom:none;}
+.lx-step .num{width:34px;height:34px;border-radius:50%;background:var(--l-raise);display:flex;align-items:center;justify-content:center;font-family:var(--l-mono);font-size:.85rem;flex-shrink:0;transition:background .3s,color .3s;}
+.lx-step:hover .num{background:var(--l-mint);color:#03140F;}
+.lx-step h3{font-size:1.02rem;margin-bottom:4px;}
+.lx-step p{color:var(--l-mut);font-size:.9rem;}
+.lx-list{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:8px;}
+.lx-list li{position:relative;padding-left:22px;font-size:.9rem;color:var(--l-mut);line-height:1.5;}
+.lx-list li::before{content:'';position:absolute;left:2px;top:.55em;width:8px;height:8px;border-radius:2px;background:var(--l-mint);transform:rotate(45deg);}
+
+/* loan types */
+.lx-type{display:flex;flex-direction:column;gap:10px;transition:transform .25s,border-color .25s;}
+.lx-type:hover{transform:translateY(-4px);border-color:var(--l-mint);}
+.lx-type .apr{font-family:var(--l-mono);color:var(--l-mint);font-weight:700;font-size:.92rem;}
+.lx-type .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px;}
+.lx-req{border:1px solid var(--l-mint);animation:lxIn .35s ease;margin-top:18px;}
+@keyframes lxIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.lx-req-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+.coin{display:flex;gap:12px;align-items:center;}
+.coin img{width:44px;height:44px;object-fit:contain;border-radius:50%;background:var(--l-raise);padding:6px;flex-shrink:0;}
+
+/* calculator */
+.lx-big{font-family:var(--l-mono);font-size:clamp(1.8rem,5vw,2.4rem);font-weight:700;color:var(--l-mint);}
+.lx-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--l-line);border-radius:10px;}
+.lx-tbl{width:100%;border-collapse:collapse;font-size:.82rem;min-width:420px;}
+.lx-tbl th{text-align:left;color:var(--l-mut);font-weight:600;padding:9px 12px;border-bottom:1px solid var(--l-line);}
+.lx-tbl td{padding:9px 12px;border-bottom:1px solid var(--l-line);font-family:var(--l-mono);}
+.lx-tbl tr:last-child td{border-bottom:none;}
+.lx-sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+.lx-sum div{display:flex;justify-content:space-between;gap:10px;font-size:.85rem;padding:10px 12px;background:var(--l-raise);border-radius:10px;}
+.lx-sum span{color:var(--l-mut);}
+.lx-sum b{font-family:var(--l-mono);}
+.lx-qs{margin-top:16px;border:1px dashed var(--l-line);border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.lx-qs b{display:block;}
+.lx-qs small{color:var(--l-mut);}
+.lx-coll{font-size:.82rem;padding:10px 12px;border-radius:10px;background:var(--l-raise);color:var(--l-mut);}
+.lx-coll.ok{color:var(--l-mint);background:var(--l-mint-dim);}
+.lx-coll.low{color:var(--l-gold);background:var(--l-gold-dim);}
+
+/* status */
+.st{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.02em;white-space:nowrap;}
+.st::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.st.pending{background:var(--l-gold-dim);color:var(--l-gold);}
+.st.pending::before{animation:lxPulse 1.6s infinite;}
+.st.approved{background:var(--l-mint-dim);color:var(--l-mint);}
+.st.declined{background:var(--l-coral-dim);color:var(--l-coral);}
+
+/* my loans */
+.lx-loan{display:flex;flex-direction:column;gap:14px;animation:lxIn .45s ease both;}
+.lx-loan-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;}
+.lx-loan .amt{font-family:var(--l-mono);font-size:1.6rem;font-weight:700;overflow-wrap:anywhere;}
+.lx-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;}
+.lx-meta div{background:var(--l-raise);border-radius:10px;padding:9px 11px;min-width:0;}
+.lx-meta span{display:block;font-size:.7rem;color:var(--l-mut);}
+.lx-meta b{font-size:.85rem;font-family:var(--l-mono);overflow-wrap:anywhere;}
+.lx-tl{display:flex;align-items:center;gap:0;font-size:.72rem;color:var(--l-mut);}
+.lx-tl .p{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;text-align:center;}
+.lx-tl .p i{width:14px;height:14px;border-radius:50%;background:var(--l-raise);border:2px solid var(--l-line);transition:all .4s;}
+.lx-tl .p.done i{background:var(--l-mint);border-color:var(--l-mint);}
+.lx-tl .p.act i{border-color:var(--l-gold);animation:lxPulse 1.6s infinite;}
+.lx-tl .p.no i{background:var(--l-coral);border-color:var(--l-coral);}
+.lx-tl .bar{flex:1;height:2px;background:var(--l-line);margin:0 6px 18px;min-width:16px;}
+.lx-tl .bar.done{background:var(--l-mint);}
+.lx-msg{border-radius:12px;padding:14px 16px;border-left:3px solid var(--l-line);background:var(--l-raise);}
+.lx-msg.approved{border-color:var(--l-mint);}
+.lx-msg.declined{border-color:var(--l-coral);}
+.lx-msg b{font-size:.78rem;display:block;margin-bottom:4px;}
+.lx-msg p{font-size:.92rem;overflow-wrap:anywhere;}
+.lx-msg small{display:block;margin-top:8px;color:var(--l-mut);font-size:.72rem;}
+.lx-empty{text-align:center;padding:44px 20px;color:var(--l-mut);border:1px dashed var(--l-line);border-radius:var(--l-r);}
+.lx-empty .ico{font-size:2.2rem;margin-bottom:10px;color:var(--l-mint);}
+.lx-led{display:flex;flex-direction:column;}
+.lx-led div{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--l-line);font-size:.88rem;}
+.lx-led div:last-child{border-bottom:none;}
+.lx-led b{font-family:var(--l-mono);color:var(--l-mint);white-space:nowrap;}
+.lx-led small{display:block;color:var(--l-mut);font-size:.74rem;}
+.lx-bump{animation:lxBump .8s ease;}
+@keyframes lxBump{0%{transform:scale(1);}30%{transform:scale(1.12);color:var(--l-mint);}100%{transform:scale(1);}}
+
+/* terms / faq */
+.lx-det{border:1px solid var(--l-line);border-radius:12px;background:var(--l-bg);overflow:hidden;transition:border-color .2s;}
+.lx-det[open]{border-color:var(--l-mint);}
+.lx-det summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:600;font-size:.92rem;display:flex;justify-content:space-between;gap:12px;align-items:center;}
+.lx-det summary::-webkit-details-marker{display:none;}
+.lx-det summary::after{content:'+';font-family:var(--l-mono);color:var(--l-mint);font-size:1.2rem;transition:transform .25s;flex-shrink:0;}
+.lx-det[open] summary::after{transform:rotate(45deg);}
+.lx-det .body{padding:0 16px 16px;color:var(--l-mut);font-size:.9rem;display:flex;flex-direction:column;gap:10px;animation:lxIn .3s ease;}
+.lx-det .body strong{color:inherit;}
+.lx-stack{display:flex;flex-direction:column;gap:10px;}
+
+/* plans */
+.lx-plan{display:flex;flex-direction:column;gap:12px;transition:transform .25s,border-color .25s;}
+.lx-plan:hover{transform:translateY(-4px);border-color:var(--l-gold);}
+.lx-plan .rate{font-family:var(--l-mono);font-size:1.5rem;color:var(--l-gold);font-weight:700;}
+.lx-plan.hot{border-color:var(--l-mint);}
+
+/* market */
+.lx-tv{height:480px;border-radius:12px;overflow:hidden;background:var(--l-raise);display:flex;align-items:center;justify-content:center;color:var(--l-mut);}
+
+/* stats */
+.lx-num{font-family:var(--l-mono);font-size:clamp(1.5rem,3.4vw,2rem);font-weight:700;color:var(--l-mint);overflow-wrap:anywhere;}
+.lx-num.gold{color:var(--l-gold);}
+.lx-numc{text-align:center;display:flex;flex-direction:column;gap:6px;}
+.lx-numc span{color:var(--l-mut);font-size:.85rem;}
+
+/* features with images */
+.lx-feat{padding:0;overflow:hidden;display:flex;flex-direction:column;}
+.lx-feat img{width:100%;height:190px;object-fit:cover;display:block;background:var(--l-raise);}
+.lx-feat .in{padding:22px;display:flex;flex-direction:column;gap:12px;flex:1;}
+.lx-feat.a{border-top:3px solid var(--l-mint);}
+.lx-feat.b{border-top:3px solid #A78BFA;}
+.lx-feat.c{border-top:3px solid var(--l-gold);}
+.lx-feat p{color:var(--l-mut);font-size:.9rem;}
+.lx-feat .lx-btn{margin-top:auto;width:fit-content;}
+
+/* testimonials */
+.lx-tw{overflow:hidden;border-radius:var(--l-r);}
+.lx-track{display:flex;transition:transform .6s cubic-bezier(.3,.7,.2,1);will-change:transform;}
+.lx-slide{flex:0 0 100%;padding:0 8px;min-width:0;}
+.lx-q{height:100%;display:flex;flex-direction:column;gap:12px;}
+.lx-q .who{display:flex;gap:12px;align-items:center;}
+.lx-av{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--l-raise);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--l-mint);flex-shrink:0;border:2px solid var(--l-mint);}
+.lx-q small{color:var(--l-mut);display:block;}
+.lx-q .stars{color:var(--l-gold);letter-spacing:2px;font-size:.9rem;}
+.lx-q p{font-size:.92rem;color:var(--l-mut);}
+.lx-dots{display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.lx-dots button{width:10px;height:10px;padding:0;border-radius:50%;border:none;background:var(--l-line);cursor:pointer;transition:all .3s;}
+.lx-dots button.on{background:var(--l-mint);width:26px;border-radius:6px;}
+
+/* contact / footer */
+.lx-foot{text-align:center;color:var(--l-mut);font-size:.82rem;display:flex;flex-direction:column;gap:6px;padding-top:10px;}
+.lx-wa{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:54px;height:54px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:90;transition:transform .2s;}
+.lx-wa:hover{transform:scale(1.08);}
+.lx-wa svg{width:28px;height:28px;fill:#fff;}
+
+/* toasts */
+.lx-toasts{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:999;display:flex;flex-direction:column;gap:10px;width:min(92vw,360px);pointer-events:none;}
+.lx-toast{pointer-events:auto;background:var(--ink-soft,#121A2E);border:1px solid var(--line,#262E45);border-left:4px solid var(--mint,#2EE6A6);border-radius:12px;padding:12px 14px;font-size:.88rem;box-shadow:0 12px 32px rgba(0,0,0,.4);animation:lxToast .4s ease both;}
+.lx-toast.bad{border-left-color:var(--coral,#FF6B6B);}
+.lx-toast b{display:block;margin-bottom:2px;}
+@keyframes lxToast{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:none;}}
+
+/* scroll reveal: one soft entrance, only when JS is on */
+.lx-js .rv{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+.lx-js .rv.in{opacity:1;transform:none;}
+
+.spin{width:16px;height:16px;border:2px solid rgba(3,20,15,.3);border-top-color:#03140F;border-radius:50%;animation:lxSpin .7s linear infinite;display:inline-block;}
+@keyframes lxSpin{to{transform:rotate(360deg);}}
+
+@media (max-width:900px){
+  .lx-hero{grid-template-columns:minmax(0,1fr);}
+  .lx-float.a{right:12%;}
+}
+@media (max-width:640px){
+  .lx{gap:24px;}
+  .lx-card{padding:18px;}
+  .lx-sum{grid-template-columns:1fr;}
+  .lx-tv{height:380px;}
+  .lx-cta .lx-btn{flex:1 1 100%;}
+  .lx-toasts{left:14px;right:14px;width:auto;}
+}
+@media (prefers-reduced-motion:reduce){
+  .lx *,.lx *::before,.lx *::after{animation:none!important;transition:none!important;}
+  .lx-js .rv{opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="dash-shell">
+
+  <aside class="dash-sidebar">
+    <a href="../index.html" class="nav-logo"><span class="mark">V</span><span>Vaultex</span></a>
+    <nav class="dash-nav">
+      <!-- populated by dashboard.js -->
+    </nav>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div>
+        <button class="sidebar-burger" data-sidebar-toggle aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h2 class="mb-0" style="font-size:1.5rem;">Loan Center</h2>
+        <p class="mb-0" style="font-size:.88rem;">Apply, calculate, and track every decision in one place.</p>
+      </div>
+      <div class="flex" style="gap:14px;">
+        <button class="theme-toggle" aria-label="Toggle theme">☾</button>
+        <button class="btn btn-ghost btn-sm" data-logout>Log out</button>
+      </div>
+    </div>
+
+    <div class="lx" id="lx">
+
+      <!-- section navigation -->
+      <nav class="lx-nav" id="lxNav" aria-label="Loan sections">
+        <a href="#overview" class="on">Overview</a>
+        <a href="#how">How it works</a>
+        <a href="#types">Loan types</a>
+        <a href="#calculator">Calculator</a>
+        <a href="#apply">Apply</a>
+        <a href="#myloans">My loans</a>
+        <a href="#terms">Terms</a>
+        <a href="#plans">Savings plans</a>
+        <a href="#market">Market</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <!-- HERO -->
+      <section class="lx-sec" id="overview">
+        <div class="lx-hero">
+          <span class="lx-float a">₿</span><span class="lx-float b">Ξ</span><span class="lx-float c">$</span>
+          <div style="position:relative;z-index:1;min-width:0;">
+            <span class="lx-pill"><i></i>Trusted · Quick decisions</span>
+            <h1 style="margin-top:14px;">Smart crypto loans and automated wealth growth</h1>
+            <p class="lead">Borrow instantly against your crypto assets, save with us and earn passive income through AI-powered trading, and build long-term wealth with staking and liquidity pools. Get fast and secure loans with low interest rates, calculate repayments live and apply in minutes.</p>
+            <div class="lx-cta">
+              <a href="#apply" class="lx-btn glow">Apply now</a>
+              <a href="#plans" class="lx-btn ghost">Savings plans</a>
+            </div>
+            <p class="lx-help">Need help? Contact <a href="mailto:support@swiftchain.site">support@swiftchain.site</a></p>
+          </div>
+          <div class="lx-hero-side">
+            <div>
+              <div class="muted" style="font-size:.76rem;">Quick stats</div>
+              <div class="big">24h decision · avg</div>
+              <div class="muted" style="font-size:.85rem;margin-top:6px;">Applications processed: <b class="mono" data-count="798">798</b></div>
+            </div>
+            <div class="lx-mini">
+              <div><span>Avg APR</span><b data-count="8.9" data-dec="1" data-suf="%">8.9%</b></div>
+              <div><span>Max term</span><b>10 years</b></div>
+              <div><span>Collateral</span><b>10%</b></div>
+              <div><span>Credit checks</span><b>None</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACCOUNT STRIP -->
+      <section class="lx-strip rv" id="account" aria-label="Your loan account">
+        <div class="lx-stat main"><span class="k">Wallet balance</span><b id="accBal">$0.00</b><small>USD · includes credits from Vaultex</small></div>
+        <div class="lx-stat"><span class="k">Applications</span><b id="accApps">0</b><small>All time</small></div>
+        <div class="lx-stat"><span class="k">Under review</span><b id="accPend">0</b><small>Waiting for a decision</small></div>
+        <div class="lx-stat"><span class="k">Approved total</span><b id="accAppr">$0.00</b><small>USD</small></div>
+      </section>
+
+      <!-- TERMS NOTICE -->
+      <div class="lx-note rv">
+        <p>Before proceeding, please <strong>read and understand our full Loan Terms &amp; Conditions</strong>. This includes repayment rules, interest rates, approval requirements, and collateral instructions.</p>
+        <a href="#terms" class="lx-btn sm">Read loan terms</a>
+      </div>
+
+      <!-- HOW IT WORKS -->
+      <section class="lx-sec rv" id="how">
+        <div class="lx-h">
+          <h2>How Vaultex loans work</h2>
+          <p>The Vaultex loan system gives you a smarter, more flexible way to unlock liquidity from your crypto assets. No paperwork, no credit checks and no long waiting periods: use your digital portfolio to access quick, secure and transparent funding.</p>
+        </div>
+        <div class="g2">
+          <div class="lx-card">
+            <div class="lx-step"><div class="num">1</div><div><h3>Create an account and verify your profile</h3><p>Start by signing up on the Vaultex platform. The process is simple and fast. Once your account is created, you gain access to savings, staking tools, and loan options.</p></div></div>
+            <div class="lx-step"><div class="num">2</div><div><h3>Save through staking and asset holding</h3><p>To qualify for a loan, begin by staking or holding crypto assets in your Vaultex wallet. This strengthens your financial profile, offers potential staking rewards, and secures your position for future loan eligibility.</p>
+              <ul class="lx-list"><li>Potential growth through staking</li><li>Strengthens your platform credibility</li><li>Helps expand your portfolio without losing ownership</li></ul></div></div>
+            <div class="lx-step"><div class="num">3</div><div><h3>Hold 10% of your loan amount as collateral</h3><p>To apply for a loan, maintain crypto assets worth at least 10% of the loan value. This low-collateral model gives you several advantages:</p>
+              <ul class="lx-list"><li>No credit checks</li><li>No bank involvement</li><li>Lower collateral than traditional lenders</li><li>Faster approvals and automated processing</li><li>Flexible repayment terms</li></ul></div></div>
+            <div class="lx-step"><div class="num">4</div><div><h3>Apply for your loan: fast automated approval</h3><p>Once your assets meet the requirement, submit your loan request. The system verifies your collateral and processes your application quickly, with transparency and security at every step.</p></div></div>
+            <div class="lx-step"><div class="num">5</div><div><h3>Access funds while your crypto keeps working</h3><p>Your crypto continues generating potential rewards even while it acts as collateral, so you can borrow without losing ownership of your digital assets.</p></div></div>
+          </div>
+          <div class="lx-card" style="align-self:start;">
+            <h3 style="margin-bottom:6px;">Why users prefer Vaultex loans</h3>
+            <ul class="lx-list">
+              <li>No paperwork or long approval times</li>
+              <li>Keep full ownership of your crypto</li>
+              <li>Blockchain-secured automated system</li>
+              <li>Only 10% collateral needed</li>
+              <li>User-friendly dashboard and loan tracking</li>
+              <li>Flexible repayment options</li>
+            </ul>
+            <div style="margin-top:20px;"><a href="#apply" class="lx-btn">Apply now</a></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WHY TRUST -->
+      <section class="lx-sec rv">
+        <div class="lx-h"><h2>Why thousands trust Vaultex Loan</h2></div>
+        <div class="g3">
+          <div class="lx-card coin"><img src="https://cryptologos.cc/logos/ethereum-eth-logo.png" alt="" loading="lazy" onerror="this.style.display='none'"><div><h3 style="font-size:1.05rem;">Crypto-backed security</h3><p class="muted" style="font-size:.9rem;margin-top:4px;">Your assets stay locked safely until repayment.</p></div></div>
+          <div class="lx-card coin"><img src="https://cryptologos.cc/logos/tether-usdt-logo.png" alt="" loading="lazy" onerror="this.style.display='none'"><div><h3 style="font-size:1.05rem;">Instant approvals</h3><p class="muted" style="font-size:.9rem;margin-top:4px;">Verification is automated and fast.</p></div></div>
+          <div class="lx-card coin"><img src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png" alt="" loading="lazy" onerror="this.style.display='none'"><div><h3 style="font-size:1.05rem;">Daily earnings</h3><p class="muted" style="font-size:.9rem;margin-top:4px;">Enjoy staking, arbitrage and liquidity pool rewards.</p></div></div>
+        </div>
+      </section>
+
+      <!-- LOAN TYPES -->
+      <section class="lx-sec rv" id="types">
+        <div class="lx-h">
+          <h2>Loan types</h2>
+          <p>We offer flexible loan products for different needs. Select one to use it in the calculator and the application form.</p>
+        </div>
+        <div class="g4">
+          <article class="lx-card lx-type">
+            <div><h3>Personal loan</h3><div class="muted" style="font-size:.8rem;">Unsecured, up to 5 years</div></div>
+            <div class="apr">7.5% – 14% APR</div>
+            <p class="muted" style="font-size:.9rem;">For household expenses, consolidation, small projects.</p>
+            <div class="acts"><button class="lx-btn sm" data-select="Personal Loan">Select</button><button class="lx-btn sm ghost" data-req="personal">Requirements</button></div>
+          </article>
+          <article class="lx-card lx-type">
+            <div><h3>Business loan</h3><div class="muted" style="font-size:.8rem;">Working capital &amp; equipment</div></div>
+            <div class="apr">6% – 12% APR</div>
+            <p class="muted" style="font-size:.9rem;">Growth capital for SMEs, terms up to 10 years.</p>
+            <div class="acts"><button class="lx-btn sm" data-select="Business Loan">Select</button><button class="lx-btn sm ghost" data-req="business">Requirements</button></div>
+          </article>
+          <article class="lx-card lx-type">
+            <div><h3>Mortgage</h3><div class="muted" style="font-size:.8rem;">Home purchase &amp; refinance</div></div>
+            <div class="apr">3.2% – 6.5% APR</div>
+            <p class="muted" style="font-size:.9rem;">30-year, 15-year or adjustable rate mortgages.</p>
+            <div class="acts"><button class="lx-btn sm" data-select="Mortgage">Select</button><button class="lx-btn sm ghost" data-req="mortgage">Requirements</button></div>
+          </article>
+          <article class="lx-card lx-type">
+            <div><h3>Auto loan</h3><div class="muted" style="font-size:.8rem;">New &amp; used vehicles</div></div>
+            <div class="apr">4.0% – 9.5% APR</div>
+            <p class="muted" style="font-size:.9rem;">Financing for new and used vehicles, terms up to 7 years.</p>
+            <div class="acts"><button class="lx-btn sm" data-select="Auto Loan">Select</button><button class="lx-btn sm ghost" data-req="auto">Requirements</button></div>
+          </article>
+        </div>
+        <div id="reqArea" aria-live="polite"></div>
+
+        <div class="lx-h" style="margin-top:34px;">
+          <h2>Crypto loan services</h2>
+          <p>Fast, secure, and credit-check free crypto-backed loans.</p>
+        </div>
+        <div class="g3">
+          <div class="lx-card"><h3>BTC-backed loan</h3><p class="muted" style="font-size:.9rem;margin-top:6px;">Borrow using Bitcoin instantly.</p></div>
+          <div class="lx-card"><h3>ETH-backed loan</h3><p class="muted" style="font-size:.9rem;margin-top:6px;">Unlock liquidity with Ethereum.</p></div>
+          <div class="lx-card"><h3>USDT loan</h3><p class="muted" style="font-size:.9rem;margin-top:6px;">Perfect for stable financing.</p></div>
+        </div>
+      </section>
+
+      <!-- CALCULATOR -->
+      <section class="lx-sec rv" id="calculator">
+        <div class="lx-h">
+          <h2>Loan calculator</h2>
+          <p>Choose a loan type and amount. The rate and duration options update to match, and results change live.</p>
+        </div>
+        <div class="g2">
+          <div class="lx-card" style="display:flex;flex-direction:column;gap:14px;">
+            <div class="lx-f"><label for="calcType">Loan type</label>
+              <select id="calcType"><option>Personal Loan</option><option>Business Loan</option><option>Mortgage</option><option>Auto Loan</option></select></div>
+            <div class="lx-f"><label for="calcAmount">Loan amount (USD)</label><input id="calcAmount" type="number" inputmode="decimal" value="10000" min="0" step="100"></div>
+            <div class="lx-row">
+              <div class="lx-f"><label for="calcRate">Interest rate (annual %)</label><input id="calcRate" type="number" inputmode="decimal" step="0.01" value="10"></div>
+              <div class="lx-f"><label for="calcTerm">Duration (months)</label><select id="calcTerm"></select></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button type="button" id="calcBtn" class="lx-btn">Calculate</button>
+              <button type="button" id="amortToggle" class="lx-btn ghost">Show amortization</button>
+            </div>
+          </div>
+
+          <div class="lx-card" style="min-width:0;">
+            <div class="muted" style="font-size:.78rem;">Monthly payment</div>
+            <div class="lx-big" id="monthlyPayment">$0.00</div>
+            <p class="muted" style="font-size:.88rem;margin-top:6px;">Total paid: <b class="mono" id="totalPaid">$0.00</b> · Total interest: <b class="mono" id="totalInterest">$0.00</b></p>
+
+            <div id="amortization" hidden style="margin-top:16px;">
+              <div class="muted" style="font-size:.8rem;margin-bottom:8px;" id="amortNote">Amortization schedule (first 12 rows shown)</div>
+              <div class="lx-tbl-wrap"><table class="lx-tbl"><thead><tr><th>#</th><th>Payment</th><th>Principal</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="amortBody"></tbody></table></div>
+            </div>
+
+            <div class="lx-qs">
+              <div><small>Quick loan summary</small><b id="qsType">—</b><small id="qsDetails">—</small></div>
+              <button type="button" class="lx-btn sm" id="qsApply">Apply</button>
+            </div>
+
+            <div class="lx-sum" id="loanStats">
+              <div><span>Available pool</span><b data-count="14342600" data-pre="$">$14,342,600</b></div>
+              <div><span>Total loaned</span><b data-count="3468564" data-pre="$">$3,468,564</b></div>
+              <div><span>Total paid</span><b data-count="1753700" data-pre="$">$1,753,700</b></div>
+              <div><span>Applications in process</span><b data-count="79">79</b></div>
+            </div>
+            <a href="#contact" class="lx-btn ghost block" style="margin-top:14px;">Connect wallet</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- APPLY -->
+      <section class="lx-sec rv" id="apply">
+        <div class="lx-h">
+          <h2>Apply for a loan</h2>
+          <p>Fill in the required fields and submit. The interest rate is filled in automatically, and your application reaches our review team straight away.</p>
+        </div>
+        <div class="g2">
+          <form id="loanForm" class="lx-card" style="display:flex;flex-direction:column;gap:14px;" autocomplete="off" novalidate>
+            <div class="lx-row">
+              <div class="lx-f"><label for="appFullName">Full name *</label><input id="appFullName" required placeholder="Your full name"></div>
+              <div class="lx-f"><label for="appEmail">Email *</label><input id="appEmail" type="email" required placeholder="you@email.com"></div>
+            </div>
+            <div class="lx-row">
+              <div class="lx-f"><label for="appLoanType">Loan type</label><select id="appLoanType"><option>Personal Loan</option><option>Business Loan</option><option>Mortgage</option><option>Auto Loan</option></select></div>
+              <div class="lx-f"><label for="appAmount">Amount (USD) *</label><input id="appAmount" type="number" inputmode="decimal" min="0" required placeholder="10000"></div>
+            </div>
+            <div class="lx-row">
+              <div class="lx-f"><label for="appIncome">Monthly income (USD)</label><input id="appIncome" type="number" inputmode="decimal" min="0" placeholder="Optional"></div>
+              <div class="lx-f"><label for="appTerm">Duration</label><select id="appTerm"></select></div>
+            </div>
+            <div class="lx-row">
+              <div class="lx-f"><label for="appRate">Interest rate (%)</label><input id="appRate" readonly value="10"></div>
+              <div class="lx-f"><label for="appCollateral">Collateral (10%)</label><input id="appCollateral" readonly placeholder="Calculated from amount"></div>
+            </div>
+            <div class="lx-coll" id="collCheck">Enter an amount to see your collateral requirement.</div>
+            <div class="lx-f"><label for="appDetails">Purpose &amp; details</label><textarea id="appDetails" rows="4" maxlength="1000" placeholder="Describe your purpose"></textarea></div>
+            <label class="lx-chk"><input id="agreeTerms" type="checkbox"><span>I agree to the <a href="#terms">Terms &amp; Conditions</a>.</span></label>
+            <button id="submitApp" type="submit" class="lx-btn block">Submit application</button>
+            <div id="appStatus" style="font-size:.9rem;min-height:1.2em;" role="status"></div>
+          </form>
+
+          <div class="lx-card" style="align-self:start;display:flex;flex-direction:column;gap:14px;">
+            <h3>What happens next</h3>
+            <div class="lx-step" style="padding-top:0;"><div class="num">1</div><div><h3 style="font-size:.95rem;">Submitted</h3><p>You receive a reference number and the application appears in <a href="#myloans" style="color:var(--l-mint)">My loans</a>.</p></div></div>
+            <div class="lx-step"><div class="num">2</div><div><h3 style="font-size:.95rem;">Under review</h3><p>Our team checks your details and collateral. Most pre-approvals take 24–72 hours.</p></div></div>
+            <div class="lx-step"><div class="num">3</div><div><h3 style="font-size:.95rem;">Decision and message</h3><p>You see the decision, together with a personal message from our team, right on your loan page.</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MY LOANS -->
+      <section class="lx-sec rv" id="myloans">
+        <div class="lx-h">
+          <h2>My loans</h2>
+          <p>Every application you submit appears here with its status and any message from our team. Updates arrive live.</p>
+        </div>
+        <div class="g2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));align-items:start;">
+          <div id="loanList" class="lx-stack" style="grid-column:1/-1;"></div>
+        </div>
+        <div class="lx-card" style="margin-top:18px;">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;">
+            <h3>Account activity</h3><span class="muted" style="font-size:.82rem;">USD · credits and transfers</span>
+          </div>
+          <div class="lx-led" id="ledger" style="margin-top:8px;"><p class="muted" style="font-size:.9rem;padding:14px 0;">No credits yet. When funds are added to your account they will show here.</p></div>
+        </div>
+      </section>
+
+      <!-- TERMS -->
+      <section class="lx-sec rv" id="terms">
+        <div class="lx-h">
+          <h2>Loan terms &amp; conditions</h2>
+          <p><strong>Overview:</strong> Loan applications are subject to verification, approval, and regulatory compliance. Borrowers must provide accurate information and meet eligibility requirements.</p>
+        </div>
+        <div class="lx-stack">
+          <details class="lx-det"><summary>Loan agreement</summary><div class="body">By submitting a loan application, the borrower confirms that all provided information is accurate and may be verified. All approved loans must be repaid under the terms outlined in the agreement.</div></details>
+          <details class="lx-det"><summary>Repayment terms</summary><div class="body">Borrower agrees to repay the full principal amount plus applicable interest and service fees within the specified repayment schedule. Late or missed payments may result in penalties.</div></details>
+          <details class="lx-det"><summary>Interest &amp; fees</summary><div class="body">Interest rates vary based on loan product, duration, and borrower qualification. Late fees or processing charges may apply for overdue installments or failed debits.</div></details>
+          <details class="lx-det"><summary>Default &amp; recovery</summary><div class="body">Defaulting may lead to collection procedures, legal action, account restrictions, or reporting to financial authorities. Recovery steps follow the obligations stated in the agreement.</div></details>
+          <details class="lx-det"><summary>Privacy &amp; data protection</summary><div class="body">Personal and financial information is used exclusively for loan evaluation, verification, and regulatory compliance. Data is handled securely, following KYC/AML standards.</div></details>
+          <details class="lx-det"><summary>Approval conditions</summary><div class="body">Loan approval is not guaranteed. Additional identification, income verification, or documentation may be required before loan funds are disbursed.</div></details>
+          <details class="lx-det"><summary>Collateral confirmation</summary><div class="body">
+            <p>To ensure responsible lending and guarantee repayment security, Vaultex requires a refundable <strong>security deposit</strong> to be locked inside your account for the duration of the loan. This collateral remains fully yours and is <strong>never used or deducted</strong> unless repayment is not completed.</p>
+            <p>The collateral amount is a small percentage of the approved loan and is held only as a protection measure. Your deposit stays secured in your account and becomes <strong>automatically unlocked on your due payment day</strong> once full repayment is confirmed.</p>
+            <p>Borrowers may be required to upload verification documents such as ID and income proof. These help maintain transparency, security, and regulatory compliance throughout the loan process.</p>
+            <p>Providing collateral increases approval chances, reduces lender risk, and allows access to larger loan limits.</p>
+          </div></details>
+        </div>
+        <div class="lx-card" style="margin-top:16px;display:flex;flex-direction:column;gap:14px;">
+          <p class="muted" style="font-size:.82rem;">This summary highlights key terms. The full agreement will be provided upon issuance of a loan offer.</p>
+          <label class="lx-chk"><input id="agreeLoanTerms" type="checkbox"><span>I have read and agree to all Loan Terms &amp; Conditions, including Collateral Confirmation.</span></label>
+          <div><button id="proceedLoanBtn" class="lx-btn" disabled>Proceed to apply</button></div>
+        </div>
+      </section>
+
+      <!-- SAVINGS PLANS -->
+      <section class="lx-sec rv" id="plans">
+        <div class="lx-h">
+          <h2>Savings &amp; income</h2>
+          <p>Our automated trading engine analyzes over 370 market indicators, aiming for stable daily profit.</p>
+        </div>
+        <div class="g3">
+          <div class="lx-card lx-plan"><h3>Basic</h3><p class="muted" style="font-size:.9rem;">Begin your journey with predictable rewards.</p><div class="rate">2% – 3% daily</div><ul class="lx-list"><li>Profit: 2% – 3% daily</li><li>Duration: 7 days</li></ul><a href="staking.html" class="lx-btn ghost block" style="margin-top:auto;">Get started</a></div>
+          <div class="lx-card lx-plan hot"><h3>Premium</h3><p class="muted" style="font-size:.9rem;">Best for long-term consistent earnings.</p><div class="rate">4% – 6% daily</div><ul class="lx-list"><li>Profit: 4% – 6% daily</li><li>Duration: 14 days</li></ul><a href="staking.html" class="lx-btn block" style="margin-top:auto;">Get started</a></div>
+          <div class="lx-card lx-plan"><h3>Pro / Elite</h3><p class="muted" style="font-size:.9rem;">Built for high-volume investors.</p><div class="rate">8% – 12% daily</div><ul class="lx-list"><li>Profit: 8% – 12% daily</li><li>Duration: 30 days</li></ul><a href="staking.html" class="lx-btn ghost block" style="margin-top:auto;">Get started</a></div>
+        </div>
+      </section>
+
+      <!-- MARKET -->
+      <section class="lx-sec rv" id="market">
+        <div class="lx-h">
+          <h2>Our live trading crypto market</h2>
+          <p>Unlock your financial potential. Save and trade with confidence, leveraging your savings, stocks, and stakes as collateral to apply for a loan and generate daily income. Our platform offers instant loan approvals, empowering you to seize new opportunities and grow your wealth.</p>
+        </div>
+        <div class="lx-card" style="padding:12px;"><div id="tvBox" class="lx-tv"><span>Live chart loads as you scroll here…</span></div></div>
+
+        <div class="lx-card" style="margin-top:18px;">
+          <h3 style="margin-bottom:10px;">How Vaultex generates profits</h3>
+          <ul class="lx-list">
+            <li>High-frequency crypto trading executed by AI</li>
+            <li>Cross-exchange arbitrage strategies</li>
+            <li>Blockchain staking &amp; validator rewards</li>
+            <li>Liquidity pool participation on top DeFi platforms</li>
+            <li>Market-neutral trading techniques</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <section class="lx-sec rv" id="stats">
+        <div class="lx-h"><h2>Our loan platform in numbers</h2></div>
+        <div class="g4">
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="12500000" data-pre="$">$12,500,000</div><span>Total loans processed ($)</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="6431">6,431</div><span>Happy borrowers served</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="98.7" data-dec="1" data-suf="%">98.7%</div><span>On-time repayment rate</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="45">45</div><span>Average loan approval time (minutes)</span></div>
+        </div>
+        <div class="g2" style="margin-top:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));">
+          <div class="lx-card lx-numc"><div class="lx-num gold" data-count="1.399649" data-dec="6">1.399649</div><span>BTC equivalent disbursed</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num gold" data-count="64">64</div><span>Countries reached</span></div>
+        </div>
+
+        <div class="lx-h" style="margin-top:34px;">
+          <h2>Our proven loan performance</h2>
+          <p>We take pride in delivering transparent, responsible, and customer-focused lending. Our performance records reflect our commitment to financial empowerment and integrity.</p>
+        </div>
+        <div class="g4">
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="3" data-suf="M+" data-pre="$">$3M+</div><span>Total loans disbursed</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="98" data-suf="%">98%</div><span>Repayment success rate</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="69000" data-suf="+">69,000+</div><span>Active clients</span></div>
+          <div class="lx-card lx-numc"><div class="lx-num" data-count="12" data-suf="+">12+</div><span>Years of trusted service</span></div>
+        </div>
+        <div class="g2" style="margin-top:18px;">
+          <div class="lx-card"><h3 style="margin-bottom:8px;">Real-time analytics &amp; insights</h3><p class="muted" style="font-size:.92rem;">Our loan monitoring system tracks repayment timelines, default risks, and client growth metrics with precision analytics. We use data to improve lending quality and client satisfaction every quarter.</p></div>
+          <div class="lx-card"><h3 style="margin-bottom:8px;">Responsible lending record</h3><p class="muted" style="font-size:.92rem;">Over 98% of our clients repay successfully, thanks to fair interest policies, flexible repayment options, and a transparent review process backed by secure financial reporting tools.</p></div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="lx-sec rv" id="funding">
+        <div class="g3">
+          <article class="lx-card lx-feat a">
+            <img src="https://images.pexels.com/photos/4386370/pexels-photo-4386370.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Loan approval" loading="lazy" onerror="this.style.display='none'">
+            <div class="in">
+              <h3>Fast &amp; secure loans: instant approval and same-day funding</h3>
+              <p>Need a <strong>fast online loan</strong> with <strong>instant approval</strong> and <strong>same-day payout</strong>? Modern loan platforms now offer quick, secure, and high-approval financial services designed for emergencies and business needs.</p>
+              <p>Whether you need a <strong>personal loan</strong>, <strong>business funding</strong>, <strong>bad-credit loan</strong>, or <strong>emergency cash</strong>, digital lending has made borrowing faster than ever.</p>
+              <a href="#apply" class="lx-btn sm">Apply now</a>
+            </div>
+          </article>
+          <article class="lx-card lx-feat b">
+            <img src="https://images.unsplash.com/photo-1556155092-8707de31f9c4?auto=format&fit=crop&w=900&q=80" alt="Business funding" loading="lazy" onerror="this.style.display='none'">
+            <div class="in">
+              <h3>Business loans for startups &amp; small enterprises: grow faster</h3>
+              <p>Business owners today need <strong>quick access to capital</strong> to compete, scale, and survive financial challenges. The demand for <strong>fast business loans</strong> and <strong>startup funding</strong> has skyrocketed.</p>
+              <p>With simplified requirements and high approval rates, entrepreneurs can secure <strong>equipment funding, inventory loans, expansion capital,</strong> and <strong>payroll support</strong> with same-day processing.</p>
+              <ul class="lx-list"><li>Easy digital application</li><li>Flexible repayment options</li><li>No collateral for small loans</li><li>Low interest for verified businesses</li><li>Fast approval within minutes</li></ul>
+              <a href="#apply" class="lx-btn sm">Apply now</a>
+            </div>
+          </article>
+          <article class="lx-card lx-feat c">
+            <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=900&q=80" alt="Emergency loan" loading="lazy" onerror="this.style.display='none'">
+            <div class="in">
+              <h3>Emergency loans: instant cash for medical bills, rent &amp; urgent needs</h3>
+              <p>Emergencies happen unexpectedly: medical bills, overdue rent, travel crises, or urgent repairs. Borrowers can now access <strong>instant emergency loans</strong> that provide quick financial relief.</p>
+              <p>Emergency loans are designed for speed, offering <strong>immediate approval</strong>, <strong>minimal requirements</strong>, and <strong>direct account funding</strong> in less than 24 hours.</p>
+              <ul class="lx-list"><li>Perfect for urgent medical expenses</li><li>Helps cover overdue rent or school fees</li><li>Fast digital verification</li><li>Available for both employed and self-employed individuals</li></ul>
+              <a href="#apply" class="lx-btn sm">Apply now</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="lx-sec rv" id="faq">
+        <div class="lx-h"><h2>Frequently asked questions</h2></div>
+        <div class="g2" style="align-items:start;">
+          <div class="lx-stack">
+            <details class="lx-det"><summary>How fast can I get a loan?</summary><div class="body">Approval is instant for eligible requests. Release within minutes.</div></details>
+            <details class="lx-det"><summary>Is crypto collateral safe?</summary><div class="body">Assets are stored in secure multi-signature vaults.</div></details>
+            <details class="lx-det"><summary>Do you support all countries?</summary><div class="body">Yes, Vaultex is a global crypto finance platform.</div></details>
+          </div>
+          <div class="lx-stack">
+            <details class="lx-det"><summary>How quickly can I get a decision?</summary><div class="body">Most pre-approvals are within 24–72 hours; full decisions after documents may take up to 7–14 business days.</div></details>
+            <details class="lx-det"><summary>Do you accept co-applicants?</summary><div class="body">Yes. Co-applicants can improve approval chances and rates depending on combined qualification.</div></details>
+            <details class="lx-det"><summary>What happens if I miss a payment?</summary><div class="body">Contact support immediately; hardship options may be available. Late fees and credit impact may apply.</div></details>
+            <details class="lx-det"><summary>Are there prepayment penalties?</summary><div class="body">Some products may have prepayment fees; these will be disclosed in the loan offer.</div></details>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="lx-sec rv" id="reviews">
+        <div class="lx-h">
+          <h2>What our clients say about Vaultex Loan</h2>
+          <p>Thousands of satisfied customers trust Vaultex for fast, transparent, and reliable lending. Here is what some of them have to say.</p>
+        </div>
+        <div class="lx-tw" id="twWrap"><div class="lx-track" id="twTrack"></div></div>
+        <div class="lx-dots" id="twDots"></div>
+        <div style="text-align:center;margin-top:22px;"><a href="#apply" class="lx-btn">Apply for a Vaultex loan now</a></div>
+      </section>
+
+      <!-- CONTACT -->
+      <section class="lx-sec rv" id="contact">
+        <div class="g3">
+          <div class="lx-card"><h3 style="margin-bottom:6px;">Contact</h3><p class="muted" style="font-size:.9rem;"><a href="mailto:support@swiftchain.site">support@swiftchain.site</a><br>+1 346 291 0829</p></div>
+          <div class="lx-card"><h3 style="margin-bottom:6px;">Office</h3><p class="muted" style="font-size:.9rem;">Union Trust Building, 123 South Main St, Seattle, WA 98104, USA</p></div>
+          <div class="lx-card"><h3 style="margin-bottom:6px;">Business hours</h3><p class="muted" style="font-size:.9rem;">24/7</p></div>
+        </div>
+      </section>
+
+      <footer class="lx-foot">
+        <div>© <span id="year"></span> Vaultex Loan · Fast, trusted loans</div>
+        <div>Union Trust Building, 123 South Main St, Seattle, WA · +1 346 291 0829</div>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<a href="https://wa.link/qk4ju3" target="_blank" rel="noopener" class="lx-wa" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.47-.149-.668.15-.198.297-.768.966-.941 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.074-.149-.668-1.611-.916-2.21-.242-.579-.487-.501-.668-.51-.173-.008-.372-.01-.57-.01s-.521.074-.794.372c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.118.554 4.087 1.513 5.778L0 24l6.57-1.529C8.943 23.443 10.94 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+</a>
+<div class="lx-toasts" id="toasts" aria-live="polite"></div>
+
+<script src="../assets/js/main.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/js/firebase-init.js"></script>
+<script src="../assets/js/auth-guard.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js" defer></script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- helpers ---------- */
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const millis = t => (t && t.toMillis) ? t.toMillis() : (t instanceof Date ? t.getTime() : Date.now());
+  const fmtDate = t => new Date(millis(t)).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const FA = (typeof auth !== 'undefined' && auth) || firebase.auth();
+  const FD = (typeof db !== 'undefined' && db && db.collection) ? db : firebase.firestore();
+  const TS = () => firebase.firestore.FieldValue.serverTimestamp();
+
+  function toast(title, body, bad) {
+    const el = document.createElement('div');
+    el.className = 'lx-toast' + (bad ? ' bad' : '');
+    el.innerHTML = '<b>' + esc(title) + '</b>' + (body ? esc(body) : '');
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 6500);
+  }
+
+  $('#year').textContent = new Date().getFullYear();
+
+  /* ---------- reveal + counters + scroll spy ---------- */
+  function countUp(el) {
+    const to = parseFloat(el.dataset.count), dec = +(el.dataset.dec || 0), pre = el.dataset.pre || '', suf = el.dataset.suf || '';
+    const t0 = performance.now(), dur = 1400;
+    (function f(t) {
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = pre + (to * e).toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suf;
+      if (p < 1) requestAnimationFrame(f);
+    })(t0);
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('in');
+      $$('[data-count]', e.target).forEach(countUp);
+      io.unobserve(e.target);
+    }), { threshold: 0.1 });
+    $$('.rv').forEach(el => io.observe(el));
+    $$('.lx-hero [data-count]').forEach(countUp);
+
+    const links = $$('#lxNav a');
+    const spy = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+    }), { rootMargin: '-30% 0px -60% 0px' });
+    links.forEach(a => { const t = $(a.getAttribute('href')); if (t) spy.observe(t); });
+
+    const tvObs = new IntersectionObserver(es => { if (es[0].isIntersecting) { tvObs.disconnect(); loadChart(); } }, { rootMargin: '200px' });
+    tvObs.observe($('#tvBox'));
+  } else {
+    $$('.rv').forEach(el => el.classList.add('in'));
+    loadChart();
+  }
+
+  // smooth in-page links that account for the sticky nav
+  $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id.length < 2) return;
+    const el = $(id);
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', id);
+  }));
+
+  function loadChart() {
+    const box = $('#tvBox');
+    const dark = (document.documentElement.getAttribute('data-theme') || 'dark') !== 'light';
+    function make() {
+      box.innerHTML = '';
+      try {
+        new TradingView.widget({ autosize: true, symbol: 'BINANCE:BTCUSDT', interval: '30', timezone: 'Etc/UTC', theme: dark ? 'dark' : 'light', style: '1', locale: 'en', enable_publishing: false, allow_symbol_change: true, container_id: 'tvBox' });
+      } catch (e) { box.innerHTML = '<span>Live chart is unavailable right now.</span>'; }
+    }
+    if (window.TradingView) return make();
+    const s = document.createElement('script');
+    s.src = 'https://s3.tradingview.com/tv.js';
+    s.onload = make;
+    s.onerror = () => { box.innerHTML = '<span>Live chart is unavailable right now.</span>'; };
+    document.head.appendChild(s);
+  }
+
+  /* ---------- loan presets, calculator and application sync ---------- */
+  const PRESETS = {
+    'Personal Loan': [{ max: 5000, rate: 14.0, terms: [6, 12, 24] }, { max: 20000, rate: 10.0, terms: [12, 24, 36, 60] }, { max: Infinity, rate: 7.5, terms: [24, 36, 48, 60] }],
+    'Business Loan': [{ max: 10000, rate: 12.0, terms: [12, 24, 36] }, { max: 100000, rate: 9.0, terms: [12, 24, 36, 60, 120] }, { max: Infinity, rate: 6.0, terms: [24, 36, 60, 120] }],
+    'Mortgage':      [{ max: 100000, rate: 6.5, terms: [60, 120, 180, 240, 360] }, { max: 500000, rate: 4.5, terms: [120, 180, 240, 360] }, { max: Infinity, rate: 3.2, terms: [240, 360] }],
+    'Auto Loan':     [{ max: 10000, rate: 9.5, terms: [12, 24, 36, 48] }, { max: 50000, rate: 6.5, terms: [24, 36, 48, 60, 84] }, { max: Infinity, rate: 4.0, terms: [36, 48, 60, 72, 84] }]
+  };
+  const COLLATERAL = 0.10;
+
+  const cType = $('#calcType'), cAmt = $('#calcAmount'), cRate = $('#calcRate'), cTerm = $('#calcTerm');
+  const aType = $('#appLoanType'), aAmt = $('#appAmount'), aTerm = $('#appTerm'), aRate = $('#appRate'), aColl = $('#appCollateral');
+  const amort = $('#amortization'), amortBody = $('#amortBody');
+  let walletUSD = 0;
+
+  const pmt = (P, apr, m) => { const r = apr / 100 / 12; return r === 0 ? P / m : P * r / (1 - Math.pow(1 + r, -m)); };
+  const preset = (type, amount) => (PRESETS[type] || []).find(t => amount <= t.max) || (PRESETS[type] || [])[2];
+
+  function fillTerms(sel, terms, keep) {
+    const want = Number(keep);
+    sel.innerHTML = terms.map(m => '<option value="' + m + '">' + m + ' months</option>').join('');
+    sel.value = terms.indexOf(want) > -1 ? want : terms[0];
+  }
+
+  function collateralView() {
+    const amt = Number(cAmt.value) || 0;
+    const need = Math.round(amt * COLLATERAL * 100) / 100;
+    aColl.value = amt > 0 ? money(need) + ' (10%)' : '';
+    const el = $('#collCheck');
+    if (!(amt > 0)) { el.className = 'lx-coll'; el.textContent = 'Enter an amount to see your collateral requirement.'; return; }
+    if (walletUSD >= need) { el.className = 'lx-coll ok'; el.textContent = 'Collateral needed: ' + money(need) + '. Your wallet balance of ' + money(walletUSD) + ' covers it.'; }
+    else { el.className = 'lx-coll low'; el.textContent = 'Collateral needed: ' + money(need) + '. Your wallet balance is ' + money(walletUSD) + '. You can still apply and our team will review it.'; }
+  }
+
+  function compute() {
+    const P = Number(cAmt.value) || 0, m = Number(cTerm.value) || 0, apr = Number(cRate.value) || 0;
+    amortBody.innerHTML = '';
+    if (P <= 0 || m <= 0) {
+      $('#monthlyPayment').textContent = '$0.00'; $('#totalPaid').textContent = '$0.00'; $('#totalInterest').textContent = '$0.00';
+    } else {
+      const A = pmt(P, apr, m), total = A * m;
+      $('#monthlyPayment').textContent = money(A); $('#totalPaid').textContent = money(total); $('#totalInterest').textContent = money(total - P);
+      if (!amort.hidden) {
+        const r = apr / 100 / 12; let bal = P; const rows = Math.min(12, m);
+        for (let i = 1; i <= rows; i++) {
+          const interest = bal * r, principal = Math.min(bal, A - interest); bal = Math.max(0, bal - principal);
+          amortBody.insertAdjacentHTML('beforeend', '<tr><td>' + i + '</td><td>' + money(A) + '</td><td>' + money(principal) + '</td><td>' + money(interest) + '</td><td>' + money(bal) + '</td></tr>');
+        }
+        $('#amortNote').textContent = 'Amortization schedule (first ' + rows + ' of ' + m + ' payments shown)';
+      }
+      $('#qsType').textContent = cType.value + ' · ' + money(P);
+      $('#qsDetails').textContent = apr + '% · ' + m + ' months · ' + money(A) + '/mo · Collateral ' + money(P * COLLATERAL);
+    }
+    if (!(P > 0)) { $('#qsType').textContent = cType.value; $('#qsDetails').textContent = 'Enter an amount to see a summary'; }
+    collateralView();
+  }
+
+  function onTypeOrAmount() {
+    const p = preset(cType.value, Number(cAmt.value) || 0);
+    if (p) { cRate.value = p.rate; fillTerms(cTerm, p.terms, cTerm.value); }
+    aType.value = cType.value; aAmt.value = cAmt.value; aRate.value = cRate.value;
+    fillTerms(aTerm, Array.from(cTerm.options).map(o => Number(o.value)), cTerm.value);
+    compute();
+  }
+
+  cType.addEventListener('change', onTypeOrAmount);
+  cAmt.addEventListener('input', onTypeOrAmount);
+  cRate.addEventListener('input', () => { aRate.value = cRate.value; compute(); });
+  cTerm.addEventListener('change', () => { aTerm.value = cTerm.value; compute(); });
+  $('#calcBtn').addEventListener('click', () => { amort.hidden = false; $('#amortToggle').textContent = 'Hide amortization'; compute(); });
+  $('#amortToggle').addEventListener('click', e => { amort.hidden = !amort.hidden; e.target.textContent = amort.hidden ? 'Show amortization' : 'Hide amortization'; compute(); });
+  aAmt.addEventListener('input', () => { cAmt.value = aAmt.value; onTypeOrAmount(); });
+  aType.addEventListener('change', () => { cType.value = aType.value; onTypeOrAmount(); });
+  aTerm.addEventListener('change', () => { cTerm.value = aTerm.value; compute(); });
+  $('#qsApply').addEventListener('click', () => { $('#apply').scrollIntoView({ behavior: 'smooth' }); setTimeout(() => aAmt.focus({ preventScroll: true }), 500); });
+
+  function selectLoan(name) {
+    cType.value = name; onTypeOrAmount();
+    $('#apply').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => aAmt.focus({ preventScroll: true }), 500);
+  }
+  $$('[data-select]').forEach(b => b.addEventListener('click', () => selectLoan(b.dataset.select)));
+
+  cAmt.value = 10000; onTypeOrAmount();
+
+  /* ---------- requirements panel ---------- */
+  const REQS = {
+    personal: ['Personal loan — requirements', ['Government-issued ID', 'Proof of income (last 2 payslips or 3 months bank statements)', 'Proof of residence (utility bill)']],
+    business: ['Business loan — requirements', ['Business registration & tax ID', 'Financial statements (last 2 years)', 'Bank statements (6 months)']],
+    mortgage: ['Mortgage — requirements', ['Property valuation & deed', 'Proof of income & employment', 'Credit history & ID']],
+    auto:     ['Auto loan — requirements', ['Vehicle information & quote', 'Driver license', 'Proof of income']]
+  };
+  $$('[data-req]').forEach(b => b.addEventListener('click', () => {
+    const d = REQS[b.dataset.req]; if (!d) return;
+    const area = $('#reqArea');
+    area.innerHTML = '<div class="lx-card lx-req"><div class="lx-req-head"><div><h3>' + esc(d[0]) + '</h3><ul class="lx-list">' + d[1].map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div><button class="lx-btn sm ghost" id="reqClose">Close</button></div></div>';
+    $('#reqClose').addEventListener('click', () => { area.innerHTML = ''; });
+    area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }));
+
+  /* ---------- terms gate ---------- */
+  const agreeLoan = $('#agreeLoanTerms'), proceed = $('#proceedLoanBtn'), agreeForm = $('#agreeTerms');
+  agreeLoan.addEventListener('change', () => { proceed.disabled = !agreeLoan.checked; agreeForm.checked = agreeLoan.checked; });
+  agreeForm.addEventListener('change', () => { agreeLoan.checked = agreeForm.checked; proceed.disabled = !agreeLoan.checked; });
+  proceed.addEventListener('click', () => $('#apply').scrollIntoView({ behavior: 'smooth' }));
+
+  /* ---------- PDF copy of an application ---------- */
+  function makePDF(p) {
+    if (!window.jspdf) { toast('PDF not ready', 'The PDF tool is still loading. Try again in a moment.', true); return; }
+    const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
+    const left = 40; let y = 60;
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text('Vaultex Loan — Application Summary', left, y); y += 20;
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text('Generated: ' + new Date().toLocaleString(), left, y); y += 16;
+    if (p.reference) { doc.text('Reference: ' + p.reference, left, y); y += 16; }
+    doc.setDrawColor(220); doc.line(left, y, 560, y); y += 18;
+    doc.setFont('helvetica', 'bold'); doc.text('Applicant', left, y); y += 14; doc.setFont('helvetica', 'normal');
+    doc.text('Name: ' + (p.name || '-'), left, y); y += 14;
+    doc.text('Email: ' + (p.email || '-'), left, y); y += 14;
+    doc.text('Monthly income: ' + (p.income ? money(p.income) : '-'), left, y); y += 20;
+    doc.setFont('helvetica', 'bold'); doc.text('Loan details', left, y); y += 14; doc.setFont('helvetica', 'normal');
+    doc.text('Loan type: ' + (p.loanType || '-'), left, y); y += 14;
+    doc.text('Amount requested: ' + money(p.amountUSD), left, y); y += 14;
+    doc.text('Term: ' + p.termMonths + ' months', left, y); y += 14;
+    doc.text('Interest rate (APR): ' + p.rate + '%', left, y); y += 14;
+    doc.text('Estimated monthly payment: ' + money(pmt(p.amountUSD, p.rate, p.termMonths)), left, y); y += 14;
+    doc.text('Collateral (10%): ' + money(p.collateralUSD), left, y); y += 14;
+    if (p.status) { doc.text('Status: ' + p.status, left, y); y += 14; }
+    if (p.adminMessage) { const m = doc.splitTextToSize('Message from Vaultex: ' + p.adminMessage, 520); doc.text(m, left, y); y += m.length * 12 + 6; }
+    y += 8; doc.setFont('helvetica', 'bold'); doc.text('Purpose / notes', left, y); y += 14; doc.setFont('helvetica', 'normal');
+    const split = doc.splitTextToSize(p.details || '-', 520); doc.text(split, left, y); y += split.length * 12 + 16;
+    doc.setFontSize(9); doc.setTextColor(100);
+    doc.text(doc.splitTextToSize('This is an applicant summary for Vaultex Loan. Final loan terms and approval are subject to verification, underwriting and the full agreement.', 520), left, y);
+    doc.save('vaultex-loan-' + (p.reference || 'application') + '.pdf');
+  }
+
+  /* ---------- optional email notification (never blocks submit) ---------- */
+  function notifyEmail(p) {
+    try {
+      if (!window.emailjs) return;
+      emailjs.init('kAD8RR318f9waKE7W');
+      emailjs.send('service_t2gszxi', 'template_byd84ip', {
+        name: p.name, email: p.email, loanType: p.loanType, amount: p.amountUSD, income: p.income,
+        duration: p.termMonths + ' months', interest: p.rate + '%', collateral: money(p.collateralUSD), description: p.details
+      }).catch(() => {});
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- submit application ---------- */
+  let apps = [];
+  const form = $('#loanForm'), statusEl = $('#appStatus'), submitBtn = $('#submitApp');
+  const setStatus = (html, bad) => { statusEl.style.color = bad ? 'var(--coral,#FF6B6B)' : 'var(--mint,#2EE6A6)'; statusEl.innerHTML = html; };
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const user = FA.currentUser;
+    const name = $('#appFullName').value.trim(), email = $('#appEmail').value.trim(), amount = Math.round((Number(aAmt.value) || 0) * 100) / 100;
+    if (!user) return setStatus('Please sign in again to submit an application.', true);
+    if (!name || !email) return setStatus('Enter your full name and email.', true);
+    if (!/^\S+@\S+\.\S+$/.test(email)) return setStatus('Enter a valid email address.', true);
+    if (!(amount > 0) || amount > 100000000) return setStatus('Enter a loan amount greater than $0.', true);
+    if (!agreeForm.checked) return setStatus('You need to agree to the Terms & Conditions first.', true);
+
+    const payload = {
+      uid: user.uid, name, email, loanType: aType.value, amountUSD: amount,
+      termMonths: Number(aTerm.value) || 0, rate: Number(aRate.value) || 0,
+      income: Number($('#appIncome').value) || 0, collateralUSD: Math.round(amount * COLLATERAL * 100) / 100, collateralPct: 10,
+      details: $('#appDetails').value.trim().slice(0, 1000), status: 'pending', adminMessage: '', credited: false,
+      reference: 'VL' + Math.floor(Math.random() * 900000 + 100000), createdAt: TS()
+    };
+    submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spin"></span> Submitting';
+    try {
+      await FD.collection('loanApplications').add(payload);
+      setStatus('Application submitted. Your reference is <strong>' + esc(payload.reference) + '</strong>. We will respond within 24–72 hours. <button type="button" class="lx-btn sm ghost" id="pdfNow" style="margin-left:8px;">Download PDF copy</button>');
+      $('#pdfNow').addEventListener('click', () => makePDF(payload));
+      toast('Application submitted', 'Reference ' + payload.reference + '. Track it under My loans.');
+      notifyEmail(payload);
+      $('#appDetails').value = '';
+      setTimeout(() => $('#myloans').scrollIntoView({ behavior: 'smooth' }), 900);
+    } catch (err) {
+      console.error('Loan submit failed', err);
+      setStatus('We could not send your application. Check your connection and try again.', true);
+    } finally {
+      submitBtn.disabled = false; submitBtn.textContent = 'Submit application';
+    }
+  });
+
+  /* ---------- my loans (live) ---------- */
+  const LABEL = { pending: 'Under review', approved: 'Approved', declined: 'Declined' };
+  function renderLoans() {
+    const box = $('#loanList');
+    if (!apps.length) {
+      box.innerHTML = '<div class="lx-empty"><div class="ico">◇</div><p>No applications yet. Submit your first one above. Decisions and messages from our team appear here instantly.</p></div>';
+    } else {
+      box.innerHTML = '<div class="g2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));">' + apps.map(a => {
+        const p = a.status === 'pending', ap = a.status === 'approved';
+        const monthly = a.termMonths ? pmt(a.amountUSD, a.rate, a.termMonths) : 0;
+        const msg = !p ? '<div class="lx-msg ' + esc(a.status) + '"><b>Message from Vaultex</b><p>' + esc(a.adminMessage || (ap ? 'Your application has been approved.' : 'Your application was not approved this time.')) + '</p>' +
+          '<small>' + (a.decidedAt ? 'Decided ' + esc(fmtDate(a.decidedAt)) : '') + (a.credited ? ' · ' + esc(money(a.amountUSD)) + ' credited to your wallet' : '') + '</small></div>' : '';
+        return '<article class="lx-card lx-loan">' +
+          '<div class="lx-loan-top"><div><div class="muted" style="font-size:.78rem;">' + esc(a.loanType) + ' · ' + esc(a.reference) + '</div><div class="amt">' + esc(money(a.amountUSD)) + '</div></div><span class="st ' + esc(a.status) + '">' + esc(LABEL[a.status] || a.status) + '</span></div>' +
+          '<div class="lx-tl"><div class="p done"><i></i>Submitted</div><div class="bar ' + (!p ? 'done' : '') + '"></div><div class="p ' + (p ? 'act' : 'done') + '"><i></i>Review</div><div class="bar ' + (!p ? 'done' : '') + '"></div><div class="p ' + (p ? '' : (ap ? 'done' : 'no')) + '"><i></i>Decision</div></div>' +
+          '<div class="lx-meta"><div><span>Term</span><b>' + esc(a.termMonths) + ' mo</b></div><div><span>Rate</span><b>' + esc(a.rate) + '%</b></div><div><span>Monthly</span><b>' + esc(money(monthly)) + '</b></div><div><span>Collateral</span><b>' + esc(money(a.collateralUSD)) + '</b></div></div>' +
+          msg +
+          '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;"><small class="muted">Submitted ' + esc(fmtDate(a.createdAt)) + '</small><button class="lx-btn sm ghost" data-pdf="' + esc(a.id) + '">PDF copy</button></div>' +
+          '</article>';
+      }).join('') + '</div>';
+    }
+    $('#accApps').textContent = apps.length;
+    $('#accPend').textContent = apps.filter(a => a.status === 'pending').length;
+    $('#accAppr').textContent = money(apps.filter(a => a.status === 'approved').reduce((s, a) => s + (Number(a.amountUSD) || 0), 0));
+  }
+  $('#loanList').addEventListener('click', e => {
+    const b = e.target.closest('[data-pdf]'); if (!b) return;
+    const a = apps.find(x => x.id === b.dataset.pdf); if (a) makePDF(a);
+  });
+
+  let appsFirst = true; const prevStatus = {};
+  function listenApps(uid) {
+    FD.collection('loanApplications').where('uid', '==', uid).onSnapshot(snap => {
+      apps = snap.docs.map(d => Object.assign({ id: d.id }, d.data())).sort((a, b) => millis(b.createdAt) - millis(a.createdAt));
+      if (!appsFirst) {
+        apps.forEach(a => {
+          if (prevStatus[a.id] === 'pending' && a.status !== 'pending') {
+            toast('Loan ' + (a.status === 'approved' ? 'approved' : 'declined'), money(a.amountUSD) + ' ' + a.loanType + (a.adminMessage ? ': ' + a.adminMessage : ''), a.status !== 'approved');
+          }
+        });
+      }
+      apps.forEach(a => { prevStatus[a.id] = a.status; });
+      appsFirst = false;
+      renderLoans();
+    }, err => { console.error('Loans listener failed', err); $('#loanList').innerHTML = '<div class="lx-empty"><p>We could not load your applications right now. Refresh the page to try again.</p></div>'; });
+  }
+
+  /* ---------- wallet + credits (live) ---------- */
+  let ledFirst = true;
+  function listenWallet(uid) {
+    FD.collection('users').doc(uid).collection('wallet').doc('main').onSnapshot(d => {
+      const v = d.exists ? Number(d.data().balanceUSD || 0) : 0;
+      const el = $('#accBal');
+      if (v !== walletUSD) { el.classList.remove('lx-bump'); void el.offsetWidth; el.classList.add('lx-bump'); }
+      walletUSD = v; el.textContent = money(v); collateralView();
+    }, err => console.error('Wallet listener failed', err));
+
+    FD.collection('users').doc(uid).collection('ledger').orderBy('createdAt', 'desc').limit(15).onSnapshot(s => {
+      const rows = s.docs.map(d => d.data());
+      if (!ledFirst) s.docChanges().forEach(c => { if (c.type === 'added' && c.doc.data().type === 'credit') toast('Account credited', money(c.doc.data().amountUSD) + ' was added to your wallet.'); });
+      ledFirst = false;
+      $('#ledger').innerHTML = rows.length ? rows.map(r =>
+        '<div><span>' + esc(r.note || (r.type === 'debit' ? 'Transfer' : 'Credit from Vaultex')) + '<small>' + esc(fmtDate(r.createdAt)) + '</small></span><b style="' + (r.type === 'debit' ? 'color:var(--l-coral)' : '') + '">' + (r.type === 'debit' ? '−' : '+') + esc(money(r.amountUSD)) + '</b></div>').join('')
+        : '<p class="muted" style="font-size:.9rem;padding:14px 0;">No credits yet. When funds are added to your account they will show here.</p>';
+    }, err => console.error('Ledger listener failed', err));
+  }
+
+  /* ---------- testimonials ---------- */
+  const REVIEWS = [
+    ['Michael Thompson', 'CFO, GlobalBank', 'men/72', 'The loan platform is seamless, fast, and reliable. It simplified our financing process and saved valuable time.'],
+    ['Sarah Williams', 'Loan Manager, FinTech Solutions', 'women/48', 'Our clients love the speed and transparency of this platform. Loan approvals have never been easier.'],
+    ['David Roberts', 'VP of Operations, MoneyCorp', 'men/51', 'A highly intuitive platform that makes loan management straightforward. Great user experience and reliability.'],
+    ['Michael Johnson', 'Small Business Owner', 'men/42', 'Vaultex helped me secure funding for my business expansion within 48 hours. The process was straightforward and transparent — truly a reliable financial partner.'],
+    ['Amelia Osei', 'Freelance Designer', 'women/68', 'I was surprised by how fast and easy the approval was. The team was very responsive, and I got my loan disbursed the same day. Highly recommended!'],
+    ['Damilo N.', 'Civil Servant', 'men/77', 'The repayment terms were flexible and customer service was excellent. Vaultex gave me confidence that legitimate, honest loan companies still exist.'],
+    ['Sofia Martins', 'Crypto Investor', 'women/44', 'Vaultex verification and secure escrow gave me total confidence to complete high-value trades. Definitely a 5-star experience from start to finish.'],
+    ['Kofi Mensah', 'Entrepreneur', 'men/85', 'Secure, fast, and transparent — Vaultex really stands out from other platforms. My loan was processed flawlessly and released in record time.']
+  ];
+  const track = $('#twTrack'), dotsEl = $('#twDots');
+  track.innerHTML = REVIEWS.map(r => '<div class="lx-slide"><div class="lx-card lx-q"><div class="who"><img class="lx-av" src="https://randomuser.me/api/portraits/' + r[2] + '.jpg" alt="" loading="lazy" onerror="this.outerHTML=\'<div class=lx-av>' + esc(r[0].charAt(0)) + '</div>\'"><div><b>' + esc(r[0]) + '</b><small>' + esc(r[1]) + '</small></div></div><div class="stars">★★★★★</div><p>“' + esc(r[3]) + '”</p></div></div>').join('');
+  let tIdx = 0, perView = 1, timer;
+  const maxIdx = () => Math.max(0, REVIEWS.length - perView);
+  function twLayout() {
+    perView = window.innerWidth >= 1100 ? 3 : window.innerWidth >= 700 ? 2 : 1;
+    $$('.lx-slide', track).forEach(s => { s.style.flex = '0 0 ' + (100 / perView) + '%'; });
+    dotsEl.innerHTML = Array.from({ length: maxIdx() + 1 }, (_, i) => '<button aria-label="Go to review ' + (i + 1) + '" data-i="' + i + '"></button>').join('');
+    twGo(Math.min(tIdx, maxIdx()));
+  }
+  function twGo(i) {
+    tIdx = i;
+    track.style.transform = 'translateX(-' + (i * 100 / perView) + '%)';
+    $$('button', dotsEl).forEach((b, k) => b.classList.toggle('on', k === i));
+  }
+  const twNext = () => twGo(tIdx >= maxIdx() ? 0 : tIdx + 1);
+  const twStart = () => { clearInterval(timer); timer = setInterval(twNext, 5000); };
+  dotsEl.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { twGo(+b.dataset.i); twStart(); } });
+  let sx = 0;
+  const wrap = $('#twWrap');
+  wrap.addEventListener('touchstart', e => { sx = e.touches[0].clientX; clearInterval(timer); }, { passive: true });
+  wrap.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - sx; if (dx > 50) twGo(Math.max(0, tIdx - 1)); else if (dx < -50) twGo(Math.min(maxIdx(), tIdx + 1)); twStart(); });
+  wrap.addEventListener('mouseenter', () => clearInterval(timer));
+  wrap.addEventListener('mouseleave', twStart);
+  window.addEventListener('resize', twLayout);
+  twLayout(); twStart();
+
+  /* ---------- session ---------- */
+  FA.onAuthStateChanged(user => {
+    if (!user) return;
+    if (!$('#appEmail').value) $('#appEmail').value = user.email || '';
+    if (!$('#appFullName').value && user.displayName) $('#appFullName').value = user.displayName;
+    listenApps(user.uid);
+    listenWallet(user.uid);
+  });
+})();
+</script>
+</body>
+</html>
