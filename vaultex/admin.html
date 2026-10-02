@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Vaultex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/dashboard.css">
+<link rel="stylesheet" href="assets/css/responsive.css">
+<style>
+/* Admin console — Vaultex tokens with safe fallbacks */
+:root{
+  --a-bg:var(--ink,#0B1020);--a-soft:var(--ink-soft,#121A2E);--a-raise:var(--ink-raise,#1A2340);--a-line:var(--line,#262E45);
+  --a-mut:var(--muted,#8993AB);--a-mint:var(--mint,#2EE6A6);--a-gold:var(--gold,#F5B942);--a-coral:var(--coral,#FF6B6B);
+  --a-mint-dim:var(--mint-dim,rgba(46,230,166,.14));--a-gold-dim:var(--gold-dim,rgba(245,185,66,.14));--a-coral-dim:var(--coral-dim,rgba(255,107,107,.14));
+  --a-mono:var(--font-mono,'JetBrains Mono',ui-monospace,monospace);--a-head:'Space Grotesk','Inter',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body.adm{margin:0;min-height:100vh;background:var(--a-bg);overflow-x:hidden;font-family:'Inter',system-ui,sans-serif;}
+.adm h1,.adm h2,.adm h3{font-family:var(--a-head);margin:0;line-height:1.2;}
+.adm p{margin:0;line-height:1.6;}
+.adm .mono{font-family:var(--a-mono);}
+.adm .muted{color:var(--a-mut);}
+[hidden]{display:none!important;}
+.adm :focus-visible{outline:2px solid var(--a-mint);outline-offset:2px;}
+
+/* buttons / fields */
+.ab{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;background:var(--a-mint);color:#03140F;font:600 .88rem 'Inter',system-ui,sans-serif;padding:10px 18px;border-radius:10px;cursor:pointer;min-height:42px;transition:transform .18s,box-shadow .18s,opacity .18s,border-color .18s;text-decoration:none;}
+.ab:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(46,230,166,.25);}
+.ab.ghost{background:transparent;color:inherit;border-color:var(--a-line);}
+.ab.ghost:hover{border-color:var(--a-mint);box-shadow:none;}
+.ab.bad{background:var(--a-coral);color:#2b0505;}
+.ab.bad:hover{box-shadow:0 8px 20px rgba(255,107,107,.25);}
+.ab.sm{padding:6px 12px;font-size:.78rem;min-height:34px;}
+.ab[disabled]{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.af{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.af label{font-size:.78rem;font-weight:600;color:var(--a-mut);}
+.af input,.af select,.af textarea{width:100%;min-width:0;background:var(--a-raise);border:1px solid var(--a-line);color:inherit;border-radius:10px;padding:11px 13px;font:inherit;font-size:.92rem;transition:border-color .2s,box-shadow .2s;}
+.af input:focus,.af select:focus,.af textarea:focus{outline:none;border-color:var(--a-mint);box-shadow:0 0 0 3px var(--a-mint-dim);}
+.af textarea{resize:vertical;min-height:96px;}
+.af select option{background:#121A2E;color:#E8ECF6;}
+.acard{background:var(--a-soft);border:1px solid var(--a-line);border-radius:16px;padding:22px;min-width:0;}
+
+/* login */
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(700px 360px at 50% 0%,rgba(46,230,166,.12),transparent 60%);}
+.gate .acard{width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px;animation:aIn .5s ease both;}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--a-head);font-weight:700;font-size:1.15rem;}
+.brand .mk{width:34px;height:34px;border-radius:10px;background:var(--a-mint);color:#03140F;display:flex;align-items:center;justify-content:center;font-weight:700;}
+@keyframes aIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.err{color:var(--a-coral);font-size:.85rem;min-height:1.2em;}
+
+/* shell */
+.top{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));background:var(--a-soft);border-bottom:1px solid var(--a-line);}
+.top .who{display:flex;align-items:center;gap:10px;min-width:0;}
+.top .who span{font-size:.8rem;color:var(--a-mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:32vw;}
+.wrap{width:100%;max-width:1280px;margin:0 auto;padding:22px max(16px,env(safe-area-inset-right)) 80px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:22px;}
+.sech{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.sech h2{font-size:clamp(1.15rem,2.4vw,1.45rem);}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;}
+.stat{background:var(--a-soft);border:1px solid var(--a-line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.stat span{font-size:.76rem;color:var(--a-mut);}
+.stat b{font-family:var(--a-mono);font-size:1.5rem;overflow-wrap:anywhere;}
+.stat.p b{color:var(--a-gold);}.stat.a b{color:var(--a-mint);}.stat.d b{color:var(--a-coral);}
+
+/* toolbar */
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.tabs{display:flex;gap:6px;overflow-x:auto;background:var(--a-raise);border-radius:12px;padding:4px;scrollbar-width:none;max-width:100%;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{flex:0 0 auto;background:transparent;border:none;color:var(--a-mut);padding:8px 14px;border-radius:8px;font:600 .82rem 'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s;}
+.tabs button.on{background:var(--a-soft);color:var(--a-mint);}
+.tabs em{font-style:normal;font-family:var(--a-mono);font-size:.72rem;margin-left:6px;opacity:.8;}
+.search{flex:1 1 220px;max-width:340px;}
+
+/* table -> cards on mobile */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--a-line);border-radius:14px;background:var(--a-soft);}
+table.t{width:100%;border-collapse:collapse;font-size:.86rem;min-width:860px;}
+.t th{text-align:left;padding:12px 14px;font-size:.74rem;color:var(--a-mut);font-weight:600;border-bottom:1px solid var(--a-line);white-space:nowrap;}
+.t td{padding:13px 14px;border-bottom:1px solid var(--a-line);vertical-align:middle;}
+.t tr:last-child td{border-bottom:none;}
+.t tbody tr{cursor:pointer;transition:background .2s;}
+.t tbody tr:hover{background:var(--a-raise);}
+.t .nm b{display:block;}
+.t .nm small{color:var(--a-mut);overflow-wrap:anywhere;}
+.t .amt{font-family:var(--a-mono);font-weight:700;white-space:nowrap;}
+.t tr.flash{animation:aFlash 2.4s ease;}
+@keyframes aFlash{0%,60%{background:var(--a-mint-dim);}100%{background:transparent;}}
+.st{display:inline-flex;align-items:center;gap:7px;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.st::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.st.pending{background:var(--a-gold-dim);color:var(--a-gold);}
+.st.pending::before{animation:aPulse 1.6s infinite;}
+.st.approved{background:var(--a-mint-dim);color:var(--a-mint);}
+.st.declined{background:var(--a-coral-dim);color:var(--a-coral);}
+@keyframes aPulse{0%{box-shadow:0 0 0 0 currentColor;}100%{box-shadow:0 0 0 8px transparent;}}
+.empty{text-align:center;padding:44px 16px;color:var(--a-mut);}
+
+/* credit panel */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:18px;align-items:start;}
+.form{display:flex;flex-direction:column;gap:14px;}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px;}
+.hint{font-size:.78rem;color:var(--a-mut);}
+.okmsg{font-size:.85rem;min-height:1.2em;}
+
+/* sheet (review dialog) */
+.ov{position:fixed;inset:0;z-index:100;background:rgba(3,6,14,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px;animation:aFade .25s ease both;}
+@keyframes aFade{from{opacity:0;}to{opacity:1;}}
+.sheet{width:100%;max-width:640px;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--a-soft);border:1px solid var(--a-line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:16px;animation:aUp .35s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes aUp{from{opacity:0;transform:translateY(24px) scale(.98);}to{opacity:1;transform:none;}}
+.sheet-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.kv div{background:var(--a-raise);border-radius:10px;padding:10px 12px;min-width:0;}
+.kv span{display:block;font-size:.7rem;color:var(--a-mut);}
+.kv b{font-size:.88rem;overflow-wrap:anywhere;}
+.kv .mono{font-family:var(--a-mono);}
+.purpose{background:var(--a-raise);border-radius:10px;padding:12px 14px;font-size:.9rem;overflow-wrap:anywhere;white-space:pre-wrap;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;}
+.chips button{background:var(--a-raise);border:1px solid var(--a-line);color:inherit;border-radius:999px;padding:6px 12px;font:500 .76rem 'Inter',sans-serif;cursor:pointer;transition:border-color .2s;}
+.chips button:hover{border-color:var(--a-mint);}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--a-mut);}
+.chk input{width:18px;height:18px;margin-top:2px;accent-color:var(--a-mint);flex-shrink:0;}
+.acts{display:flex;gap:10px;flex-wrap:wrap;}
+.acts .ab{flex:1 1 150px;}
+.cnt{font-size:.72rem;color:var(--a-mut);text-align:right;}
+.prior{border-left:3px solid var(--a-line);background:var(--a-raise);border-radius:10px;padding:10px 14px;font-size:.88rem;}
+.prior.approved{border-color:var(--a-mint);}.prior.declined{border-color:var(--a-coral);}
+
+.kimgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.kimgs figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0;}
+.kimgs figcaption{font-size:.72rem;color:var(--a-mut);}
+.kimgs img{width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid var(--a-line);cursor:zoom-in;background:var(--a-raise);}
+.kimgs figure.zoom{grid-column:1/-1;}
+.kimgs figure.zoom img{max-height:none;object-fit:contain;cursor:zoom-out;}
+/* toasts */
+.toasts{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:999;display:flex;flex-direction:column;gap:10px;width:min(92vw,360px);pointer-events:none;}
+.toast{pointer-events:auto;background:var(--a-soft);border:1px solid var(--a-line);border-left:4px solid var(--a-mint);border-radius:12px;padding:12px 14px;font-size:.88rem;box-shadow:0 12px 32px rgba(0,0,0,.4);animation:aTo .4s ease both;}
+.toast.bad{border-left-color:var(--a-coral);}
+.toast b{display:block;margin-bottom:2px;}
+@keyframes aTo{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:none;}}
+.spin{width:15px;height:15px;border:2px solid rgba(3,20,15,.3);border-top-color:#03140F;border-radius:50%;animation:aSp .7s linear infinite;display:inline-block;}
+@keyframes aSp{to{transform:rotate(360deg);}}
+
+@media (max-width:760px){
+  .top .who span{display:none;}
+  .tw{border:none;background:transparent;overflow:visible;}
+  table.t{min-width:0;display:block;}
+  .t thead{display:none;}
+  .t tbody{display:flex;flex-direction:column;gap:12px;}
+  .t tr{display:flex;flex-direction:column;gap:2px;background:var(--a-soft);border:1px solid var(--a-line);border-radius:14px;padding:12px 14px;}
+  .t td{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:7px 0;border:none;text-align:right;}
+  .t td::before{content:attr(data-label);color:var(--a-mut);font-size:.74rem;font-weight:600;text-align:left;flex-shrink:0;}
+  .t td.nm{text-align:right;}
+  .t td.nm > div{min-width:0;}
+  .ov{align-items:flex-end;padding:0;}
+  .sheet{max-width:none;max-height:94vh;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));}
+  .toasts{left:14px;right:14px;width:auto;}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body class="adm">
+
+<!-- CONSOLE -->
+<div id="app">
+  <header class="top">
+    <div class="brand"><span class="mk">V</span><span>Admin</span></div>
+    <div class="who">
+      <button class="ab ghost sm" id="themeBtn" aria-label="Toggle theme">☾</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section aria-label="Summary"><div class="stats" id="stats"></div></section>
+
+    <section id="loansSec">
+      <div class="sech"><h2>Loan applications</h2><span class="muted" style="font-size:.82rem;" id="liveNote">Live · updates as people apply</span></div>
+      <div class="bar">
+        <div class="tabs" id="tabs" role="tablist"></div>
+        <div class="af search"><input id="q" type="search" placeholder="Search name, email or reference" aria-label="Search applications"></div>
+      </div>
+      <div class="tw">
+        <table class="t" id="loanTable">
+          <thead><tr><th>Applicant</th><th>Loan</th><th>Amount (USD)</th><th>Term</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>No applications match this view.</div>
+      </div>
+    </section>
+
+    <section id="transfersSec">
+      <div class="sech"><h2>Transfer requests</h2><span class="muted" style="font-size:.82rem;">Approving deducts the amount from the user's loan balance</span></div>
+      <div class="bar">
+        <div class="tabs" id="tTabs" role="tablist"></div>
+        <div class="af search"><input id="tq" type="search" placeholder="Search name, bank or reference" aria-label="Search transfers"></div>
+      </div>
+      <div class="tw">
+        <table class="t" id="transTable">
+          <thead><tr><th>User</th><th>Bank</th><th>Amount (USD)</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tRows"></tbody>
+        </table>
+        <div class="empty" id="tEmpty" hidden>No transfers match this view.</div>
+      </div>
+    </section>
+
+    <section id="kycSec">
+      <div class="sech"><h2>KYC requests</h2><span class="muted" style="font-size:.82rem;">Approve to mark the user as verified, or reject with a message</span></div>
+      <div class="bar">
+        <div class="tabs" id="kTabs" role="tablist"></div>
+        <div class="af search"><input id="kq" type="search" placeholder="Search name, email or reference" aria-label="Search KYC requests"></div>
+      </div>
+      <div class="tw">
+        <table class="t" id="kycTable">
+          <thead><tr><th>User</th><th>ID</th><th>Country</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+          <tbody id="kRows"></tbody>
+        </table>
+        <div class="empty" id="kEmpty" hidden>No KYC requests match this view.</div>
+      </div>
+    </section>
+
+    <section id="creditSec">
+      <div class="sech"><h2>Credit a user's account</h2><span class="muted" style="font-size:.82rem;">Amounts are in USD and appear on the user's pages straight away</span></div>
+      <div class="grid2">
+        <form class="acard form" id="creditForm" novalidate>
+          <div class="af"><label for="cUser">User</label><input id="cUser" list="userList" autocomplete="off" placeholder="Search by name or email, or paste a user ID"><datalist id="userList"></datalist><span class="hint" id="cUserHint">Applicants appear in the list automatically.</span></div>
+          <div class="row2">
+            <div class="af"><label for="cAmt">Amount (USD)</label><input id="cAmt" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0.00"></div>
+            <div class="af"><label for="cNote">Note shown to the user</label><input id="cNote" maxlength="120" placeholder="e.g. Welcome bonus"></div>
+          </div>
+          <button class="ab" type="submit" id="cBtn">Credit account</button>
+          <div class="okmsg" id="cMsg" role="status"></div>
+        </form>
+        <div class="acard">
+          <h3 style="font-size:1rem;margin-bottom:6px;">Recent credits</h3>
+          <div id="credLog"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="ov" id="ov" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/js/firebase-init.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const millis = t => (t && t.toMillis) ? t.toMillis() : Date.now();
+  const fmt = t => new Date(millis(t)).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const FD = (typeof db !== 'undefined' && db && db.collection) ? db : firebase.firestore();
+  const TS = () => firebase.firestore.FieldValue.serverTimestamp();
+  const INC = n => firebase.firestore.FieldValue.increment(n);
+  const LABEL = { pending: 'Pending', approved: 'Approved', declined: 'Declined' };
+  const adminEmail = 'Admin';
+  const unsubs = [];
+
+  function toast(title, body, bad) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (bad ? ' bad' : '');
+    el.innerHTML = '<b>' + esc(title) + '</b>' + esc(body || '');
+    $('#toasts').appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 7000);
+  }
+
+  /* ---- theme ---- */
+  try { const t = localStorage.getItem('vaultex-theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  $('#themeBtn').addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('vaultex-theme', next); } catch (e) {}
+  });
+
+  /* ---- applications ---- */
+  let apps = [], filter = 'all', query = '', first = true, flashIds = new Set(), unseen = 0;
+  const dir = new Map();          // uid -> {name,email}
+  const labelToUid = new Map();
+
+  function start() {
+    startTransfers();
+    startKyc();
+    unsubs.push(FD.collection('loanApplications').orderBy('createdAt', 'desc').onSnapshot(snap => {
+      apps = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (!first) snap.docChanges().forEach(c => {
+        if (c.type === 'added') {
+          const a = c.doc.data();
+          if (a.status === 'pending') {
+            flashIds.add(c.doc.id); unseen++;
+            toast('New loan application', (a.name || 'Someone') + ' requested ' + money(a.amountUSD) + ' (' + (a.loanType || 'loan') + ')');
+            document.title = '(' + unseen + ') Admin — Vaultex';
+          }
+        }
+      });
+      first = false;
+      apps.forEach(a => { if (a.uid) dir.set(a.uid, { name: a.name, email: a.email }); });
+      renderStats(); renderRows(); rebuildDir();
+      if (current) { const a = apps.find(x => x.id === current); if (a) refreshSheetStatus(a); }
+    }, err => { console.error(err); toast('Could not load applications', 'Check your connection and the Firestore rules, then refresh.', true); }));
+
+    unsubs.push(FD.collection('adminCredits').orderBy('createdAt', 'desc').limit(25).onSnapshot(snap => {
+      const rows = snap.docs.map(d => d.data());
+      $('#credLog').innerHTML = rows.length ? rows.map(r =>
+        '<div style="display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--a-line);font-size:.86rem;"><span style="min-width:0;overflow-wrap:anywhere;"><b>' + esc(r.name || r.email || r.uid) + '</b><small class="muted" style="display:block;">' + esc(r.note || 'Credit') + ' · ' + esc(fmt(r.createdAt)) + '</small></span><b class="mono" style="color:var(--a-mint);white-space:nowrap;">+' + esc(money(r.amountUSD)) + '</b></div>').join('')
+        : '<p class="muted" style="font-size:.88rem;padding:10px 0;">No credits yet.</p>';
+    }, err => console.error('Credit log failed', err)));
+
+    FD.collection('users').limit(300).get().then(s => {
+      s.forEach(d => { const x = d.data() || {}; if (!dir.has(d.id)) dir.set(d.id, { name: x.fullName || x.displayName || x.name || [x.firstName, x.lastName].filter(Boolean).join(' '), email: x.email || '' }); });
+      rebuildDir();
+    }).catch(() => { /* users list is optional; applicants and pasted IDs still work */ });
+  }
+
+  /* ---- KYC ---- */
+  let kycs = [], kFilter = 'pending', kQuery = '', kFirst = true, kFlash = new Set(), currentK = null;
+  const KL = { pending: 'Pending', approved: 'Verified', rejected: 'Rejected' };
+  const KQUICK = [
+    ['Verify', 'Your identity has been verified. Thank you.'],
+    ['Blurry ID', 'Rejected: the ID photo is blurry or cut off. Retake it in good light with all four corners visible, then submit again.'],
+    ['Selfie mismatch', 'Rejected: your selfie does not clearly match the ID. Upload a clear selfie of your face holding the same ID, then submit again.'],
+    ['Details mismatch', 'Rejected: your name or date of birth does not match the ID. Correct your details exactly as on the ID and submit again.'],
+    ['Expired ID', 'Rejected: this ID has expired. Use a valid, unexpired ID and submit again.']
+  ];
+  const imgOk = u => (typeof u === 'string' && u.indexOf('data:image/') === 0) ? u : '';
+
+  function startKyc() {
+    FD.collection('kycRequests').orderBy('createdAt', 'desc').onSnapshot(snap => {
+      kycs = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (!kFirst) snap.docChanges().forEach(c => {
+        const k = c.doc.data();
+        if ((c.type === 'added' || c.type === 'modified') && k.status === 'pending' && !(c.type === 'modified' && kFlash.has(c.doc.id))) {
+          kFlash.add(c.doc.id); unseen++;
+          toast('New KYC request', (k.userName || 'A user') + ' submitted ' + (k.idType || 'an ID') + ' for verification');
+          document.title = '(' + unseen + ') Admin — Vaultex';
+        }
+      });
+      kFirst = false;
+      kycs.forEach(k => { if (k.uid && !dir.has(k.uid)) dir.set(k.uid, { name: k.userName, email: k.email }); });
+      renderStats(); renderKyc(); rebuildDir();
+      if (currentK) { const k = kycs.find(x => x.id === currentK); if (k && k.status !== 'pending' && $('#kSt')) { $('#kSt').className = 'st ' + k.status; $('#kSt').textContent = KL[k.status]; } }
+    }, err => { console.error(err); toast('Could not load KYC requests', 'Check your connection and the Firestore rules, then refresh.', true); });
+  }
+
+  function renderKyc() {
+    const cnt = s => s === 'all' ? kycs.length : kycs.filter(k => k.status === s).length;
+    $('#kTabs').innerHTML = ['pending', 'approved', 'rejected', 'all'].map(s =>
+      '<button role="tab" data-f="' + s + '" class="' + (kFilter === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : KL[s]) + '<em>' + cnt(s) + '</em></button>').join('');
+    const q = kQuery.toLowerCase();
+    const list = kycs.filter(k => (kFilter === 'all' || k.status === kFilter) && (!q || [k.userName, k.email, k.reference, k.country].join(' ').toLowerCase().indexOf(q) > -1));
+    $('#kRows').innerHTML = list.map(k =>
+      '<tr data-id="' + esc(k.id) + '" class="' + (kFlash.has(k.id) && k.status === 'pending' ? 'flash' : '') + '">' +
+      '<td class="nm" data-label="User"><div><b>' + esc(k.userName || '—') + '</b><small>' + esc(k.email || '') + '</small></div></td>' +
+      '<td data-label="ID">' + esc(k.idType || '—') + '<br><small class="muted mono">' + esc(k.reference || '') + '</small></td>' +
+      '<td data-label="Country">' + esc(k.country || '—') + '</td>' +
+      '<td data-label="Submitted">' + esc(fmt(k.createdAt)) + '</td>' +
+      '<td data-label="Status"><span class="st ' + esc(k.status) + '">' + esc(KL[k.status] || k.status) + '</span></td>' +
+      '<td data-label=""><button class="ab sm ' + (k.status === 'pending' ? '' : 'ghost') + '">' + (k.status === 'pending' ? 'Review' : 'View') + '</button></td></tr>').join('');
+    $('#kEmpty').hidden = list.length > 0;
+    $('#kycTable').style.display = list.length ? '' : 'none';
+  }
+  $('#kTabs').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { kFilter = b.dataset.f; renderKyc(); } });
+  $('#kq').addEventListener('input', e => { kQuery = e.target.value.trim(); renderKyc(); });
+  $('#kRows').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (tr) openKyc(tr.dataset.id); });
+
+  function openKyc(id) {
+    const k = kycs.find(x => x.id === id); if (!k) return;
+    currentK = id; kFlash.delete(id);
+    const pend = k.status === 'pending';
+    const ov = $('#ov');
+    const imgs = [['ID photo', imgOk(k.idPhoto)], ['Selfie with ID', imgOk(k.selfie)]].filter(x => x[1]);
+    ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="kT">' +
+      '<div class="sheet-h"><div><h3 id="kT">' + esc(k.userName || 'User') + '</h3><p class="muted" style="font-size:.85rem;overflow-wrap:anywhere;">' + esc(k.email || '') + ' · ' + esc(k.reference || '') + (k.attempt > 1 ? ' · Attempt ' + esc(k.attempt) : '') + '</p></div><div style="display:flex;gap:10px;align-items:center;"><span id="kSt" class="st ' + esc(k.status) + '">' + esc(KL[k.status] || k.status) + '</span><button class="ab ghost sm" id="kX" aria-label="Close">✕</button></div></div>' +
+      '<div class="kv">' +
+      '<div><span>Full name</span><b>' + esc(k.userName) + '</b></div>' +
+      '<div><span>Date of birth</span><b>' + esc(k.dob) + '</b></div>' +
+      '<div><span>Country</span><b>' + esc(k.country) + '</b></div>' +
+      '<div><span>Phone</span><b>' + esc(k.phone || '—') + '</b></div>' +
+      '<div><span>Address</span><b>' + esc(k.address) + '</b></div>' +
+      '<div><span>ID type</span><b>' + esc(k.idType) + '</b></div>' +
+      '<div><span>ID number</span><b class="mono">' + esc(k.idNumber) + '</b></div>' +
+      '<div><span>Submitted</span><b>' + esc(fmt(k.createdAt)) + '</b></div></div>' +
+      '<div class="kimgs">' + (imgs.length ? imgs.map(x => '<figure><img src="' + x[1] + '" alt="' + esc(x[0]) + '"><figcaption>' + esc(x[0]) + ' · tap to enlarge</figcaption></figure>').join('') : '<p class="muted" style="font-size:.88rem;">No photos were attached.</p>') + '</div>' +
+      (!pend ? '<div class="prior ' + (k.status === 'approved' ? 'approved' : 'declined') + '"><b>' + esc(KL[k.status]) + '</b><br>' + esc(k.adminMessage || 'No message was sent.') + '<br><small class="muted">' + (k.decidedAt ? esc(fmt(k.decidedAt)) : '') + '</small></div><div class="acts"><button class="ab ghost" id="kClose">Close</button></div>' :
+      '<div class="af"><label for="kMsg">Your message to the user (a reason is required when rejecting)</label><textarea id="kMsg" maxlength="500" placeholder="Say a word: why it was approved or rejected, and what the user should do next"></textarea><div class="cnt"><span id="kCnt">0</span>/500</div></div>' +
+      '<div class="chips" id="kChips"></div><div class="err" id="kErr" role="alert"></div>' +
+      '<div class="acts"><button class="ab" id="kOk">Approve and verify</button><button class="ab bad" id="kNo">Reject</button></div>') + '</div>';
+    ov.hidden = false; document.body.style.overflow = 'hidden';
+    $('#kX').addEventListener('click', closeSheet);
+    ov.querySelectorAll('.kimgs figure').forEach(f => f.addEventListener('click', () => f.classList.toggle('zoom')));
+    if (!pend) { $('#kClose').addEventListener('click', closeSheet); return; }
+    const msg = $('#kMsg');
+    msg.addEventListener('input', () => { $('#kCnt').textContent = msg.value.length; });
+    $('#kChips').innerHTML = KQUICK.map((q, i) => '<button type="button" data-q="' + i + '">' + esc(q[0]) + '</button>').join('');
+    $('#kChips').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b) return; msg.value = KQUICK[+b.dataset.q][1]; $('#kCnt').textContent = msg.value.length; msg.focus(); });
+    $('#kOk').addEventListener('click', () => decideKyc(id, 'approved'));
+    $('#kNo').addEventListener('click', () => decideKyc(id, 'rejected'));
+  }
+
+  async function decideKyc(id, status) {
+    const k = kycs.find(x => x.id === id); if (!k) return;
+    const msg = $('#kMsg').value.trim().slice(0, 500), errEl = $('#kErr');
+    errEl.textContent = '';
+    if (status === 'rejected' && !msg) { errEl.textContent = 'Write a reason so the user knows why it was rejected and what to fix.'; $('#kMsg').focus(); return; }
+    const ok = $('#kOk'), no = $('#kNo'), btn = status === 'approved' ? ok : no, label = btn.textContent;
+    ok.disabled = no.disabled = true; btn.innerHTML = '<span class="spin"></span> Saving';
+    try {
+      await FD.collection('kycRequests').doc(id).update({ status, adminMessage: msg, decidedAt: TS(), decidedBy: adminEmail });
+      toast('KYC ' + (status === 'approved' ? 'verified' : 'rejected'), (k.userName || 'The user') + ' will see this on their KYC page now.');
+      closeSheet();
+    } catch (ex) {
+      console.error(ex);
+      errEl.textContent = 'Could not save. Check your connection and the Firestore rules, then try again.';
+      ok.disabled = no.disabled = false; btn.textContent = label;
+    }
+  }
+
+  /* ---- transfers ---- */
+  let transfers = [], tFilter = 'pending', tQuery = '', tFirst = true, tFlash = new Set(), currentT = null;
+  const TL = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
+  const TQUICK = [
+    ['Approve', 'Approved. Your transfer is on its way to your bank.'],
+    ['Wrong details', 'Rejected: the bank details look incorrect. Please check the account number and SWIFT/routing code, then submit again.'],
+    ['Verify first', 'Rejected: please complete your KYC verification, then submit the transfer again.'],
+    ['Contact support', 'Rejected: please contact support so we can help you finish this transfer.']
+  ];
+
+  function startTransfers() {
+    FD.collection('transfers').orderBy('createdAt', 'desc').onSnapshot(snap => {
+      transfers = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (!tFirst) snap.docChanges().forEach(c => {
+        if (c.type === 'added' && c.doc.data().status === 'pending') {
+          const t = c.doc.data(); tFlash.add(c.doc.id); unseen++;
+          toast('New transfer request', (t.userName || 'A user') + ' wants to send ' + money(t.amountUSD) + ' to ' + (t.bankName || 'a bank'));
+          document.title = '(' + unseen + ') Admin — Vaultex';
+        }
+      });
+      tFirst = false;
+      transfers.forEach(t => { if (t.uid && !dir.has(t.uid)) dir.set(t.uid, { name: t.userName, email: t.email }); });
+      renderStats(); renderTransfers(); rebuildDir();
+      if (currentT) { const t = transfers.find(x => x.id === currentT); if (t && t.status !== 'pending' && $('#tSt')) { $('#tSt').className = 'st ' + t.status; $('#tSt').textContent = TL[t.status]; } }
+    }, err => { console.error(err); toast('Could not load transfers', 'Check your connection and the Firestore rules, then refresh.', true); });
+  }
+
+  function renderTransfers() {
+    const cnt = s => s === 'all' ? transfers.length : transfers.filter(t => t.status === s).length;
+    $('#tTabs').innerHTML = ['pending', 'approved', 'rejected', 'all'].map(s =>
+      '<button role="tab" data-f="' + s + '" class="' + (tFilter === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : TL[s]) + '<em>' + cnt(s) + '</em></button>').join('');
+    const q = tQuery.toLowerCase();
+    const list = transfers.filter(t => (tFilter === 'all' || t.status === tFilter) &&
+      (!q || [t.userName, t.email, t.bankName, t.accountName, t.reference].join(' ').toLowerCase().indexOf(q) > -1));
+    $('#tRows').innerHTML = list.map(t =>
+      '<tr data-id="' + esc(t.id) + '" class="' + (tFlash.has(t.id) ? 'flash' : '') + '">' +
+      '<td class="nm" data-label="User"><div><b>' + esc(t.userName || '—') + '</b><small>' + esc(t.email || '') + '</small></div></td>' +
+      '<td data-label="Bank">' + esc(t.bankName || '—') + '<br><small class="muted mono">' + esc(t.reference || '') + '</small></td>' +
+      '<td class="amt" data-label="Amount">' + esc(money(t.amountUSD)) + '</td>' +
+      '<td data-label="Submitted">' + esc(fmt(t.createdAt)) + '</td>' +
+      '<td data-label="Status"><span class="st ' + esc(t.status) + '">' + esc(TL[t.status] || t.status) + '</span></td>' +
+      '<td data-label=""><button class="ab sm ' + (t.status === 'pending' ? '' : 'ghost') + '">' + (t.status === 'pending' ? 'Review' : 'View') + '</button></td></tr>').join('');
+    $('#tEmpty').hidden = list.length > 0;
+    $('#transTable').style.display = list.length ? '' : 'none';
+  }
+  $('#tTabs').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { tFilter = b.dataset.f; renderTransfers(); } });
+  $('#tq').addEventListener('input', e => { tQuery = e.target.value.trim(); renderTransfers(); });
+  $('#tRows').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (tr) openTransfer(tr.dataset.id); });
+
+  function openTransfer(id) {
+    const t = transfers.find(x => x.id === id); if (!t) return;
+    currentT = id; tFlash.delete(id);
+    const pend = t.status === 'pending';
+    const ov = $('#ov');
+    ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tT">' +
+      '<div class="sheet-h"><div><h3 id="tT">Transfer ' + esc(t.reference || '') + '</h3><p class="muted" style="font-size:.85rem;overflow-wrap:anywhere;">' + esc(t.userName || '') + ' · ' + esc(t.email || '') + '</p></div><div style="display:flex;gap:10px;align-items:center;"><span id="tSt" class="st ' + esc(t.status) + '">' + esc(TL[t.status] || t.status) + '</span><button class="ab ghost sm" id="tX" aria-label="Close">✕</button></div></div>' +
+      '<div class="kv">' +
+      '<div><span>Amount (USD)</span><b class="mono">' + esc(money(t.amountUSD)) + '</b></div>' +
+      '<div><span>User loan balance</span><b class="mono" id="tBal">Checking…</b></div>' +
+      '<div><span>Bank</span><b>' + esc(t.bankName) + '</b></div>' +
+      '<div><span>Country</span><b>' + esc(t.country) + '</b></div>' +
+      '<div><span>Account holder</span><b>' + esc(t.accountName) + '</b></div>' +
+      '<div><span>Account number</span><b class="mono">' + esc(t.accountNumber) + '</b></div>' +
+      '<div><span>SWIFT / routing</span><b class="mono">' + esc(t.swift) + '</b></div>' +
+      '<div><span>Submitted</span><b>' + esc(fmt(t.createdAt)) + '</b></div></div>' +
+      (t.note ? '<div><div class="muted" style="font-size:.76rem;margin-bottom:6px;">User note</div><div class="purpose">' + esc(t.note) + '</div></div>' : '') +
+      (!pend ? '<div class="prior ' + (t.status === 'approved' ? 'approved' : 'declined') + '"><b>' + esc(TL[t.status]) + '</b><br>' + esc(t.adminMessage || 'No message was sent.') + '<br><small class="muted">' + (t.decidedAt ? esc(fmt(t.decidedAt)) : '') + (t.balanceAfterUSD != null ? ' · Balance after ' + esc(money(t.balanceAfterUSD)) : '') + '</small></div>' +
+        '<div class="acts"><button class="ab ghost" id="tClose">Close</button></div>' :
+      '<div class="af"><label for="tMsg">Your message to the user (a reason is required when rejecting)</label><textarea id="tMsg" maxlength="500" placeholder="Say a word: why it was approved or rejected, and what the user should do next"></textarea><div class="cnt"><span id="tCnt">0</span>/500</div></div>' +
+      '<div class="chips" id="tChips"></div><div class="err" id="tErr" role="alert"></div>' +
+      '<div class="acts"><button class="ab" id="tOk">Approve and deduct</button><button class="ab bad" id="tNo">Reject</button></div>') + '</div>';
+    ov.hidden = false; document.body.style.overflow = 'hidden';
+    $('#tX').addEventListener('click', closeSheet);
+    if (!pend) { $('#tClose').addEventListener('click', closeSheet); }
+    FD.doc('users/' + t.uid + '/wallet/main').get().then(d => { const el = $('#tBal'); if (el) el.textContent = money(d.exists ? Number(d.data().balanceUSD || 0) : 0); }).catch(() => { const el = $('#tBal'); if (el) el.textContent = 'Unavailable'; });
+    if (!pend) return;
+    const msg = $('#tMsg');
+    msg.addEventListener('input', () => { $('#tCnt').textContent = msg.value.length; });
+    $('#tChips').innerHTML = TQUICK.map((q, i) => '<button type="button" data-q="' + i + '">' + esc(q[0]) + '</button>').join('');
+    $('#tChips').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b) return; msg.value = TQUICK[+b.dataset.q][1]; $('#tCnt').textContent = msg.value.length; msg.focus(); });
+    $('#tOk').addEventListener('click', () => decideTransfer(id, 'approved'));
+    $('#tNo').addEventListener('click', () => decideTransfer(id, 'rejected'));
+    msg.focus({ preventScroll: true });
+  }
+
+  async function decideTransfer(id, status) {
+    const t = transfers.find(x => x.id === id); if (!t) return;
+    const msg = $('#tMsg').value.trim().slice(0, 500), errEl = $('#tErr');
+    errEl.textContent = '';
+    if (status === 'rejected' && !msg) { errEl.textContent = 'Write a reason so the user knows why it was rejected and what to do next.'; $('#tMsg').focus(); return; }
+    const ok = $('#tOk'), no = $('#tNo'), btn = status === 'approved' ? ok : no, label = btn.textContent;
+    ok.disabled = no.disabled = true; btn.innerHTML = '<span class="spin"></span> Saving';
+    const tRef = FD.collection('transfers').doc(id);
+    try {
+      if (status === 'approved') {
+        await FD.runTransaction(async tx => {
+          const wRef = FD.doc('users/' + t.uid + '/wallet/main');
+          const tSnap = await tx.get(tRef);
+          const wSnap = await tx.get(wRef);
+          if (!tSnap.exists || tSnap.data().status !== 'pending') throw new Error('already-decided');
+          const amount = Math.round(Number(tSnap.data().amountUSD) * 100) / 100;
+          const bal = wSnap.exists ? Number(wSnap.data().balanceUSD || 0) : 0;
+          if (bal + 0.004 < amount) throw new Error('insufficient');
+          const after = Math.round((bal - amount) * 100) / 100;
+          tx.set(wRef, { balanceUSD: after, updatedAt: TS() }, { merge: true });
+          tx.set(FD.collection('users/' + t.uid + '/ledger').doc(), { type: 'debit', amountUSD: amount, note: 'Bank transfer ' + (t.reference || ''), createdAt: TS(), by: adminEmail });
+          tx.update(tRef, { status: 'approved', adminMessage: msg, decidedAt: TS(), decidedBy: adminEmail, balanceAfterUSD: after });
+        });
+      } else {
+        await tRef.update({ status: 'rejected', adminMessage: msg, decidedAt: TS(), decidedBy: adminEmail });
+      }
+      toast('Transfer ' + status, (t.userName || 'The user') + ' will see this in their history now.');
+      closeSheet();
+    } catch (ex) {
+      console.error(ex);
+      const m = ex && ex.message === 'insufficient' ? 'The user\'s loan balance is now lower than this amount. Reject it with a message instead.'
+        : ex && ex.message === 'already-decided' ? 'This transfer was already decided.' : 'Check your connection and the Firestore rules, then try again.';
+      errEl.textContent = m;
+      ok.disabled = no.disabled = false; btn.textContent = label;
+    }
+  }
+
+  function renderStats() {
+    const c = s => apps.filter(a => a.status === s).length;
+    const approvedUSD = apps.filter(a => a.status === 'approved').reduce((t, a) => t + (Number(a.amountUSD) || 0), 0);
+    $('#stats').innerHTML =
+      '<div class="stat"><span>All applications</span><b>' + apps.length + '</b></div>' +
+      '<div class="stat p"><span>Pending</span><b>' + c('pending') + '</b></div>' +
+      '<div class="stat a"><span>Approved</span><b>' + c('approved') + '</b></div>' +
+      '<div class="stat d"><span>Declined</span><b>' + c('declined') + '</b></div>' +
+      '<div class="stat p"><span>Pending transfers</span><b>' + transfers.filter(t => t.status === 'pending').length + '</b></div>' +
+      '<div class="stat p"><span>Pending KYC</span><b>' + kycs.filter(k => k.status === 'pending').length + '</b></div>' +
+      '<div class="stat"><span>Approved total (USD)</span><b>' + esc(money(approvedUSD)) + '</b></div>';
+  }
+
+  function renderRows() {
+    const cnt = s => s === 'all' ? apps.length : apps.filter(a => a.status === s).length;
+    $('#tabs').innerHTML = ['all', 'pending', 'approved', 'declined'].map(s =>
+      '<button role="tab" data-f="' + s + '" class="' + (filter === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : LABEL[s]) + '<em>' + cnt(s) + '</em></button>').join('');
+    const q = query.toLowerCase();
+    const list = apps.filter(a => (filter === 'all' || a.status === filter) &&
+      (!q || [a.name, a.email, a.reference, a.loanType].join(' ').toLowerCase().indexOf(q) > -1));
+    $('#rows').innerHTML = list.map(a =>
+      '<tr data-id="' + esc(a.id) + '" class="' + (flashIds.has(a.id) ? 'flash' : '') + '">' +
+      '<td class="nm" data-label="Applicant"><div><b>' + esc(a.name || '—') + '</b><small>' + esc(a.email || '') + '</small></div></td>' +
+      '<td data-label="Loan">' + esc(a.loanType || '—') + '<br><small class="muted mono">' + esc(a.reference || '') + '</small></td>' +
+      '<td class="amt" data-label="Amount">' + esc(money(a.amountUSD)) + '</td>' +
+      '<td data-label="Term">' + esc(a.termMonths || '—') + ' mo</td>' +
+      '<td data-label="Submitted">' + esc(fmt(a.createdAt)) + '</td>' +
+      '<td data-label="Status"><span class="st ' + esc(a.status) + '">' + esc(LABEL[a.status] || a.status) + '</span></td>' +
+      '<td data-label=""><button class="ab sm ' + (a.status === 'pending' ? '' : 'ghost') + '" data-open="' + esc(a.id) + '">' + (a.status === 'pending' ? 'Review' : 'View') + '</button></td></tr>').join('');
+    $('#empty').hidden = list.length > 0;
+    $('#loanTable').style.display = list.length ? '' : 'none';
+  }
+  $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b) { filter = b.dataset.f; renderRows(); } });
+  $('#q').addEventListener('input', e => { query = e.target.value.trim(); renderRows(); });
+  $('#rows').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (tr) openSheet(tr.dataset.id); });
+  window.addEventListener('focus', () => { unseen = 0; document.title = 'Admin — Vaultex'; });
+
+  /* ---- review sheet ---- */
+  let current = null;
+  const QUICK = [
+    ['Approved', 'Approved. Your funds are on the way.'],
+    ['Approved + collateral', 'Approved. Please keep your collateral in place until repayment.'],
+    ['Declined: collateral', 'Declined: the collateral on file does not cover 10% of the amount.'],
+    ['Declined: more info', 'Declined: we need more information. Please apply again with full details.'],
+    ['Declined: above limit', 'Declined: this amount is above your current limit.']
+  ];
+  function openSheet(id) {
+    const a = apps.find(x => x.id === id); if (!a) return;
+    current = id; flashIds.delete(id);
+    const ov = $('#ov');
+    ov.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">' +
+      '<div class="sheet-h"><div><h3 id="shT">' + esc(a.name || 'Applicant') + '</h3><p class="muted" style="font-size:.85rem;overflow-wrap:anywhere;">' + esc(a.email || '') + '</p></div><div style="display:flex;gap:10px;align-items:center;"><span id="shSt" class="st ' + esc(a.status) + '">' + esc(LABEL[a.status] || a.status) + '</span><button class="ab ghost sm" id="shX" aria-label="Close">✕</button></div></div>' +
+      '<div class="kv">' +
+      '<div><span>Amount requested</span><b class="mono">' + esc(money(a.amountUSD)) + '</b></div>' +
+      '<div><span>Loan type</span><b>' + esc(a.loanType || '—') + '</b></div>' +
+      '<div><span>Term</span><b>' + esc(a.termMonths || '—') + ' months</b></div>' +
+      '<div><span>Interest rate</span><b>' + esc(a.rate) + '%</b></div>' +
+      '<div><span>Collateral (10%)</span><b class="mono">' + esc(money(a.collateralUSD)) + '</b></div>' +
+      '<div><span>Monthly income</span><b class="mono">' + esc(a.income ? money(a.income) : '—') + '</b></div>' +
+      '<div><span>Reference</span><b class="mono">' + esc(a.reference || '—') + '</b></div>' +
+      '<div><span>Submitted</span><b>' + esc(fmt(a.createdAt)) + '</b></div></div>' +
+      '<div><div class="muted" style="font-size:.76rem;margin-bottom:6px;">Purpose &amp; details</div><div class="purpose">' + esc(a.details || 'No details provided.') + '</div></div>' +
+      (a.status !== 'pending' ? '<div class="prior ' + esc(a.status) + '"><b>Current decision: ' + esc(LABEL[a.status]) + '</b><br>' + esc(a.adminMessage || 'No message was sent.') + '<br><small class="muted">' + (a.decidedAt ? esc(fmt(a.decidedAt)) : '') + (a.decidedBy ? ' · ' + esc(a.decidedBy) : '') + (a.credited ? ' · ' + esc(money(a.amountUSD)) + ' credited' : '') + '</small></div>' : '') +
+      '<div class="af"><label for="rvMsg">Your message to the user (shown on their loan page)</label><textarea id="rvMsg" maxlength="500" placeholder="Say a word about this decision"></textarea><div class="cnt"><span id="rvCnt">0</span>/500</div></div>' +
+      '<div class="chips" id="chips"></div>' +
+      (a.credited ? '<p class="hint">The loan amount was already credited to this user.</p>' :
+        '<label class="chk"><input type="checkbox" id="rvCredit"><span>When approving, also credit ' + esc(money(a.amountUSD)) + ' to the user\'s account</span></label>') +
+      '<div class="acts"><button class="ab" id="rvOk">' + (a.status === 'approved' ? 'Update and keep approved' : 'Approve') + '</button><button class="ab bad" id="rvNo">' + (a.status === 'declined' ? 'Update and keep declined' : 'Decline') + '</button></div></div>';
+    ov.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const msg = $('#rvMsg');
+    msg.value = a.adminMessage || '';
+    $('#rvCnt').textContent = msg.value.length;
+    msg.addEventListener('input', () => { $('#rvCnt').textContent = msg.value.length; });
+    $('#chips').innerHTML = QUICK.map((q, i) => '<button type="button" data-q="' + i + '">' + esc(q[0]) + '</button>').join('');
+    $('#chips').addEventListener('click', e => { const b = e.target.closest('[data-q]'); if (!b) return; msg.value = QUICK[+b.dataset.q][1]; $('#rvCnt').textContent = msg.value.length; msg.focus(); });
+    $('#shX').addEventListener('click', closeSheet);
+    $('#rvOk').addEventListener('click', () => decide(a.id, 'approved'));
+    $('#rvNo').addEventListener('click', () => decide(a.id, 'declined'));
+    msg.focus({ preventScroll: true });
+  }
+  function closeSheet() { $('#ov').hidden = true; $('#ov').innerHTML = ''; document.body.style.overflow = ''; current = null; currentT = null; currentK = null; }
+  function refreshSheetStatus(a) { const el = $('#shSt'); if (el) { el.className = 'st ' + a.status; el.textContent = LABEL[a.status] || a.status; } }
+  $('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeSheet(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#ov').hidden) closeSheet(); });
+
+  async function decide(id, status) {
+    const a = apps.find(x => x.id === id); if (!a) return;
+    const msg = $('#rvMsg').value.trim().slice(0, 500);
+    const doCredit = status === 'approved' && !a.credited && $('#rvCredit') && $('#rvCredit').checked;
+    if (status === 'declined' && a.credited && !(await ask('Decline a credited loan?', 'This loan amount was already credited. Declining will not take the money back automatically.'))) return;
+    const ok = $('#rvOk'), no = $('#rvNo');
+    const btn = status === 'approved' ? ok : no, label = btn.textContent;
+    ok.disabled = no.disabled = true; btn.innerHTML = '<span class="spin"></span> Saving';
+    try {
+      const batch = FD.batch();
+      const upd = { status, adminMessage: msg, decidedAt: TS(), decidedBy: adminEmail };
+      if (doCredit) upd.credited = true;
+      batch.update(FD.collection('loanApplications').doc(id), upd);
+      if (doCredit) creditOps(batch, { uid: a.uid, email: a.email, name: a.name, amount: Number(a.amountUSD), note: 'Loan ' + (a.reference || '') + ' approved' });
+      await batch.commit();
+      toast('Application ' + status, (a.name || 'User') + ' will see this on their loan page now.');
+      closeSheet();
+    } catch (err) {
+      console.error(err);
+      toast('Could not save the decision', 'Check your connection and the Firestore rules, then try again.', true);
+      ok.disabled = no.disabled = false; btn.textContent = label;
+    }
+  }
+
+  /* ---- crediting ---- */
+  function creditOps(batch, c) {
+    const amount = Math.round(c.amount * 100) / 100;
+    batch.set(FD.doc('users/' + c.uid + '/wallet/main'), { balanceUSD: INC(amount), updatedAt: TS() }, { merge: true });
+    batch.set(FD.collection('users/' + c.uid + '/ledger').doc(), { type: 'credit', amountUSD: amount, note: c.note || 'Credit from Vaultex', createdAt: TS(), by: adminEmail });
+    batch.set(FD.collection('adminCredits').doc(), { uid: c.uid, email: c.email || '', name: c.name || '', amountUSD: amount, note: c.note || '', createdAt: TS(), by: adminEmail });
+  }
+
+  function rebuildDir() {
+    labelToUid.clear();
+    const items = [];
+    dir.forEach((v, uid) => {
+      const label = (v.name || 'User') + ' — ' + (v.email || 'no email') + ' (' + uid.slice(0, 6) + '…)';
+      labelToUid.set(label, uid); items.push(label);
+    });
+    $('#userList').innerHTML = items.map(l => '<option value="' + esc(l) + '"></option>').join('');
+  }
+
+  $('#creditForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = $('#cMsg'); msg.textContent = ''; msg.style.color = 'var(--a-coral)';
+    const raw = $('#cUser').value.trim();
+    let uid = labelToUid.get(raw) || (/^[A-Za-z0-9]{20,40}$/.test(raw) ? raw : null);
+    const amount = Math.round((Number($('#cAmt').value) || 0) * 100) / 100;
+    if (!uid) { msg.textContent = 'Pick a user from the list or paste a valid user ID.'; return; }
+    if (!(amount >= 0.01) || amount > 10000000) { msg.textContent = 'Enter an amount between $0.01 and $10,000,000.'; return; }
+    const info = dir.get(uid) || {};
+    const who = info.name || info.email || uid;
+    if (!(await ask('Credit ' + money(amount) + '?', 'This adds ' + money(amount) + ' USD to ' + who + '\'s account right away.'))) return;
+    const btn = $('#cBtn'); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Crediting';
+    try {
+      const batch = FD.batch();
+      creditOps(batch, { uid, email: info.email, name: info.name, amount, note: $('#cNote').value.trim().slice(0, 120) });
+      await batch.commit();
+      msg.style.color = 'var(--a-mint)'; msg.textContent = money(amount) + ' credited to ' + who + '.';
+      toast('Account credited', money(amount) + ' added for ' + who + '.');
+      $('#cAmt').value = ''; $('#cNote').value = '';
+    } catch (err) {
+      console.error(err);
+      msg.textContent = 'The credit did not go through. Check your connection and the Firestore rules.';
+    } finally { btn.disabled = false; btn.textContent = 'Credit account'; }
+  });
+
+  /* ---- small confirm dialog ---- */
+  function ask(title, text) {
+    return new Promise(res => {
+      const w = document.createElement('div');
+      w.className = 'ov'; w.style.zIndex = 200;
+      w.innerHTML = '<div class="sheet" role="alertdialog" aria-modal="true" style="max-width:420px;"><h3>' + esc(title) + '</h3><p class="muted" style="font-size:.92rem;">' + esc(text) + '</p><div class="acts"><button class="ab ghost" data-r="0">Cancel</button><button class="ab" data-r="1">Confirm</button></div></div>';
+      document.body.appendChild(w);
+      const done = v => { w.remove(); res(v); };
+      w.addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) done(b.dataset.r === '1'); else if (e.target === w) done(false); });
+      $('[data-r="1"]', w).focus();
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>
